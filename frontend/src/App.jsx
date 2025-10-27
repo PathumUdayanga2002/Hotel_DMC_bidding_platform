@@ -14,6 +14,8 @@ import AdminRegisterPage from './pages/AdminRegisterPage';
 import HotelDashboard from './pages/HotelDashboard';
 import DMCDashboard from './pages/DMCDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import DMCProfileRegister from './pages/DMCProfileRegister';
+import DMCProfile from './pages/DMCProfile';
 
 const App = () => {
   return (
@@ -41,6 +43,22 @@ const App = () => {
             element={
               <ProtectedRoute allowedRoles={['DMC_USER']}>
                 <DMCDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dmc/profile/register"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCProfileRegister />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dmc/profile"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCProfile />
               </ProtectedRoute>
             }
           />
