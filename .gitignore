@@ -71,3 +71,6 @@ coverage/
 *.p12
 *.jks
 secrets/
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.github\instructions\snyk_rules.instructions.md
