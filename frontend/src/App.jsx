@@ -14,6 +14,9 @@ import AdminRegisterPage from './pages/AdminRegisterPage';
 import HotelDashboard from './pages/HotelDashboard';
 import DMCDashboard from './pages/DMCDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminDashboardNew from './pages/AdminDashboardNew';
+import AdminHome from './pages/AdminHome';
+import DMCApprovals from './pages/DMCApprovals';
 import DMCProfileRegister from './pages/DMCProfileRegister';
 import DMCProfile from './pages/DMCProfile';
 
@@ -66,10 +69,23 @@ const App = () => {
             path="/admin/dashboard"
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
-                <AdminDashboard />
+                {/* <AdminDashboard /> */}
+                <AdminDashboardNew />
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminDashboardNew />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminHome />} />
+            <Route path="dmc-approvals" element={<DMCApprovals />} />
+          </Route>
 
           {/* 404 Redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
