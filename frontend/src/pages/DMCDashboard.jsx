@@ -1,14 +1,52 @@
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
-import { Button } from '../components/Button';
-import { Card } from '../components/Card';
-import { Plane, LogOut, User, Mail } from 'lucide-react';
-import React from 'react';
+import api from '../services/api';
+import {
+  Plane,
+  LogOut,
+  User,
+  Bell,
+  MessageSquare,
+  FileText,
+  Search,
+  Gavel,
+  Menu,
+  X,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  XCircle
+} from 'lucide-react';
 
 const DMCDashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [profileStatus, setProfileStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+
+  useEffect(() => {
+    fetchProfileStatus();
+  }, []);
+
+  const fetchProfileStatus = async () => {
+    try {
+      const response = await api.get('/dmc/profile/status');
+      setProfileStatus(response.data.data);
+      
+      // Show modal if profile doesn't exist
+      if (!response.data.data.profileExists) {
+        setShowRegistrationModal(true);
+      }
+    } catch (error) {
+      console.error('Error fetching profile status:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -20,94 +58,348 @@ const DMCDashboard = () => {
     }
   };
 
+  const getStatusBadge = () => {
+    if (!profileStatus || !profileStatus.status) {
+      return (
+        <div className="flex items-center space-x-2 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <AlertCircle className="w-5 h-5 text-yellow-600" />
+          <span className="text-sm font-medium text-yellow-800">Profile Not Registered</span>
+        </div>
+      );
+    }
+
+    const statusConfig = {
+      PENDING: {
+        icon: Clock,
+        color: 'yellow',
+        text: 'Pending Review'
+      },
+      UNDER_REVIEW: {
+        icon: Clock,
+        color: 'blue',
+        text: 'Under Review'
+      },
+      APPROVED: {
+        icon: CheckCircle,
+        color: 'green',
+        text: 'Approved'
+      },
+      REJECTED: {
+        icon: XCircle,
+        color: 'red',
+        text: 'Rejected'
+      },
+      SUSPENDED: {
+        icon: AlertCircle,
+        color: 'red',
+        text: 'Suspended'
+      }
+    };
+
+    const config = statusConfig[profileStatus.status] || statusConfig.PENDING;
+    const Icon = config.icon;
+    const colorClasses = {
+      yellow: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+      blue: 'bg-blue-50 border-blue-200 text-blue-800',
+      green: 'bg-green-50 border-green-200 text-green-800',
+      red: 'bg-red-50 border-red-200 text-red-800'
+    };
+
+    return (
+      <div className={`flex items-center space-x-2 px-4 py-2 border rounded-lg ${colorClasses[config.color]}`}>
+        <Icon className="w-5 h-5" />
+        <span className="text-sm font-medium">{config.text}</span>
+      </div>
+    );
+  };
+
+  const isFeatureLocked = () => {
+    return !profileStatus?.isApproved;
+  };
+
+  const menuItems = [
+    {
+      id: 'profile',
+      name: 'Complete Profile',
+      icon: FileText,
+      path: '/dmc/profile/register',
+      locked: false
+    },
+    {
+      id: 'browse',
+      name: 'Browse Inquiries',
+      icon: Search,
+      path: '/dmc/browse-inquiries',
+      locked: true
+    },
+    {
+      id: 'bids',
+      name: 'My Bids',
+      icon: Gavel,
+      path: '/dmc/my-bids',
+      locked: true
+    },
+    {
+      id: 'direct',
+      name: 'Direct Inquiries',
+      icon: FileText,
+      path: '/dmc/direct-inquiries',
+      locked: true
+    },
+    {
+      id: 'myprofile',
+      name: 'Profile',
+      icon: User,
+      path: '/dmc/profile',
+      locked: false
+    }
+  ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-cyan-50 via-blue-50 to-green-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center">
-            <div className="bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center mr-3">
-              <Plane className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Top Navigation */}
+      <header className="bg-white shadow-sm sticky top-0 z-40">
+        <div className="flex justify-between items-center px-4 py-3">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden p-2 rounded-md hover:bg-gray-100"
+            >
+              {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+            <div className="flex items-center">
+              <div className="bg-green-600 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+                <Plane className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-xl font-bold text-green-600">DMC Portal</h1>
             </div>
-            <h1 className="text-xl font-bold text-blue-600">DMC Dashboard</h1>
           </div>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2 inline" />
-            Logout
-          </Button>
+
+          <div className="flex items-center space-x-4">
+            {/* Status Badge */}
+            {getStatusBadge()}
+
+            {/* Notifications */}
+            <button className="relative p-2 rounded-full hover:bg-gray-100">
+              <Bell className="w-6 h-6 text-gray-600" />
+              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+
+            {/* Messages */}
+            <button className="relative p-2 rounded-full hover:bg-gray-100">
+              <MessageSquare className="w-6 h-6 text-gray-600" />
+            </button>
+
+            {/* User Menu */}
+            <div className="flex items-center space-x-2">
+              <div className="hidden md:block text-right">
+                <p className="text-sm font-medium text-gray-900">{user?.username}</p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-full hover:bg-gray-100 text-red-600"
+                title="Sign Out"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+      <div className="flex">
+        {/* Sidebar */}
+        <aside
+          className={`${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out pt-16 lg:pt-0`}
+        >
+          <nav className="p-4 space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const locked = item.locked && isFeatureLocked();
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    if (!locked) {
+                      navigate(item.path);
+                    } else {
+                      toast.warning('Please complete profile registration and wait for admin approval');
+                    }
+                  }}
+                  disabled={locked}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                    locked
+                      ? 'text-gray-400 cursor-not-allowed bg-gray-50'
+                      : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{item.name}</span>
+                  {locked && (
+                    <svg
+                      className="w-4 h-4 ml-auto"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 p-6">
+          {/* Registration Status Banner */}
+          {profileStatus && profileStatus.status && profileStatus.status !== 'APPROVED' && (
+            <div className="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+              <div className="flex items-start">
+                <AlertCircle className="w-5 h-5 text-blue-500 mt-0.5 mr-3" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-blue-800">
+                    Profile Registration Status: {profileStatus.status?.replace('_', ' ')}
+                  </h3>
+                  <p className="mt-1 text-sm text-blue-700">
+                    {profileStatus.status === 'PENDING' &&
+                      'Your profile is waiting for admin review. You will be notified once approved.'}
+                    {profileStatus.status === 'UNDER_REVIEW' &&
+                      'Your profile is currently being reviewed by our admin team.'}
+                    {profileStatus.status === 'REJECTED' &&
+                      `Your profile was rejected. Reason: ${profileStatus.rejectionReason || 'Not specified'}. Please update and resubmit.`}
+                  </p>
+                  {profileStatus.status === 'REJECTED' && (
+                    <button
+                      onClick={() => navigate('/dmc/profile/register')}
+                      className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-800"
+                    >
+                      Update & Resubmit Profile →
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Welcome Section */}
-          <Card className="mb-8">
-            <div className="text-center">
-              <div className="bg-blue-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Plane className="w-10 h-10 text-blue-600" />
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Welcome back, {user?.username}!
+            </h2>
+            <p className="text-gray-600">
+              Manage your DMC operations and respond to hotel inquiries
+            </p>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Active Bids</p>
+                  <p className="text-3xl font-bold text-gray-900">0</p>
+                </div>
+                <div className="bg-green-100 rounded-full p-3">
+                  <Gavel className="w-8 h-8 text-green-600" />
+                </div>
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Welcome to DMC Dashboard
-              </h2>
-              <p className="text-gray-600">
-                Manage your services and bid on hotel inquiries
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">New Inquiries</p>
+                  <p className="text-3xl font-bold text-gray-900">0</p>
+                </div>
+                <div className="bg-blue-100 rounded-full p-3">
+                  <Search className="w-8 h-8 text-blue-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Messages</p>
+                  <p className="text-3xl font-bold text-gray-900">0</p>
+                </div>
+                <div className="bg-purple-100 rounded-full p-3">
+                  <MessageSquare className="w-8 h-8 text-purple-600" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Call to Action */}
+          {!profileStatus?.isApproved && (
+            <div className="bg-linear-to-r from-green-500 to-blue-600 rounded-lg shadow-lg p-8 text-white text-center">
+              <FileText className="w-16 h-16 mx-auto mb-4 opacity-90" />
+              <h3 className="text-2xl font-bold mb-2">Complete Your DMC Profile</h3>
+              <p className="mb-6 opacity-90">
+                Register your company details to access all platform features and start bidding on hotel inquiries.
               </p>
+              <button
+                onClick={() => navigate('/dmc/profile/register')}
+                className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+              >
+                Complete Profile Registration
+              </button>
             </div>
-          </Card>
+          )}
+        </main>
+      </div>
 
-          {/* User Info Card */}
-          <Card className="mb-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Your Information</h3>
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <User className="w-5 h-5 text-blue-600 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-600">Username</p>
-                  <p className="font-semibold text-gray-900">{user?.username || 'N/A'}</p>
-                </div>
+      {/* Registration Modal - shown for new users */}
+      {showRegistrationModal && !profileStatus?.profileExists && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="text-center">
+              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-8 h-8 text-green-600" />
               </div>
-              <div className="flex items-center">
-                <Mail className="w-5 h-5 text-blue-600 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-600">Email</p>
-                  <p className="font-semibold text-gray-900">{user?.email || 'N/A'}</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <Plane className="w-5 h-5 text-blue-600 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-600">Role</p>
-                  <p className="font-semibold text-blue-600">{user?.role || 'DMC_USER'}</p>
-                </div>
-              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                Welcome to DMC Portal!
+              </h3>
+              <p className="text-gray-600 mb-6">
+                To access all features, please complete your company profile registration.
+                Your registration will be reviewed by our admin team.
+              </p>
+              <button
+                onClick={() => {
+                  setShowRegistrationModal(false);
+                  navigate('/dmc/profile/register');
+                }}
+                className="w-full bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+              >
+                Complete Profile Now
+              </button>
+              <button
+                onClick={() => setShowRegistrationModal(false)}
+                className="w-full mt-3 text-gray-600 hover:text-gray-800 text-sm"
+              >
+                I'll do this later
+              </button>
             </div>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <p className="text-gray-500">Complete Profile</p>
-                <p className="text-sm text-gray-400 mt-2">Coming soon in Phase 2</p>
-              </div>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <p className="text-gray-500">Browse Inquiries</p>
-                <p className="text-sm text-gray-400 mt-2">Coming soon in Phase 2</p>
-              </div>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <p className="text-gray-500">My Bids</p>
-                <p className="text-sm text-gray-400 mt-2">Coming soon in Phase 2</p>
-              </div>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <p className="text-gray-500">Direct Inquiries</p>
-                <p className="text-sm text-gray-400 mt-2">Coming soon in Phase 2</p>
-              </div>
-            </div>
-          </Card>
+          </div>
         </div>
-      </main>
+      )}
     </div>
   );
 };

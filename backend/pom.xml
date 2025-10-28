@@ -113,6 +113,13 @@
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
 
+		<!-- Cloudinary for file upload -->
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http44</artifactId>
+			<version>1.36.0</version>
+		</dependency>
+
 		<!-- Development Tools -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
