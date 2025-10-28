@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
+import api from "../services/api";
 import {
   Building2,
   MapPin,
@@ -17,8 +17,9 @@ import {
   Home,
   ImageIcon,
   Award,
-  List
-} from 'lucide-react';
+  List,
+  X,
+} from "lucide-react";
 
 const HotelProfileRegister = () => {
   const navigate = useNavigate();
@@ -28,21 +29,25 @@ const HotelProfileRegister = () => {
   const [existingProfile, setExistingProfile] = useState(null);
 
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    address: '',
-    city: '',
-    country: '',
-    contactEmail: user?.email || '',
-    contactNumber: '',
-    website: '',
-    amenities: '',
-    galleryImages: '',
-    totalRooms: '',
+    name: "",
+    description: "",
+    address: "",
+    city: "",
+    country: "",
+    contactEmail: user?.email || "",
+    contactNumber: "",
+    website: "",
+    amenities: "",
+    totalRooms: "",
   });
 
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [filePreviews, setFilePreviews] = useState([]);
+  // Certifications
+  const [certificationFiles, setCertificationFiles] = useState([]);
+  const [certificationPreviews, setCertificationPreviews] = useState([]);
+
+  // Gallery
+  const [galleryFiles, setGalleryFiles] = useState([]);
+  const [galleryPreviews, setGalleryPreviews] = useState([]);
 
   useEffect(() => {
     fetchExistingProfile();
@@ -50,48 +55,71 @@ const HotelProfileRegister = () => {
 
   const fetchExistingProfile = async () => {
     try {
-      const response = await api.get('/hotel/profile');
+      const response = await api.get("/hotel/profile");
       const profile = response.data.data;
       setExistingProfile(profile);
 
       setFormData({
-        name: profile.name || '',
-        description: profile.description || '',
-        address: profile.address || '',
-        city: profile.city || '',
-        country: profile.country || '',
-        contactEmail: profile.contactEmail || user?.email || '',
-        contactNumber: profile.contactNumber || '',
-        website: profile.website || '',
-        amenities: profile.amenities?.join(', ') || '',
-        galleryImages: profile.galleryImages?.join(', ') || '',
-        totalRooms: profile.totalRooms || '',
+        name: profile.name || "",
+        description: profile.description || "",
+        address: profile.address || "",
+        city: profile.city || "",
+        country: profile.country || "",
+        contactEmail: profile.contactEmail || user?.email || "",
+        contactNumber: profile.contactNumber || "",
+        website: profile.website || "",
+        amenities: profile.amenities?.join(", ") || "",
+        totalRooms: profile.totalRooms || "",
       });
 
       if (profile.certifications?.length) {
-        setFilePreviews(profile.certifications);
+        setCertificationPreviews(profile.certifications.map((c) => c.url));
+      }
+
+      if (profile.galleryImages?.length) {
+        setGalleryPreviews(profile.galleryImages.map((g) => g.url));
       }
     } catch {
-      console.log('No existing profile found');
+      console.log("No existing profile found");
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  const handleFileChange = (e) => {
+  const handleCertificationChange = (e) => {
     const files = Array.from(e.target.files);
-    if (files.some(f => f.size > 50 * 1024 * 1024)) {
-      toast.error('Each file must be smaller than 50MB');
+    if (files.some((f) => f.size > 50 * 1024 * 1024)) {
+      toast.error("Each certification file must be smaller than 50MB");
       return;
     }
-    setSelectedFiles(files);
-    setFilePreviews(files.map(f => f.name));
+    setCertificationFiles(files);
+    setCertificationPreviews(files.map((f) => f.name));
+  };
+
+  const handleGalleryChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.some((f) => f.size > 10 * 1024 * 1024)) {
+      toast.error("Each gallery image must be smaller than 10MB");
+      return;
+    }
+    setGalleryFiles(files);
+    setGalleryPreviews(files.map((f) => URL.createObjectURL(f)));
+  };
+
+  const removePreview = (type, index) => {
+    if (type === "cert") {
+      setCertificationPreviews((prev) => prev.filter((_, i) => i !== index));
+      setCertificationFiles((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      setGalleryPreviews((prev) => prev.filter((_, i) => i !== index));
+      setGalleryFiles((prev) => prev.filter((_, i) => i !== index));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -103,38 +131,42 @@ const HotelProfileRegister = () => {
 
       const payload = {
         ...formData,
-        amenities: formData.amenities.split(',').map(a => a.trim()),
-        galleryImages: formData.galleryImages.split(',').map(a => a.trim())
+        amenities: formData.amenities.split(",").map((a) => a.trim()),
       };
 
       const profileBlob = new Blob([JSON.stringify(payload)], {
-        type: 'application/json'
+        type: "application/json",
       });
-      submitData.append('profile', profileBlob);
+      submitData.append("profile", profileBlob);
 
-      selectedFiles.forEach(file => {
-        submitData.append('certifications', file);
-      });
-
-      await api.post('/hotel/profile', submitData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      certificationFiles.forEach((file) => {
+        submitData.append("certifications", file);
       });
 
-      toast.success(existingProfile
-        ? 'Profile updated and resubmitted successfully! Waiting for admin approval.'
-        : 'Profile registered successfully! Waiting for admin approval.'
+      galleryFiles.forEach((file) => {
+        submitData.append("galleryImages", file);
+      });
+
+      await api.post("/hotel/profile", submitData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      toast.success(
+        existingProfile
+          ? "Profile updated and resubmitted successfully!"
+          : "Profile registered successfully! Waiting for admin approval."
       );
 
-      navigate('/hotel/dashboard');
+      navigate("/hotel/dashboard");
     } catch (error) {
-      console.error('Profile registration error:', error);
-      toast.error(error.response?.data?.message || 'Failed to register profile');
+      console.error("Profile registration error:", error);
+      toast.error(error.response?.data?.message || "Failed to register profile");
     } finally {
       setLoading(false);
     }
   };
 
-  const isRejected = existingProfile?.status === 'REJECTED';
+  const isRejected = existingProfile?.status === "REJECTED";
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -142,28 +174,33 @@ const HotelProfileRegister = () => {
         {/* Header */}
         <div className="mb-6">
           <button
-            onClick={() => navigate('/hotel/dashboard')}
+            onClick={() => navigate("/hotel/dashboard")}
             className="flex items-center text-green-600 hover:text-green-700 mb-4"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back to Dashboard
           </button>
           <h1 className="text-3xl font-bold text-gray-900">
-            {existingProfile ? 'Update Hotel Profile' : 'Complete Hotel Profile Registration'}
+            {existingProfile
+              ? "Update Hotel Profile"
+              : "Complete Hotel Profile Registration"}
           </h1>
           <p className="text-gray-600 mt-2">
             {isRejected
-              ? 'Your previous submission was rejected. Please update and resubmit your profile.'
-              : 'Provide your hotel details to access all platform features'}
+              ? "Your previous submission was rejected. Please update and resubmit your profile."
+              : "Provide your hotel details to access all platform features"}
           </p>
         </div>
 
         {/* Rejection Notice */}
         {isRejected && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded mb-6">
-            <h3 className="text-sm font-semibold text-red-800 mb-2">Profile Rejected</h3>
+            <h3 className="text-sm font-semibold text-red-800 mb-2">
+              Profile Rejected
+            </h3>
             <p className="text-sm text-red-700">
-              <strong>Reason:</strong> {existingProfile.currentRejectionReason || 'Not specified'}
+              <strong>Reason:</strong>{" "}
+              {existingProfile.currentRejectionReason || "Not specified"}
             </p>
           </div>
         )}
@@ -294,7 +331,7 @@ const HotelProfileRegister = () => {
               />
             </div>
 
-            {/* Amenities & Gallery */}
+            {/* Amenities */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <List className="w-4 h-4 inline mr-2" /> Amenities (comma separated)
@@ -305,20 +342,6 @@ const HotelProfileRegister = () => {
                 value={formData.amenities}
                 onChange={handleInputChange}
                 placeholder="Pool, Spa, Free Wi-Fi, Gym"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <ImageIcon className="w-4 h-4 inline mr-2" /> Gallery Image URLs (comma separated)
-              </label>
-              <input
-                type="text"
-                name="galleryImages"
-                value={formData.galleryImages}
-                onChange={handleInputChange}
-                placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
               />
             </div>
@@ -349,24 +372,87 @@ const HotelProfileRegister = () => {
                   type="file"
                   id="certifications"
                   multiple
-                  onChange={handleFileChange}
+                  onChange={handleCertificationChange}
                   accept=".pdf,.jpg,.jpeg,.png"
                   className="hidden"
                 />
-                <label htmlFor="certifications" className="cursor-pointer flex flex-col items-center">
+                <label
+                  htmlFor="certifications"
+                  className="cursor-pointer flex flex-col items-center"
+                >
                   <Upload className="w-12 h-12 text-gray-400 mb-2" />
-                  <p className="text-sm font-medium text-gray-700">Click to upload or drag and drop</p>
-                  <p className="text-xs text-gray-500 mt-1">PDF, JPG, JPEG, PNG (Max 50MB each)</p>
+                  <p className="text-sm font-medium text-gray-700">
+                    Click to upload or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    PDF, JPG, JPEG, PNG (Max 50MB each)
+                  </p>
                 </label>
               </div>
-              {filePreviews.length > 0 && (
+              {certificationPreviews.length > 0 && (
                 <ul className="mt-2 text-sm text-green-600 space-y-1">
-                  {filePreviews.map((file, i) => (
+                  {certificationPreviews.map((file, i) => (
                     <li key={i} className="flex items-center">
                       <CheckCircle className="w-4 h-4 mr-2" /> {file}
+                      <button
+                        type="button"
+                        className="ml-2 text-red-500"
+                        onClick={() => removePreview("cert", i)}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </li>
                   ))}
                 </ul>
+              )}
+            </div>
+
+            {/* Gallery Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <ImageIcon className="w-4 h-4 inline mr-2" /> Gallery Images (Optional)
+              </label>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+                <input
+                  type="file"
+                  id="galleryImages"
+                  multiple
+                  onChange={handleGalleryChange}
+                  accept=".jpg,.jpeg,.png"
+                  className="hidden"
+                />
+                <label
+                  htmlFor="galleryImages"
+                  className="cursor-pointer flex flex-col items-center"
+                >
+                  <Upload className="w-12 h-12 text-gray-400 mb-2" />
+                  <p className="text-sm font-medium text-gray-700">
+                    Click to upload or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    JPG, JPEG, PNG (Max 10MB each)
+                  </p>
+                </label>
+              </div>
+              {galleryPreviews.length > 0 && (
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {galleryPreviews.map((url, i) => (
+                    <div key={i} className="relative">
+                      <img
+                        src={url}
+                        alt={`gallery-${i}`}
+                        className="w-full h-24 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                        onClick={() => removePreview("gallery", i)}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 
@@ -374,7 +460,7 @@ const HotelProfileRegister = () => {
             <div className="flex items-center justify-between pt-6 border-t">
               <button
                 type="button"
-                onClick={() => navigate('/hotel/dashboard')}
+                onClick={() => navigate("/hotel/dashboard")}
                 className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
               >
                 Cancel
@@ -392,7 +478,9 @@ const HotelProfileRegister = () => {
                 ) : (
                   <>
                     <CheckCircle className="w-5 h-5 mr-2" />
-                    {existingProfile ? 'Update & Resubmit' : 'Submit for Approval'}
+                    {existingProfile
+                      ? "Update & Resubmit"
+                      : "Submit for Approval"}
                   </>
                 )}
               </button>
@@ -401,7 +489,9 @@ const HotelProfileRegister = () => {
 
           {/* Info Box */}
           <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="text-sm font-semibold text-blue-900 mb-2">What happens next?</h4>
+            <h4 className="text-sm font-semibold text-blue-900 mb-2">
+              What happens next?
+            </h4>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• Your profile will be reviewed by the admin</li>
               <li>• You will get notified once approved or rejected</li>
