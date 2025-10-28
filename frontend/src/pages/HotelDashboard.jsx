@@ -48,19 +48,21 @@ const LoadingSpinner = () => (
 );
 
 // --- CTACard ---
-const CTACard = ({ title, message, buttonText, icon: Icon }) => (
+// --- CTACard ---
+const CTACard = ({ title, message, buttonText, icon: Icon, onButtonClick }) => (
   <div className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl p-8 md:p-12 text-center flex flex-col items-center">
     <div className="bg-white/20 p-4 rounded-full mb-4">
       <Icon className="w-10 h-10 text-white" />
     </div>
     <h3 className="text-3xl font-bold mb-2">{title}</h3>
     <p className="text-lg text-cyan-100 max-w-2xl mb-6">{message}</p>
-    <Button variant="primary">
+    <Button variant="primary" onClick={onButtonClick}>
       <CheckCircle2 className="w-5 h-5 mr-2" />
       {buttonText}
     </Button>
   </div>
 );
+
 
 // --- InfoCard ---
 const InfoCard = ({ title, message, icon: Icon, iconColor, bgColor }) => (
@@ -102,9 +104,10 @@ const StatCards = ({ dashboardData }) => {
 
 // --- Sidebar ---
 const Sidebar = ({ profileStatus }) => {
+  const navigate = useNavigate();
   const isApproved = profileStatus === 'APPROVED';
   const navItems = [
-    { name: 'My Profile', icon: User, locked: false },
+    { name: 'My Profile', icon: User, path: '/hotel/profile/register', locked: false },
     { name: 'Browse DMCs', icon: Compass, locked: !isApproved },
     { name: 'My Inquiries', icon: FileText, locked: !isApproved },
     { name: 'Received Proposals', icon: Send, locked: !isApproved },
@@ -120,24 +123,46 @@ const Sidebar = ({ profileStatus }) => {
         <h1 className="text-xl font-bold text-cyan-600">Hotel Portal</h1>
       </div>
 
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
-          {navItems.map((item) => (
-            <li key={item.name}>
-              <a
-                href="#"
-                className={`flex items-center p-3 rounded-lg transition-colors ${
-                  item.locked ? 'text-gray-400 opacity-70 cursor-not-allowed' : 'text-gray-600 hover:bg-cyan-50 hover:text-cyan-600'
-                }`}
-                onClick={(e) => item.locked && e.preventDefault()}
-              >
-                <item.icon className="w-5 h-5 mr-3" />
-                <span className="flex-1">{item.name}</span>
-                {item.locked && profileStatus !== 'LOADING' && <Lock className="w-4 h-4" />}
-              </a>
-            </li>
-          ))}
-        </ul>
+      <nav className="p-4 space-y-2">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const locked = item.locked; // already reflects approval state
+
+          return (
+            <button
+              key={item.name}
+              onClick={() => {
+                if (!locked) {
+                  navigate(item.path);
+                } else {
+                  toast.warning('Please complete profile registration and wait for admin approval');
+                }
+              }}
+              disabled={locked}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                locked
+                  ? 'text-gray-400 cursor-not-allowed bg-gray-50'
+                  : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="font-medium">{item.name}</span>
+              {locked && (
+                <svg
+                  className="w-4 h-4 ml-auto"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+            </button>
+          );
+        })}
       </nav>
 
       <div className="p-4 border-t">
@@ -295,8 +320,10 @@ const HotelDashboard = () => {
               message="Register your hotel details to access all platform features and start sending inquiries to DMCs."
               buttonText="Complete Profile Registration"
               icon={Building2}
+              onButtonClick={() => navigate('/hotel/profile/register')}
             />
           )}
+
           {profileStatus === 'PENDING_APPROVAL' && (
             <InfoCard
               title="Profile Pending Approval"

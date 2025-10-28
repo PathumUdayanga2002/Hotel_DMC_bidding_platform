@@ -19,6 +19,7 @@ import AdminHome from './pages/AdminHome';
 import DMCApprovals from './pages/DMCApprovals';
 import DMCProfileRegister from './pages/DMCProfileRegister';
 import DMCProfile from './pages/DMCProfile';
+import HotelProfileRegister from './pages/HotelProfileRegister';
 
 const App = () => {
   return (
@@ -38,6 +39,14 @@ const App = () => {
             element={
               <ProtectedRoute allowedRoles={['HOTEL_USER']}>
                 <HotelDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hotel/profile/register"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <HotelProfileRegister />
               </ProtectedRoute>
             }
           />
