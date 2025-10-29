@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -37,7 +38,19 @@ public class HotelProfile {
     private Integer totalRooms;
     private List<String> certifications;
 
-    private String status; // PENDING_REVIEW, APPROVED, REJECTED
+    private String status; // PENDING, UNDER_REVIEW, APPROVED, REJECTED, SUSPENDED
+    
+    // Admin approval tracking
+    private String approvedBy; // Admin user ID who approved
+    private String approvedByUsername; // Admin username who approved
+    private LocalDateTime approvedAt;
+    
+    // Rejection tracking
+    private String rejectionReason; // Current rejection reason (if rejected)
+    private List<HotelRejectionHistory> rejectionHistory = new ArrayList<>();
+    
+    // Admin notes (internal only, not visible to hotel users)
+    private List<HotelAdminNote> adminNotes = new ArrayList<>();
 
     @CreatedDate
     private LocalDateTime createdAt;

@@ -104,4 +104,87 @@ public class EmailServiceImpl implements EmailService {
             log.error("Failed to send rejection email: {}", e.getMessage());
         }
     }
+    
+    @Async
+    @Override
+    public void sendNewHotelRegistrationNotification(String hotelName, String hotelEmail) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(adminEmail);
+            message.setSubject("New Hotel Registration Request - " + hotelName);
+            message.setText(
+                "Dear Admin,\n\n" +
+                "A new Hotel has registered on the Hotel Bidding Platform:\n\n" +
+                "Hotel Name: " + hotelName + "\n" +
+                "Email: " + hotelEmail + "\n\n" +
+                "Please review and approve/reject the registration.\n\n" +
+                "Login to the admin panel to review the details.\n\n" +
+                "Best regards,\n" +
+                "Hotel Bidding Platform Team"
+            );
+
+            mailSender.send(message);
+            log.info("Admin notification sent for new Hotel registration: {}", hotelName);
+
+        } catch (Exception e) {
+            log.error("Failed to send admin notification email for hotel: {}", e.getMessage());
+        }
+    }
+
+    @Async
+    @Override
+    public void sendHotelApprovalEmail(String hotelEmail, String hotelName) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(hotelEmail);
+            message.setSubject("Hotel Registration Approved - " + hotelName);
+            message.setText(
+                "Dear " + hotelName + ",\n\n" +
+                "Congratulations! Your hotel registration has been approved.\n\n" +
+                "You can now access all features of the Hotel Bidding Platform:\n" +
+                "- Receive inquiries from DMCs\n" +
+                "- Respond to bids\n" +
+                "- Manage your hotel profile\n" +
+                "- Track bookings and payments\n\n" +
+                "Login to your dashboard to get started.\n\n" +
+                "Best regards,\n" +
+                "Hotel Bidding Platform Team"
+            );
+
+            mailSender.send(message);
+            log.info("Approval email sent to Hotel: {}", hotelName);
+
+        } catch (Exception e) {
+            log.error("Failed to send approval email to hotel: {}", e.getMessage());
+        }
+    }
+
+    @Async
+    @Override
+    public void sendHotelRejectionEmail(String hotelEmail, String hotelName, String reason) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(hotelEmail);
+            message.setSubject("Hotel Registration Update - " + hotelName);
+            message.setText(
+                "Dear " + hotelName + ",\n\n" +
+                "Thank you for your interest in the Hotel Bidding Platform.\n\n" +
+                "Unfortunately, your hotel registration has not been approved at this time.\n\n" +
+                "Reason: " + reason + "\n\n" +
+                "You can update your profile and resubmit your registration for review.\n\n" +
+                "If you have any questions, please contact our support team.\n\n" +
+                "Best regards,\n" +
+                "Hotel Bidding Platform Team"
+            );
+
+            mailSender.send(message);
+            log.info("Rejection email sent to Hotel: {}", hotelName);
+
+        } catch (Exception e) {
+            log.error("Failed to send rejection email to hotel: {}", e.getMessage());
+        }
+    }
 }
