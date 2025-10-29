@@ -10,11 +10,12 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Building2
 } from 'lucide-react';
 
 const AdminHome = () => {
-  const { dmcStats } = useOutletContext();
+  const { dmcStats, hotelStats } = useOutletContext();
   const navigate = useNavigate();
 
   const stats = [
@@ -68,6 +69,13 @@ const AdminHome = () => {
       icon: FileCheck,
       color: 'green',
       action: () => navigate('/admin/dmc-approvals')
+    },
+    {
+      title: 'Review Hotel Profiles',
+      description: 'Approve or reject pending hotel registrations',
+      icon: Building2,
+      color: 'green',
+      action: () => navigate('/admin/hotel-approvals')
     },
     {
       title: 'Manage Users',
@@ -202,43 +210,85 @@ const AdminHome = () => {
       </div>
 
       {/* Status Breakdown */}
-      <Card>
-        <h2 className="text-xl font-bold text-gray-900 mb-4">DMC Profile Status Breakdown</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {[
-            { label: 'Total', value: dmcStats?.total || 0, color: 'gray', icon: FileCheck },
-            { label: 'Pending', value: dmcStats?.pending || 0, color: 'yellow', icon: Clock },
-            { label: 'Under Review', value: dmcStats?.underReview || 0, color: 'blue', icon: Activity },
-            { label: 'Approved', value: dmcStats?.approved || 0, color: 'green', icon: CheckCircle },
-            { label: 'Rejected', value: dmcStats?.rejected || 0, color: 'red', icon: XCircle },
-            { label: 'Suspended', value: dmcStats?.suspended || 0, color: 'red', icon: AlertCircle }
-          ].map((status, index) => {
-            const Icon = status.icon;
-            const colorClasses = {
-              gray: 'border-gray-200 bg-gray-50',
-              yellow: 'border-yellow-200 bg-yellow-50',
-              blue: 'border-blue-200 bg-blue-50',
-              green: 'border-green-200 bg-green-50',
-              red: 'border-red-200 bg-red-50'
-            };
-            const iconColors = {
-              gray: 'text-gray-600',
-              yellow: 'text-yellow-600',
-              blue: 'text-blue-600',
-              green: 'text-green-600',
-              red: 'text-red-600'
-            };
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* DMC Status Breakdown */}
+        <Card>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">DMC Profile Status Breakdown</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              { label: 'Total', value: dmcStats?.total || 0, color: 'gray', icon: FileCheck },
+              { label: 'Pending', value: dmcStats?.pending || 0, color: 'yellow', icon: Clock },
+              { label: 'Under Review', value: dmcStats?.underReview || 0, color: 'blue', icon: Activity },
+              { label: 'Approved', value: dmcStats?.approved || 0, color: 'green', icon: CheckCircle },
+              { label: 'Rejected', value: dmcStats?.rejected || 0, color: 'red', icon: XCircle },
+              { label: 'Suspended', value: dmcStats?.suspended || 0, color: 'red', icon: AlertCircle }
+            ].map((status, index) => {
+              const Icon = status.icon;
+              const colorClasses = {
+                gray: 'border-gray-200 bg-gray-50',
+                yellow: 'border-yellow-200 bg-yellow-50',
+                blue: 'border-blue-200 bg-blue-50',
+                green: 'border-green-200 bg-green-50',
+                red: 'border-red-200 bg-red-50'
+              };
+              const iconColors = {
+                gray: 'text-gray-600',
+                yellow: 'text-yellow-600',
+                blue: 'text-blue-600',
+                green: 'text-green-600',
+                red: 'text-red-600'
+              };
 
-            return (
-              <div key={index} className={`p-4 rounded-lg border-2 ${colorClasses[status.color]}`}>
-                <Icon className={`w-5 h-5 mb-2 ${iconColors[status.color]}`} />
-                <p className="text-2xl font-bold text-gray-900">{status.value}</p>
-                <p className="text-sm text-gray-600">{status.label}</p>
-              </div>
-            );
-          })}
-        </div>
-      </Card>
+              return (
+                <div key={index} className={`p-4 rounded-lg border-2 ${colorClasses[status.color]}`}>
+                  <Icon className={`w-5 h-5 mb-2 ${iconColors[status.color]}`} />
+                  <p className="text-2xl font-bold text-gray-900">{status.value}</p>
+                  <p className="text-sm text-gray-600">{status.label}</p>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Hotel Status Breakdown */}
+        <Card>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Hotel Profile Status Breakdown</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              { label: 'Total', value: hotelStats?.total || 0, color: 'gray', icon: Building2 },
+              { label: 'Pending', value: hotelStats?.pending || 0, color: 'yellow', icon: Clock },
+              { label: 'Under Review', value: hotelStats?.underReview || 0, color: 'blue', icon: Activity },
+              { label: 'Approved', value: hotelStats?.approved || 0, color: 'green', icon: CheckCircle },
+              { label: 'Rejected', value: hotelStats?.rejected || 0, color: 'red', icon: XCircle },
+              { label: 'Suspended', value: hotelStats?.suspended || 0, color: 'red', icon: AlertCircle }
+            ].map((status, index) => {
+              const Icon = status.icon;
+              const colorClasses = {
+                gray: 'border-gray-200 bg-gray-50',
+                yellow: 'border-yellow-200 bg-yellow-50',
+                blue: 'border-blue-200 bg-blue-50',
+                green: 'border-green-200 bg-green-50',
+                red: 'border-red-200 bg-red-50'
+              };
+              const iconColors = {
+                gray: 'text-gray-600',
+                yellow: 'text-yellow-600',
+                blue: 'text-blue-600',
+                green: 'text-green-600',
+                red: 'text-red-600'
+              };
+
+              return (
+                <div key={index} className={`p-4 rounded-lg border-2 ${colorClasses[status.color]}`}>
+                  <Icon className={`w-5 h-5 mb-2 ${iconColors[status.color]}`} />
+                  <p className="text-2xl font-bold text-gray-900">{status.value}</p>
+                  <p className="text-sm text-gray-600">{status.label}</p>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      </div>
     </div>
   );
 };

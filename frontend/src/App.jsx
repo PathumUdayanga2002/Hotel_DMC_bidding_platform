@@ -17,6 +17,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminDashboardNew from './pages/AdminDashboardNew';
 import AdminHome from './pages/AdminHome';
 import DMCApprovals from './pages/DMCApprovals';
+import HotelApprovals from './pages/HotelApprovals';
 import DMCProfileRegister from './pages/DMCProfileRegister';
 import DMCProfile from './pages/DMCProfile';
 import HotelProfileRegister from './pages/HotelProfileRegister';
@@ -94,6 +95,7 @@ const App = () => {
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminHome />} />
             <Route path="dmc-approvals" element={<DMCApprovals />} />
+            <Route path="hotel-approvals" element={<HotelApprovals />} />
           </Route>
 
           {/* 404 Redirect */}
