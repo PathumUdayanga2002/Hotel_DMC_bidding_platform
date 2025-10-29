@@ -20,6 +20,7 @@ import DMCApprovals from './pages/DMCApprovals';
 import DMCProfileRegister from './pages/DMCProfileRegister';
 import DMCProfile from './pages/DMCProfile';
 import HotelProfileRegister from './pages/HotelProfileRegister';
+import MainDashboard from './components/MainDashboard';
 
 const App = () => {
   return (
@@ -79,15 +80,19 @@ const App = () => {
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
                 {/* <AdminDashboard /> */}
-                <AdminDashboardNew />
+                {/* <AdminDashboardNew /> */}
+                <MainDashboard />
               </ProtectedRoute>
             }
           />
+
+          
           <Route
             path="/admin"
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminDashboardNew />
+                {/* <MainDashboard /> */}
               </ProtectedRoute>
             }
           >
