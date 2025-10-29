@@ -14,6 +14,12 @@ import AdminRegisterPage from './pages/AdminRegisterPage';
 import HotelDashboard from './pages/HotelDashboard';
 import DMCDashboard from './pages/DMCDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminDashboardNew from './pages/AdminDashboardNew';
+import AdminHome from './pages/AdminHome';
+import DMCApprovals from './pages/DMCApprovals';
+import DMCProfileRegister from './pages/DMCProfileRegister';
+import DMCProfile from './pages/DMCProfile';
+import HotelProfileRegister from './pages/HotelProfileRegister';
 
 const App = () => {
   return (
@@ -37,6 +43,14 @@ const App = () => {
             }
           />
           <Route
+            path="/hotel/profile/register"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <HotelProfileRegister />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/dmc/dashboard"
             element={
               <ProtectedRoute allowedRoles={['DMC_USER']}>
@@ -45,13 +59,42 @@ const App = () => {
             }
           />
           <Route
-            path="/admin/dashboard"
+            path="/dmc/profile/register"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
-                <AdminDashboard />
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCProfileRegister />
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/dmc/profile"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                {/* <AdminDashboard /> */}
+                <AdminDashboardNew />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminDashboardNew />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="dashboard" element={<AdminHome />} />
+            <Route path="dmc-approvals" element={<DMCApprovals />} />
+          </Route>
 
           {/* 404 Redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
