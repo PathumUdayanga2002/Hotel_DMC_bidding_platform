@@ -1,0 +1,187 @@
+package com.hotel_bidding.backend.controller;
+
+import com.hotel_bidding.backend.constants.BidInquiryStatus;
+import com.hotel_bidding.backend.dto.request.CreateBidInquiryRequest;
+import com.hotel_bidding.backend.dto.request.UpdateBidInquiryRequest;
+import com.hotel_bidding.backend.dto.response.BidInquiryResponse;
+import com.hotel_bidding.backend.dto.response.BidInquiryStatsResponse;
+import com.hotel_bidding.backend.dto.response.HotelBidResponse;
+import com.hotel_bidding.backend.service.BidInquiryService;
+import com.hotel_bidding.backend.service.HotelBidService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * REST Controller for DMC Bid Inquiry Management
+ * Handles inquiry creation, updates, closing, canceling, and awarding bids
+ */
+@RestController
+@RequestMapping("/api/dmc/inquiries")
+@RequiredArgsConstructor
+@Slf4j
+@PreAuthorize("hasRole('DMC_USER')")
+public class DMCBidInquiryController {
+
+    private final BidInquiryService bidInquiryService;
+    private final HotelBidService hotelBidService;
+
+    /**
+     * Create a new bid inquiry
+     */
+    @PostMapping
+    public ResponseEntity<BidInquiryResponse> createInquiry(
+            @Valid @RequestBody CreateBidInquiryRequest request,
+            Authentication authentication) {
+        
+        log.info("Creating new inquiry by DMC: {}", authentication.getName());
+        
+        BidInquiryResponse inquiry = bidInquiryService.createInquiry(request, authentication.getName());
+        return ResponseEntity.status(HttpStatus.CREATED).body(inquiry);
+    }
+
+    /**
+     * Get all inquiries posted by the authenticated DMC
+     */
+    @GetMapping("/my-inquiries")
+    public ResponseEntity<Page<BidInquiryResponse>> getMyInquiries(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) BidInquiryStatus status,
+            Authentication authentication) {
+        
+        String dmcUserId = authentication.getName();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postedAt"));
+        
+        Page<BidInquiryResponse> inquiries;
+        if (status != null) {
+            inquiries = bidInquiryService.getInquiriesByDmcUserAndStatus(dmcUserId, status, pageable);
+        } else {
+            inquiries = bidInquiryService.getInquiriesByDmcUser(dmcUserId, pageable);
+        }
+        
+        return ResponseEntity.ok(inquiries);
+    }
+
+    /**
+     * Get inquiry details by ID
+     */
+    @GetMapping("/{inquiryId}")
+    public ResponseEntity<BidInquiryResponse> getInquiryById(@PathVariable String inquiryId) {
+        BidInquiryResponse inquiry = bidInquiryService.getInquiryById(inquiryId);
+        return ResponseEntity.ok(inquiry);
+    }
+
+    /**
+     * Update an existing inquiry
+     */
+    @PutMapping("/{inquiryId}")
+    public ResponseEntity<BidInquiryResponse> updateInquiry(
+            @PathVariable String inquiryId,
+            @Valid @RequestBody UpdateBidInquiryRequest request,
+            Authentication authentication) {
+        
+        log.info("Updating inquiry {} by DMC: {}", inquiryId, authentication.getName());
+        
+        BidInquiryResponse updatedInquiry = bidInquiryService.updateInquiry(inquiryId, request, authentication.getName());
+        return ResponseEntity.ok(updatedInquiry);
+    }
+
+    /**
+     * Close an inquiry (no more bids accepted)
+     */
+    @PutMapping("/{inquiryId}/close")
+    public ResponseEntity<BidInquiryResponse> closeInquiry(
+            @PathVariable String inquiryId,
+            Authentication authentication) {
+        
+        log.info("Closing inquiry {} by DMC: {}", inquiryId, authentication.getName());
+        
+        BidInquiryResponse closedInquiry = bidInquiryService.closeInquiry(inquiryId, authentication.getName());
+        return ResponseEntity.ok(closedInquiry);
+    }
+
+    /**
+     * Cancel an inquiry
+     */
+    @PutMapping("/{inquiryId}/cancel")
+    public ResponseEntity<BidInquiryResponse> cancelInquiry(
+            @PathVariable String inquiryId,
+            Authentication authentication) {
+        
+        log.info("Canceling inquiry {} by DMC: {}", inquiryId, authentication.getName());
+        
+        BidInquiryResponse canceledInquiry = bidInquiryService.cancelInquiry(inquiryId, authentication.getName());
+        return ResponseEntity.ok(canceledInquiry);
+    }
+
+    /**
+     * Award a bid to a hotel
+     */
+    @PutMapping("/{inquiryId}/award/{bidId}")
+    public ResponseEntity<BidInquiryResponse> awardBid(
+            @PathVariable String inquiryId,
+            @PathVariable String bidId,
+            Authentication authentication) {
+        
+        log.info("Awarding bid {} for inquiry {} by DMC: {}", bidId, inquiryId, authentication.getName());
+        
+        BidInquiryResponse awardedInquiry = bidInquiryService.awardInquiry(inquiryId, bidId, authentication.getName());
+        return ResponseEntity.ok(awardedInquiry);
+    }
+
+    /**
+     * Get all bids for a specific inquiry
+     */
+    @GetMapping("/{inquiryId}/bids")
+    public ResponseEntity<Page<HotelBidResponse>> getBidsForInquiry(
+            @PathVariable String inquiryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "submittedAt"));
+        Page<HotelBidResponse> bids = hotelBidService.getBidsByInquiryId(inquiryId, pageable);
+        
+        return ResponseEntity.ok(bids);
+    }
+
+    /**
+     * Get DMC statistics
+     */
+    @GetMapping("/stats")
+    public ResponseEntity<BidInquiryStatsResponse> getStats(Authentication authentication) {
+        String dmcUserId = authentication.getName();
+        BidInquiryStatsResponse stats = bidInquiryService.getInquiryStats(dmcUserId);
+        return ResponseEntity.ok(stats);
+    }
+
+    /**
+     * Search inquiries with filters
+     */
+    @GetMapping("/search")
+    public ResponseEntity<Page<BidInquiryResponse>> searchInquiries(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication) {
+        
+        String dmcUserId = authentication.getName();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postedAt"));
+        
+        Page<BidInquiryResponse> results = bidInquiryService.searchInquiriesByDmcUser(dmcUserId, keyword, pageable);
+        return ResponseEntity.ok(results);
+    }
+}
+
