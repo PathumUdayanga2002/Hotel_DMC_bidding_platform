@@ -24,6 +24,9 @@ public class DMCProfileResponse {
     private DMCProfileStatus status;
     private String currentRejectionReason;
     private List<RejectionHistoryDTO> rejectionHistory;
+    private List<AdminNoteDTO> adminNotes;
+    private String approvedBy;
+    private String approvedByUsername;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime submittedAt;

@@ -5,36 +5,42 @@ import com.hotel_bidding.backend.dto.response.ApiResponse;
 import com.hotel_bidding.backend.entity.HotelProfile;
 import com.hotel_bidding.backend.repository.HotelRepository;
 import com.hotel_bidding.backend.security.UserDetailsImpl;
+import com.hotel_bidding.backend.service.CloudinaryService;
 import com.hotel_bidding.backend.service.HotelService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class HotelServiceImpl implements HotelService {
 
     private final HotelRepository hotelRepository;
+    private final CloudinaryService cloudinaryService;
 
     @Override
-    public ApiResponse createProfile(HotelProfileRequestDTO request, UserDetailsImpl userDetails) {
+    public ApiResponse createProfile(
+            HotelProfileRequestDTO request,
+            List<MultipartFile> certifications,
+            List<MultipartFile> galleryImages,
+            UserDetailsImpl userDetails
+    ) throws IOException {
+
         String userId = userDetails.getId();
 
-        // Check if profile already exists
-        if (hotelRepository.existsByUserId(userId)) {
-            return ApiResponse.builder()
-                    .success(false)
-                    .message("Hotel profile already exists. Please edit your profile instead.")
-                    .build();
-        }
-
-
-        HotelProfile profile = new HotelProfile();
+        // Fetch existing profile or create new
+        HotelProfile profile = hotelRepository.findByUserId(userId).orElse(new HotelProfile());
         profile.setUserId(userId);
+
         profile.setName(request.getName());
         profile.setDescription(request.getDescription());
         profile.setAddress(request.getAddress());
@@ -44,16 +50,42 @@ public class HotelServiceImpl implements HotelService {
         profile.setContactNumber(request.getContactNumber());
         profile.setWebsite(request.getWebsite());
         profile.setAmenities(request.getAmenities());
-        profile.setGalleryImages(request.getGalleryImages());
         profile.setTotalRooms(request.getTotalRooms());
-        profile.setCertifications(request.getCertifications());
-        profile.setStatus("PENDING_REVIEW");
+
+        // Upload certifications
+        if (certifications != null && !certifications.isEmpty()) {
+            List<String> uploadedCerts = certifications.stream().map(file -> {
+                try {
+                    Map<String, String> result = cloudinaryService.uploadFile(file, "hotel_certifications");
+                    return result.get("url");
+                } catch (IOException e) {
+                    throw new RuntimeException("Certification upload failed: " + file.getOriginalFilename(), e);
+                }
+            }).collect(Collectors.toList());
+            profile.setCertifications(uploadedCerts);
+        }
+
+        // Upload gallery images
+        if (galleryImages != null && !galleryImages.isEmpty()) {
+            List<String> uploadedGallery = galleryImages.stream().map(file -> {
+                try {
+                    Map<String, String> result = cloudinaryService.uploadFile(file, "hotel_gallery");
+                    return result.get("url");
+                } catch (IOException e) {
+                    throw new RuntimeException("Gallery upload failed: " + file.getOriginalFilename(), e);
+                }
+            }).collect(Collectors.toList());
+            profile.setGalleryImages(uploadedGallery);
+        }
+
+        // Reset status for new or updated profile
+        profile.setStatus("PENDING");
 
         HotelProfile saved = hotelRepository.save(profile);
 
         return ApiResponse.builder()
                 .success(true)
-                .message("Hotel profile submitted for admin review.")
+                .message("Hotel profile submitted successfully and pending admin approval.")
                 .data(saved)
                 .build();
     }
@@ -81,7 +113,6 @@ public class HotelServiceImpl implements HotelService {
     public Map<String, Object> getDashboardData(HotelProfile hotel) {
         Map<String, Object> dashboardData = new HashMap<>();
 
-        // Example dashboard data — replace with real data later
         dashboardData.put("hotelName", hotel.getName());
         dashboardData.put("status", hotel.getStatus());
         dashboardData.put("totalRooms", hotel.getTotalRooms());
@@ -96,5 +127,4 @@ public class HotelServiceImpl implements HotelService {
 
         return dashboardData;
     }
-
 }

@@ -66,7 +66,11 @@ public class DMCProfile {
 
     // Approval tracking
     private String approvedBy; // Admin ID who approved
+    private String approvedByUsername; // Admin username
     private LocalDateTime approvedAt;
+
+    // Admin notes (internal - not visible to DMC)
+    private List<AdminNote> adminNotes = new ArrayList<>();
 
     @CreatedDate
     private LocalDateTime createdAt;

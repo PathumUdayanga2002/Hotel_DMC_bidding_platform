@@ -21,8 +21,15 @@ frontend/.vite/
 .env
 .env.local
 .env.*.local
+<<<<<<< HEAD
 backend/src/main/resources/application-local.properties
 backend/src/main/resources/application-prod.properties
+=======
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-local.properties
+backend/src/main/resources/application-prod.properties
+backend/src/main/resources/application.properties
+>>>>>>> ef09e8fa3f1c865563e4b369af0390ba93e978d7
 
 # IDE
 .idea/
