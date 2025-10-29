@@ -13,8 +13,14 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Unauthorized - redirect to login
-      window.location.href = '/login';
+      // Don't redirect to login for /auth/check endpoint (used for initial auth verification)
+      // This prevents infinite redirect loops
+      const isAuthCheckEndpoint = error.config?.url?.includes('/auth/check');
+      
+      if (!isAuthCheckEndpoint) {
+        // Unauthorized - redirect to login for all other endpoints
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
