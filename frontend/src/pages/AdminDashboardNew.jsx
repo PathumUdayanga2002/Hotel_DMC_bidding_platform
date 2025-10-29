@@ -26,6 +26,7 @@ const AdminDashboardNew = () => {
   const { user, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dmcStats, setDmcStats] = useState(null);
+  const [hotelStats, setHotelStats] = useState(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [approvalsSubmenuOpen, setApprovalsSubmenuOpen] = useState(true);
 
@@ -35,8 +36,12 @@ const AdminDashboardNew = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await api.get('/admin/dmc-approvals/stats');
-      setDmcStats(response.data.data);
+      const [dmcResponse, hotelResponse] = await Promise.all([
+        api.get('/admin/dmc-approvals/stats'),
+        api.get('/admin/hotel-approvals/stats')
+      ]);
+      setDmcStats(dmcResponse.data.data);
+      setHotelStats(hotelResponse.data.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
@@ -67,7 +72,7 @@ const AdminDashboardNew = () => {
       path: null,
       submenu: [
         { id: 'dmc', name: 'DMC Profiles', path: '/admin/dmc-approvals', badge: dmcStats?.pending || 0 },
-        { id: 'hotel', name: 'Hotel Profiles', path: '/admin/hotel-approvals', disabled: true }
+        { id: 'hotel', name: 'Hotel Profiles', path: '/admin/hotel-approvals', badge: hotelStats?.pending || 0 }
       ]
     },
     {
@@ -287,7 +292,7 @@ const AdminDashboardNew = () => {
         }`}
       >
         <div className="p-6">
-          <Outlet context={{ dmcStats, refreshStats: fetchStats }} />
+          <Outlet context={{ dmcStats, hotelStats, refreshStats: fetchStats }} />
         </div>
       </main>
     </div>

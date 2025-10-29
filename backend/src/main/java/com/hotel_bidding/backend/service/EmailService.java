@@ -23,4 +23,26 @@ public interface EmailService {
      * @param reason Rejection reason
      */
     void sendDMCRejectionEmail(String dmcEmail, String companyName, String reason);
+    
+    /**
+     * Send email notification to admin about new Hotel registration
+     * @param hotelName Name of the hotel
+     * @param hotelEmail Hotel contact email address
+     */
+    void sendNewHotelRegistrationNotification(String hotelName, String hotelEmail);
+    
+    /**
+     * Send approval email to Hotel
+     * @param hotelEmail Hotel contact email address
+     * @param hotelName Hotel name
+     */
+    void sendHotelApprovalEmail(String hotelEmail, String hotelName);
+    
+    /**
+     * Send rejection email to Hotel
+     * @param hotelEmail Hotel contact email address
+     * @param hotelName Hotel name
+     * @param reason Rejection reason
+     */
+    void sendHotelRejectionEmail(String hotelEmail, String hotelName, String reason);
 }
