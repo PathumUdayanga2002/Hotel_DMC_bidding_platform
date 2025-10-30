@@ -48,17 +48,21 @@ public class BidInquiryServiceImpl implements BidInquiryService {
     public BidInquiryResponse createInquiry(CreateBidInquiryRequest request, String dmcUserId) {
         log.info("Creating bid inquiry for DMC user: {}", dmcUserId);
         
-        // Check if DMC is approved
-        DMCProfile dmcProfile = dmcProfileRepository.findByUserId(dmcUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("DMC profile not found"));
-        
-        if (dmcProfile.getStatus() != DMCProfileStatus.APPROVED) {
-            throw new UnauthorizedException("Only approved DMCs can post inquiries");
-        }
-        
-        // Get DMC user
-        User dmcUser = userRepository.findById(dmcUserId)
+        // Get DMC user by username (dmcUserId is actually the username from authentication)
+        User dmcUser = userRepository.findByUsername(dmcUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("DMC user not found"));
+        
+        // Check if DMC profile exists (optional - use username as fallback)
+        String dmcCompanyName = dmcUser.getUsername();
+        DMCProfile dmcProfile = dmcProfileRepository.findByUserId(dmcUser.getId()).orElse(null);
+        
+        if (dmcProfile != null) {
+            // Only check approval if profile exists
+            if (dmcProfile.getStatus() != DMCProfileStatus.APPROVED) {
+                throw new UnauthorizedException("Only approved DMCs can post inquiries");
+            }
+            dmcCompanyName = dmcProfile.getCompanyName();
+        }
         
         // Validate dates
         if (request.getCheckOutDate().isBefore(request.getCheckInDate())) {
@@ -77,9 +81,9 @@ public class BidInquiryServiceImpl implements BidInquiryService {
         LocalDateTime deadline = now.plusHours(48); // 48 hours deadline
         
         BidInquiry inquiry = BidInquiry.builder()
-                .dmcUserId(dmcUserId)
+                .dmcUserId(dmcUser.getId())
                 .dmcUsername(dmcUser.getUsername())
-                .dmcCompanyName(dmcProfile.getCompanyName())
+                .dmcCompanyName(dmcCompanyName)
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .destinationCities(request.getDestinationCities())

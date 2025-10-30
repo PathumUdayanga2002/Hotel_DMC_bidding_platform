@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
  * Handles viewing available inquiries, submitting bids, and managing existing bids
  */
 @RestController
-@RequestMapping("/api/hotel")
+@RequestMapping("/hotel")
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasRole('HOTEL_USER')")

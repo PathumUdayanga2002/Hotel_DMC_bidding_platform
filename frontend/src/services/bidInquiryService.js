@@ -15,6 +15,7 @@ export const createBidInquiry = async (inquiryData) => {
   return response.data;
 };
 
+
 /**
  * Get all inquiries for the authenticated DMC
  */

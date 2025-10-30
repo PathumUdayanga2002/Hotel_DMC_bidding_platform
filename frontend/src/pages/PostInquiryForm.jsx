@@ -123,14 +123,28 @@ const PostInquiryForm = () => {
 
     setLoading(true);
     try {
-      await createBidInquiry({
-        ...formData,
-        budgetMin: parseFloat(formData.budgetMin) || null,
-        budgetMax: parseFloat(formData.budgetMax) || null,
+      const inquiryData = {
+        title: formData.title,
+        description: formData.description,
+        destinationCities: formData.destinationCities,
+        country: formData.country,
+        checkInDate: formData.checkInDate,
+        checkOutDate: formData.checkOutDate,
         numberOfRooms: parseInt(formData.numberOfRooms),
         numberOfAdults: parseInt(formData.numberOfAdults),
-        numberOfChildren: parseInt(formData.numberOfChildren)
-      });
+        numberOfChildren: parseInt(formData.numberOfChildren),
+        preferredRoomTypes: formData.preferredRoomTypes,
+        preferredMealPlans: formData.preferredMealPlans,
+        budgetMin: parseFloat(formData.budgetMin) || null,
+        budgetMax: parseFloat(formData.budgetMax) || null,
+        currency: formData.currency,
+        specialRequirements: formData.specialRequirements 
+          ? formData.specialRequirements.split('\n').filter(req => req.trim()) 
+          : null,
+        specialNotes: formData.specialNotes || null
+      };
+
+      await createBidInquiry(inquiryData);
 
       toast.success('Inquiry posted successfully! Hotels will be notified.');
       navigate('/dmc/inquiries');
@@ -374,18 +388,18 @@ const PostInquiryForm = () => {
                   Preferred Room Types (Multiple selection)
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {ROOM_TYPES.map(roomType => (
+                  {Object.entries(ROOM_TYPES).map(([key, label]) => (
                     <button
-                      key={roomType.value}
+                      key={key}
                       type="button"
-                      onClick={() => handleRoomTypeToggle(roomType.value)}
+                      onClick={() => handleRoomTypeToggle(key)}
                       className={`px-4 py-2 rounded-lg border transition-all ${
-                        formData.preferredRoomTypes.includes(roomType.value)
+                        formData.preferredRoomTypes.includes(key)
                           ? 'bg-cyan-600 text-white border-cyan-600'
                           : 'bg-white text-gray-700 border-gray-300 hover:border-cyan-600'
                       }`}
                     >
-                      {roomType.label}
+                      {label}
                     </button>
                   ))}
                 </div>
@@ -397,18 +411,18 @@ const PostInquiryForm = () => {
                   Preferred Meal Plans (Multiple selection)
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {MEAL_PLANS.map(mealPlan => (
+                  {Object.entries(MEAL_PLANS).map(([key, label]) => (
                     <button
-                      key={mealPlan.value}
+                      key={key}
                       type="button"
-                      onClick={() => handleMealPlanToggle(mealPlan.value)}
+                      onClick={() => handleMealPlanToggle(key)}
                       className={`px-4 py-2 rounded-lg border transition-all ${
-                        formData.preferredMealPlans.includes(mealPlan.value)
+                        formData.preferredMealPlans.includes(key)
                           ? 'bg-cyan-600 text-white border-cyan-600'
                           : 'bg-white text-gray-700 border-gray-300 hover:border-cyan-600'
                       }`}
                     >
-                      {mealPlan.label}
+                      {label}
                     </button>
                   ))}
                 </div>

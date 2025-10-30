@@ -21,7 +21,7 @@ import java.util.Map;
  * Handles in-app notification display, read status, and cleanup
  */
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping("/notifications")
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasAnyRole('DMC_USER', 'HOTEL_USER')")

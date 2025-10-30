@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * Handles inquiry creation, updates, closing, canceling, and awarding bids
  */
 @RestController
-@RequestMapping("/api/dmc/inquiries")
+@RequestMapping("/dmc/inquiries")
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasRole('DMC_USER')")

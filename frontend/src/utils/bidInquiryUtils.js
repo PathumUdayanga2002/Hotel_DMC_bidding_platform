@@ -18,21 +18,21 @@ export const BID_STATUS = {
   WITHDRAWN: 'WITHDRAWN'
 };
 
-export const ROOM_TYPES = [
-  { value: 'STANDARD', label: 'Standard Room' },
-  { value: 'DELUXE', label: 'Deluxe Room' },
-  { value: 'SUITE', label: 'Suite' },
-  { value: 'EXECUTIVE', label: 'Executive Room' },
-  { value: 'PRESIDENTIAL', label: 'Presidential Suite' }
-];
+export const ROOM_TYPES = {
+  STANDARD: 'Standard Room',
+  DELUXE: 'Deluxe Room',
+  SUITE: 'Suite',
+  EXECUTIVE: 'Executive Room',
+  PRESIDENTIAL: 'Presidential Suite'
+};
 
-export const MEAL_PLANS = [
-  { value: 'ROOM_ONLY', label: 'Room Only' },
-  { value: 'BREAKFAST', label: 'Breakfast Included' },
-  { value: 'HALF_BOARD', label: 'Half Board (Breakfast + Dinner)' },
-  { value: 'FULL_BOARD', label: 'Full Board (All Meals)' },
-  { value: 'ALL_INCLUSIVE', label: 'All Inclusive' }
-];
+export const MEAL_PLANS = {
+  ROOM_ONLY: 'Room Only',
+  BREAKFAST: 'Breakfast Included',
+  HALF_BOARD: 'Half Board (Breakfast + Dinner)',
+  FULL_BOARD: 'Full Board (All Meals)',
+  ALL_INCLUSIVE: 'All Inclusive'
+};
 
 export const CURRENCIES = [
   { value: 'USD', label: 'USD ($)', symbol: '$' },

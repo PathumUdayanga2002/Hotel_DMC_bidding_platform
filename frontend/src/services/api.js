@@ -8,6 +8,8 @@ const api = axios.create({
   },
 });
 
+const url=import.meta.env.VITE_API_BASE_URL;
+console.log(url);
 // Response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
