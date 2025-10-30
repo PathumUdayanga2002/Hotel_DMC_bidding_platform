@@ -6,6 +6,9 @@ import com.hotel_bidding.backend.dto.request.UpdateBidInquiryRequest;
 import com.hotel_bidding.backend.dto.response.BidInquiryResponse;
 import com.hotel_bidding.backend.dto.response.BidInquiryStatsResponse;
 import com.hotel_bidding.backend.dto.response.HotelBidResponse;
+import com.hotel_bidding.backend.entity.User;
+import com.hotel_bidding.backend.exception.ResourceNotFoundException;
+import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.BidInquiryService;
 import com.hotel_bidding.backend.service.HotelBidService;
 import jakarta.validation.Valid;
@@ -37,6 +40,16 @@ public class DMCBidInquiryController {
 
     private final BidInquiryService bidInquiryService;
     private final HotelBidService hotelBidService;
+    private final UserRepository userRepository;
+
+    /**
+     * Helper method to get user ID from authentication
+     */
+    private String getUserId(Authentication authentication) {
+        return userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"))
+                .getId();
+    }
 
     /**
      * Create a new bid inquiry
@@ -62,7 +75,9 @@ public class DMCBidInquiryController {
             @RequestParam(required = false) BidInquiryStatus status,
             Authentication authentication) {
         
-        String dmcUserId = authentication.getName();
+        // Get user ID from authentication
+        String dmcUserId = getUserId(authentication);
+        
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postedAt"));
         
         Page<BidInquiryResponse> inquiries;
@@ -95,7 +110,8 @@ public class DMCBidInquiryController {
         
         log.info("Updating inquiry {} by DMC: {}", inquiryId, authentication.getName());
         
-        BidInquiryResponse updatedInquiry = bidInquiryService.updateInquiry(inquiryId, request, authentication.getName());
+        String dmcUserId = getUserId(authentication);
+        BidInquiryResponse updatedInquiry = bidInquiryService.updateInquiry(inquiryId, request, dmcUserId);
         return ResponseEntity.ok(updatedInquiry);
     }
 
@@ -109,7 +125,8 @@ public class DMCBidInquiryController {
         
         log.info("Closing inquiry {} by DMC: {}", inquiryId, authentication.getName());
         
-        BidInquiryResponse closedInquiry = bidInquiryService.closeInquiry(inquiryId, authentication.getName());
+        String dmcUserId = getUserId(authentication);
+        BidInquiryResponse closedInquiry = bidInquiryService.closeInquiry(inquiryId, dmcUserId);
         return ResponseEntity.ok(closedInquiry);
     }
 
@@ -123,7 +140,8 @@ public class DMCBidInquiryController {
         
         log.info("Canceling inquiry {} by DMC: {}", inquiryId, authentication.getName());
         
-        BidInquiryResponse canceledInquiry = bidInquiryService.cancelInquiry(inquiryId, authentication.getName());
+        String dmcUserId = getUserId(authentication);
+        BidInquiryResponse canceledInquiry = bidInquiryService.cancelInquiry(inquiryId, dmcUserId);
         return ResponseEntity.ok(canceledInquiry);
     }
 
@@ -138,7 +156,8 @@ public class DMCBidInquiryController {
         
         log.info("Awarding bid {} for inquiry {} by DMC: {}", bidId, inquiryId, authentication.getName());
         
-        BidInquiryResponse awardedInquiry = bidInquiryService.awardInquiry(inquiryId, bidId, authentication.getName());
+        String dmcUserId = getUserId(authentication);
+        BidInquiryResponse awardedInquiry = bidInquiryService.awardInquiry(inquiryId, bidId, dmcUserId);
         return ResponseEntity.ok(awardedInquiry);
     }
 
@@ -162,7 +181,7 @@ public class DMCBidInquiryController {
      */
     @GetMapping("/stats")
     public ResponseEntity<BidInquiryStatsResponse> getStats(Authentication authentication) {
-        String dmcUserId = authentication.getName();
+        String dmcUserId = getUserId(authentication);
         BidInquiryStatsResponse stats = bidInquiryService.getInquiryStats(dmcUserId);
         return ResponseEntity.ok(stats);
     }
@@ -177,7 +196,7 @@ public class DMCBidInquiryController {
             @RequestParam(defaultValue = "10") int size,
             Authentication authentication) {
         
-        String dmcUserId = authentication.getName();
+        String dmcUserId = getUserId(authentication);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postedAt"));
         
         Page<BidInquiryResponse> results = bidInquiryService.searchInquiriesByDmcUser(dmcUserId, keyword, pageable);

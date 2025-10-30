@@ -5,6 +5,8 @@ import com.hotel_bidding.backend.dto.request.UpdateHotelBidRequest;
 import com.hotel_bidding.backend.dto.response.BidInquiryResponse;
 import com.hotel_bidding.backend.dto.response.HotelBidResponse;
 import com.hotel_bidding.backend.dto.response.HotelBidStatsResponse;
+import com.hotel_bidding.backend.exception.ResourceNotFoundException;
+import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.BidInquiryService;
 import com.hotel_bidding.backend.service.HotelBidService;
 import jakarta.validation.Valid;
@@ -33,6 +35,16 @@ public class HotelBidController {
 
     private final BidInquiryService bidInquiryService;
     private final HotelBidService hotelBidService;
+    private final UserRepository userRepository;
+
+    /**
+     * Helper method to get user ID from authentication
+     */
+    private String getUserId(Authentication authentication) {
+        return userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"))
+                .getId();
+    }
 
     /**
      * Get available inquiries for hotel (filtered by hotel's city and open status)
@@ -74,7 +86,8 @@ public class HotelBidController {
         
         log.info("Submitting bid by hotel: {}", authentication.getName());
         
-        HotelBidResponse bid = hotelBidService.createBid(request, authentication.getName());
+        String hotelUserId = getUserId(authentication);
+        HotelBidResponse bid = hotelBidService.createBid(request, hotelUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body(bid);
     }
 
@@ -87,7 +100,7 @@ public class HotelBidController {
             @RequestParam(defaultValue = "10") int size,
             Authentication authentication) {
         
-        String hotelUserId = authentication.getName();
+        String hotelUserId = getUserId(authentication);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "submittedAt"));
         
         Page<HotelBidResponse> bids = hotelBidService.getBidsByHotelUser(hotelUserId, pageable);
@@ -114,7 +127,8 @@ public class HotelBidController {
         
         log.info("Updating bid {} by hotel: {}", bidId, authentication.getName());
         
-        HotelBidResponse updatedBid = hotelBidService.updateBid(bidId, request, authentication.getName());
+        String hotelUserId = getUserId(authentication);
+        HotelBidResponse updatedBid = hotelBidService.updateBid(bidId, request, hotelUserId);
         return ResponseEntity.ok(updatedBid);
     }
 
@@ -128,7 +142,8 @@ public class HotelBidController {
         
         log.info("Withdrawing bid {} by hotel: {}", bidId, authentication.getName());
         
-        HotelBidResponse withdrawnBid = hotelBidService.withdrawBid(bidId, authentication.getName());
+        String hotelUserId = getUserId(authentication);
+        HotelBidResponse withdrawnBid = hotelBidService.withdrawBid(bidId, hotelUserId);
         return ResponseEntity.ok(withdrawnBid);
     }
 
@@ -143,7 +158,8 @@ public class HotelBidController {
         
         log.info("Adding negotiation note to bid {} by hotel: {}", bidId, authentication.getName());
         
-        HotelBidResponse bid = hotelBidService.addNegotiationNotes(bidId, note, authentication.getName());
+        String hotelUserId = getUserId(authentication);
+        HotelBidResponse bid = hotelBidService.addNegotiationNotes(bidId, note, hotelUserId);
         return ResponseEntity.ok(bid);
     }
 
@@ -152,7 +168,7 @@ public class HotelBidController {
      */
     @GetMapping("/bids/stats")
     public ResponseEntity<HotelBidStatsResponse> getStats(Authentication authentication) {
-        String hotelUserId = authentication.getName();
+        String hotelUserId = getUserId(authentication);
         HotelBidStatsResponse stats = hotelBidService.getBidStats(hotelUserId);
         return ResponseEntity.ok(stats);
     }
@@ -167,7 +183,7 @@ public class HotelBidController {
             @RequestParam(defaultValue = "10") int size,
             Authentication authentication) {
         
-        String hotelUserId = authentication.getName();
+        String hotelUserId = getUserId(authentication);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "submittedAt"));
         
         Page<HotelBidResponse> results = hotelBidService.searchBidsByHotel(hotelUserId, keyword, pageable);
