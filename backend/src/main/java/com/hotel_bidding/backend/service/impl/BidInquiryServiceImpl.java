@@ -209,9 +209,17 @@ public class BidInquiryServiceImpl implements BidInquiryService {
     
     @Override
     public Page<BidInquiryResponse> getAvailableInquiriesForHotel(String hotelCity, Pageable pageable) {
-        // Get inquiries where city matches and status is OPEN
-        List<String> cities = List.of(hotelCity);
-        Page<BidInquiry> inquiries = bidInquiryRepository.findOpenInquiriesByCities(cities, LocalDateTime.now(), pageable);
+        Page<BidInquiry> inquiries;
+        
+        if (hotelCity != null && !hotelCity.trim().isEmpty()) {
+            // Get inquiries where city matches and status is OPEN
+            List<String> cities = List.of(hotelCity);
+            inquiries = bidInquiryRepository.findOpenInquiriesByCities(cities, LocalDateTime.now(), pageable);
+        } else {
+            // If no city specified, return all open inquiries
+            inquiries = bidInquiryRepository.findAllOpenInquiries(LocalDateTime.now(), pageable);
+        }
+        
         return inquiries.map(this::mapToResponse);
     }
     

@@ -196,14 +196,23 @@ export const validateBidPrice = (bidPrice, budgetMin, budgetMax) => {
   const max = parseFloat(budgetMax);
   
   if (min && price < min) {
-    return 'Bid price is below the minimum budget';
+    return {
+      isValid: false,
+      message: 'Bid price is below the minimum budget'
+    };
   }
   
   if (max && price > max) {
-    return 'Bid price exceeds the maximum budget';
+    return {
+      isValid: false,
+      message: 'Bid price exceeds the maximum budget'
+    };
   }
   
-  return null; // Valid
+  return {
+    isValid: true,
+    message: ''
+  };
 };
 
 // ============== TEXT HELPERS ==============
@@ -221,13 +230,11 @@ export const pluralize = (count, singular, plural) => {
 // ============== ROOM TYPE & MEAL PLAN HELPERS ==============
 
 export const getRoomTypeLabel = (value) => {
-  const roomType = ROOM_TYPES.find(rt => rt.value === value);
-  return roomType ? roomType.label : value;
+  return ROOM_TYPES[value] || value;
 };
 
 export const getMealPlanLabel = (value) => {
-  const mealPlan = MEAL_PLANS.find(mp => mp.value === value);
-  return mealPlan ? mealPlan.label : value;
+  return MEAL_PLANS[value] || value;
 };
 
 // ============== STATISTICS HELPERS ==============

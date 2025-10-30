@@ -30,6 +30,10 @@ public interface BidInquiryRepository extends MongoRepository<BidInquiry, String
     @Query("{ 'destinationCities': { $in: ?0 }, 'status': 'OPEN', 'deadline': { $gt: ?1 } }")
     Page<BidInquiry> findOpenInquiriesByCities(List<String> cities, LocalDateTime now, Pageable pageable);
     
+    // Find all open inquiries (not yet expired)
+    @Query("{ 'status': 'OPEN', 'deadline': { $gt: ?0 } }")
+    Page<BidInquiry> findAllOpenInquiries(LocalDateTime now, Pageable pageable);
+    
     // Search by title or description
     @Query("{ $or: [ { 'title': { $regex: ?0, $options: 'i' } }, { 'description': { $regex: ?0, $options: 'i' } } ] }")
     Page<BidInquiry> searchInquiries(String keyword, Pageable pageable);

@@ -37,12 +37,16 @@ const SubmitBidForm = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
+    bidTitle: '',
     pricePerRoomPerNight: '',
+    totalPrice: '',
+    availableRooms: '',
     roomType: '',
     mealPlan: '',
     bidDescription: '',
     specialOffer: '',
     termsAndConditions: '',
+    validityDate: '',
     amenities: [],
     availableFrom: '',
     availableTo: '',
@@ -77,10 +81,22 @@ const SubmitBidForm = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    
+    setFormData(prev => {
+      const newFormData = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      };
+      
+      // Auto-calculate totalPrice when pricePerRoomPerNight changes
+      if (name === 'pricePerRoomPerNight' && value && inquiry) {
+        const calculatedTotal = parseFloat(value) * inquiry.numberOfRooms * inquiry.numberOfNights;
+        newFormData.totalPrice = calculatedTotal.toFixed(2);
+      }
+      
+      return newFormData;
+    });
+    
     // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -99,6 +115,10 @@ const SubmitBidForm = () => {
   const validateForm = () => {
     const newErrors = {};
 
+    if (!formData.bidTitle || formData.bidTitle.trim().length < 10) {
+      newErrors.bidTitle = 'Bid title is required (minimum 10 characters)';
+    }
+
     if (!formData.pricePerRoomPerNight || parseFloat(formData.pricePerRoomPerNight) <= 0) {
       newErrors.pricePerRoomPerNight = 'Please enter a valid price';
     } else if (inquiry.budgetMin && inquiry.budgetMax) {
@@ -112,6 +132,14 @@ const SubmitBidForm = () => {
       }
     }
 
+    if (!formData.totalPrice || parseFloat(formData.totalPrice) <= 0) {
+      newErrors.totalPrice = 'Please enter a valid total price';
+    }
+
+    if (!formData.availableRooms || parseInt(formData.availableRooms) <= 0) {
+      newErrors.availableRooms = 'Please enter number of available rooms';
+    }
+
     if (!formData.roomType) {
       newErrors.roomType = 'Please select a room type';
     }
@@ -122,6 +150,16 @@ const SubmitBidForm = () => {
 
     if (!formData.bidDescription || formData.bidDescription.trim().length < 20) {
       newErrors.bidDescription = 'Please provide a description (minimum 20 characters)';
+    }
+
+    if (!formData.termsAndConditions || formData.termsAndConditions.trim().length < 50) {
+      newErrors.termsAndConditions = 'Terms and conditions are required (minimum 50 characters)';
+    }
+
+    if (!formData.validityDate) {
+      newErrors.validityDate = 'Please select bid validity date';
+    } else if (new Date(formData.validityDate) <= new Date()) {
+      newErrors.validityDate = 'Validity date must be in the future';
     }
 
     if (!formData.availableFrom) {
@@ -138,6 +176,7 @@ const SubmitBidForm = () => {
       }
     }
 
+    console.log('Validation errors found:', newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -146,6 +185,8 @@ const SubmitBidForm = () => {
     e.preventDefault();
     
     if (!validateForm()) {
+      console.log('Validation errors:', errors);
+      console.log('Form data:', formData);
       toast.error('Please fix all errors before submitting');
       return;
     }
@@ -154,16 +195,19 @@ const SubmitBidForm = () => {
     try {
       const bidData = {
         inquiryId,
+        bidTitle: formData.bidTitle.trim(),
         pricePerRoomPerNight: parseFloat(formData.pricePerRoomPerNight),
+        totalPrice: parseFloat(formData.totalPrice),
+        availableRooms: parseInt(formData.availableRooms),
         currency: inquiry.currency,
         roomType: formData.roomType,
         mealPlan: formData.mealPlan,
         bidDescription: formData.bidDescription.trim(),
+        termsAndConditions: formData.termsAndConditions.trim(),
+        validityDate: formData.validityDate,
         specialOffer: formData.specialOffer.trim() || null,
-        termsAndConditions: formData.termsAndConditions.trim() || null,
-        amenities: formData.amenities.length > 0 ? formData.amenities : null,
-        availableFrom: formData.availableFrom,
-        availableTo: formData.availableTo,
+        includedAmenities: formData.amenities.length > 0 ? formData.amenities : null,
+        additionalNotes: `Available from ${formData.availableFrom} to ${formData.availableTo}`,
         openToNegotiation: formData.openToNegotiation
       };
 
@@ -232,6 +276,32 @@ const SubmitBidForm = () => {
           {/* Main Form */}
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Bid Title Section */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  Bid Information
+                </h2>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bid Title <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="bidTitle"
+                    value={formData.bidTitle}
+                    onChange={handleInputChange}
+                    placeholder="Enter a descriptive title for your bid (min 10 characters)"
+                    disabled={deadlinePassed}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent ${
+                      errors.bidTitle ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {errors.bidTitle && (
+                    <p className="text-red-500 text-sm mt-1">{errors.bidTitle}</p>
+                  )}
+                </div>
+              </div>
+
               {/* Pricing Section */}
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
@@ -291,6 +361,84 @@ const SubmitBidForm = () => {
                       </div>
                     </div>
                   )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Total Price <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                          {inquiry.currency === 'USD' ? '$' :
+                           inquiry.currency === 'EUR' ? '€' :
+                           inquiry.currency === 'GBP' ? '£' : 'LKR'}
+                        </span>
+                        <input
+                          type="number"
+                          name="totalPrice"
+                          value={formData.totalPrice}
+                          onChange={handleInputChange}
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          disabled={deadlinePassed}
+                          className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent ${
+                            errors.totalPrice ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                        />
+                      </div>
+                      {errors.totalPrice && (
+                        <p className="text-red-500 text-sm mt-1">{errors.totalPrice}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Available Rooms <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        name="availableRooms"
+                        value={formData.availableRooms}
+                        onChange={handleInputChange}
+                        min="1"
+                        placeholder="Number of rooms available"
+                        disabled={deadlinePassed}
+                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent ${
+                          errors.availableRooms ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors.availableRooms && (
+                        <p className="text-red-500 text-sm mt-1">{errors.availableRooms}</p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">
+                        Inquiry requests: {inquiry.numberOfRooms} rooms
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bid Validity Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="validityDate"
+                      value={formData.validityDate}
+                      onChange={handleInputChange}
+                      min={new Date().toISOString().split('T')[0]}
+                      disabled={deadlinePassed}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent ${
+                        errors.validityDate ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.validityDate && (
+                      <p className="text-red-500 text-sm mt-1">{errors.validityDate}</p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      How long is this bid valid?
+                    </p>
+                  </div>
                 </div>
               </div>
 

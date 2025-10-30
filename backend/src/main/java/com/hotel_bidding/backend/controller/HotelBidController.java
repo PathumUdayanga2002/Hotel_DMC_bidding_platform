@@ -5,7 +5,9 @@ import com.hotel_bidding.backend.dto.request.UpdateHotelBidRequest;
 import com.hotel_bidding.backend.dto.response.BidInquiryResponse;
 import com.hotel_bidding.backend.dto.response.HotelBidResponse;
 import com.hotel_bidding.backend.dto.response.HotelBidStatsResponse;
+import com.hotel_bidding.backend.entity.HotelProfile;
 import com.hotel_bidding.backend.exception.ResourceNotFoundException;
+import com.hotel_bidding.backend.repository.HotelRepository;
 import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.BidInquiryService;
 import com.hotel_bidding.backend.service.HotelBidService;
@@ -36,6 +38,7 @@ public class HotelBidController {
     private final BidInquiryService bidInquiryService;
     private final HotelBidService hotelBidService;
     private final UserRepository userRepository;
+    private final HotelRepository hotelRepository;
 
     /**
      * Helper method to get user ID from authentication
@@ -60,9 +63,18 @@ public class HotelBidController {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "postedAt"));
         
-        // If hotelCity is not provided, we need to get it from hotel profile
-        // For now, it's required as a parameter
-        Page<BidInquiryResponse> inquiries = bidInquiryService.getAvailableInquiriesForHotel(hotelCity, pageable);
+        // If hotelCity is not provided, get it from hotel profile
+        String city = hotelCity;
+        if (city == null) {
+            String hotelUserId = getUserId(authentication);
+            HotelProfile hotelProfile = hotelRepository.findByUserId(hotelUserId).orElse(null);
+            
+            if (hotelProfile != null && hotelProfile.getCity() != null) {
+                city = hotelProfile.getCity();
+            }
+        }
+        
+        Page<BidInquiryResponse> inquiries = bidInquiryService.getAvailableInquiriesForHotel(city, pageable);
         
         return ResponseEntity.ok(inquiries);
     }
