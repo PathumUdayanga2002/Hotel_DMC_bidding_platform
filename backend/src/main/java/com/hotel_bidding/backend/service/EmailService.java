@@ -45,4 +45,31 @@ public interface EmailService {
      * @param reason Rejection reason
      */
     void sendHotelRejectionEmail(String hotelEmail, String hotelName, String reason);
+    
+    // ============ BID INQUIRY NOTIFICATION EMAILS ============
+    
+    /**
+     * Send new inquiry notification to hotels
+     */
+    void sendNewInquiryNotificationToHotel(String hotelEmail, String hotelName, String inquiryTitle,
+                                          String dmcCompanyName, String destination, String checkIn,
+                                          String checkOut, int rooms, String deadline);
+    
+    /**
+     * Send new bid notification to DMC
+     */
+    void sendNewBidNotificationToDmc(String dmcCompanyName, String hotelName, String inquiryTitle,
+                                    Double bidPrice, String currency);
+    
+    /**
+     * Send bid acceptance notification to hotel
+     */
+    void sendBidAcceptanceNotificationToHotel(String hotelEmail, String hotelName, String inquiryTitle,
+                                             String dmcCompanyName, Double totalPrice, String currency);
+    
+    /**
+     * Send bid rejection notification to hotel
+     */
+    void sendBidRejectionNotificationToHotel(String hotelEmail, String hotelName, String inquiryTitle,
+                                            String dmcCompanyName, String rejectionReason);
 }
