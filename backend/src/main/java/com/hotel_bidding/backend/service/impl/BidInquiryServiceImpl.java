@@ -1,6 +1,7 @@
 package com.hotel_bidding.backend.service.impl;
 
 import com.hotel_bidding.backend.constants.BidInquiryStatus;
+import com.hotel_bidding.backend.constants.BidStatus;
 import com.hotel_bidding.backend.constants.DMCProfileStatus;
 import com.hotel_bidding.backend.dto.request.CreateBidInquiryRequest;
 import com.hotel_bidding.backend.dto.request.UpdateBidInquiryRequest;
@@ -29,57 +30,48 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
-/**
- * Implementation of BidInquiryService
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class BidInquiryServiceImpl implements BidInquiryService {
-    
+
     private final BidInquiryRepository bidInquiryRepository;
     private final DMCProfileRepository dmcProfileRepository;
     private final HotelBidRepository hotelBidRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
-    
+
     @Override
     @Transactional
     public BidInquiryResponse createInquiry(CreateBidInquiryRequest request, String dmcUserId) {
         log.info("Creating bid inquiry for DMC user: {}", dmcUserId);
-        
-        // Get DMC user by username (dmcUserId is actually the username from authentication)
+
         User dmcUser = userRepository.findByUsername(dmcUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("DMC user not found"));
-        
-        // Check if DMC profile exists (optional - use username as fallback)
+
         String dmcCompanyName = dmcUser.getUsername();
         DMCProfile dmcProfile = dmcProfileRepository.findByUserId(dmcUser.getId()).orElse(null);
-        
+
         if (dmcProfile != null) {
-            // Only check approval if profile exists
             if (dmcProfile.getStatus() != DMCProfileStatus.APPROVED) {
                 throw new UnauthorizedException("Only approved DMCs can post inquiries");
             }
             dmcCompanyName = dmcProfile.getCompanyName();
         }
-        
-        // Validate dates
+
         if (request.getCheckOutDate().isBefore(request.getCheckInDate())) {
             throw new IllegalArgumentException("Check-out date must be after check-in date");
         }
-        
+
         if (request.getBudgetMax() < request.getBudgetMin()) {
             throw new IllegalArgumentException("Maximum budget must be greater than minimum budget");
         }
-        
-        // Calculate number of nights
+
         int numberOfNights = (int) ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
-        
-        // Create inquiry
+
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime deadline = now.plusHours(48); // 48 hours deadline
-        
+        LocalDateTime deadline = now.plusHours(48);
+
         BidInquiry inquiry = BidInquiry.builder()
                 .dmcUserId(dmcUser.getId())
                 .dmcUsername(dmcUser.getUsername())
@@ -109,47 +101,42 @@ public class BidInquiryServiceImpl implements BidInquiryService {
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
-        
+
         BidInquiry savedInquiry = bidInquiryRepository.save(inquiry);
         log.info("Bid inquiry created with ID: {}", savedInquiry.getId());
-        
-        // Send notifications to hotels in matching cities
+
         notificationService.notifyHotelsAboutNewInquiry(savedInquiry.getId(), request.getDestinationCities());
-        
+
         return mapToResponse(savedInquiry);
     }
-    
+
     @Override
     @Transactional
     public BidInquiryResponse updateInquiry(String inquiryId, UpdateBidInquiryRequest request, String dmcUserId) {
         log.info("Updating inquiry: {} by DMC user: {}", inquiryId, dmcUserId);
-        
+
         BidInquiry inquiry = bidInquiryRepository.findById(inquiryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inquiry not found"));
-        
-        // Check ownership
+
         if (!inquiry.getDmcUserId().equals(dmcUserId)) {
             throw new UnauthorizedException("You can only update your own inquiries");
         }
-        
-        // Can only update if status is OPEN
+
         if (inquiry.getStatus() != BidInquiryStatus.OPEN) {
             throw new IllegalStateException("Can only update OPEN inquiries");
         }
-        
-        // Update fields if provided
+
         if (request.getTitle() != null) inquiry.setTitle(request.getTitle());
         if (request.getDescription() != null) inquiry.setDescription(request.getDescription());
         if (request.getDestinationCities() != null) inquiry.setDestinationCities(request.getDestinationCities());
         if (request.getCountry() != null) inquiry.setCountry(request.getCountry());
-        
         if (request.getCheckInDate() != null) inquiry.setCheckInDate(request.getCheckInDate());
         if (request.getCheckOutDate() != null) inquiry.setCheckOutDate(request.getCheckOutDate());
-        
+
         if (inquiry.getCheckInDate() != null && inquiry.getCheckOutDate() != null) {
             inquiry.setNumberOfNights((int) ChronoUnit.DAYS.between(inquiry.getCheckInDate(), inquiry.getCheckOutDate()));
         }
-        
+
         if (request.getNumberOfRooms() != null) inquiry.setNumberOfRooms(request.getNumberOfRooms());
         if (request.getNumberOfAdults() != null) inquiry.setNumberOfAdults(request.getNumberOfAdults());
         if (request.getNumberOfChildren() != null) inquiry.setNumberOfChildren(request.getNumberOfChildren());
@@ -160,149 +147,151 @@ public class BidInquiryServiceImpl implements BidInquiryService {
         if (request.getCurrency() != null) inquiry.setCurrency(request.getCurrency());
         if (request.getSpecialRequirements() != null) inquiry.setSpecialRequirements(request.getSpecialRequirements());
         if (request.getSpecialNotes() != null) inquiry.setSpecialNotes(request.getSpecialNotes());
-        
+
         inquiry.setUpdatedAt(LocalDateTime.now());
         inquiry.addEditHistory(dmcUserId, request.getChangeDescription());
-        
+
         BidInquiry updatedInquiry = bidInquiryRepository.save(inquiry);
         log.info("Inquiry updated: {}", inquiryId);
-        
+
         return mapToResponse(updatedInquiry);
     }
-    
+
     @Override
     public BidInquiryResponse getInquiryById(String inquiryId) {
         BidInquiry inquiry = bidInquiryRepository.findById(inquiryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inquiry not found"));
         return mapToResponse(inquiry);
     }
-    
+
     @Override
     @Transactional
     public BidInquiryResponse getInquiryByIdAndIncrementView(String inquiryId) {
         BidInquiry inquiry = bidInquiryRepository.findById(inquiryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inquiry not found"));
-        
+
         inquiry.incrementViewCount();
         bidInquiryRepository.save(inquiry);
-        
+
         return mapToResponse(inquiry);
     }
-    
+
     @Override
     public Page<BidInquiryResponse> getInquiriesByDmcUser(String dmcUserId, Pageable pageable) {
         Page<BidInquiry> inquiries = bidInquiryRepository.findByDmcUserIdOrderByPostedAtDesc(dmcUserId, pageable);
         return inquiries.map(this::mapToResponse);
     }
-    
+
     @Override
     public Page<BidInquiryResponse> getInquiriesByDmcUserAndStatus(String dmcUserId, BidInquiryStatus status, Pageable pageable) {
         Page<BidInquiry> inquiries = bidInquiryRepository.findByDmcUserIdAndStatusOrderByPostedAtDesc(dmcUserId, status, pageable);
         return inquiries.map(this::mapToResponse);
     }
-    
+
     @Override
     public Page<BidInquiryResponse> searchInquiriesByDmcUser(String dmcUserId, String keyword, Pageable pageable) {
         Page<BidInquiry> inquiries = bidInquiryRepository.searchInquiriesByDmcUser(dmcUserId, keyword, pageable);
         return inquiries.map(this::mapToResponse);
     }
-    
+
     @Override
     public Page<BidInquiryResponse> getAvailableInquiriesForHotel(String hotelCity, Pageable pageable) {
         Page<BidInquiry> inquiries;
-        
+
         if (hotelCity != null && !hotelCity.trim().isEmpty()) {
-            // Get inquiries where city matches and status is OPEN
             List<String> cities = List.of(hotelCity);
             inquiries = bidInquiryRepository.findOpenInquiriesByCities(cities, LocalDateTime.now(), pageable);
         } else {
-            // If no city specified, return all open inquiries
             inquiries = bidInquiryRepository.findAllOpenInquiries(LocalDateTime.now(), pageable);
         }
-        
+
         return inquiries.map(this::mapToResponse);
     }
-    
+
     @Override
     @Transactional
     public BidInquiryResponse closeInquiry(String inquiryId, String dmcUserId) {
         BidInquiry inquiry = bidInquiryRepository.findById(inquiryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inquiry not found"));
-        
+
         if (!inquiry.getDmcUserId().equals(dmcUserId)) {
             throw new UnauthorizedException("You can only close your own inquiries");
         }
-        
+
         if (inquiry.getStatus() != BidInquiryStatus.OPEN) {
             throw new IllegalStateException("Can only close OPEN inquiries");
         }
-        
+
         inquiry.setStatus(BidInquiryStatus.CLOSED);
         inquiry.setClosedAt(LocalDateTime.now());
         inquiry.setUpdatedAt(LocalDateTime.now());
-        
+
         BidInquiry closedInquiry = bidInquiryRepository.save(inquiry);
         log.info("Inquiry closed: {}", inquiryId);
-        
-        // Notify hotels that bid on this inquiry
+
         notificationService.notifyHotelsAboutInquiryClosed(inquiryId);
-        
+
         return mapToResponse(closedInquiry);
     }
-    
+
     @Override
     @Transactional
     public BidInquiryResponse cancelInquiry(String inquiryId, String dmcUserId) {
         BidInquiry inquiry = bidInquiryRepository.findById(inquiryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inquiry not found"));
-        
+
         if (!inquiry.getDmcUserId().equals(dmcUserId)) {
             throw new UnauthorizedException("You can only cancel your own inquiries");
         }
-        
+
         if (inquiry.getStatus() == BidInquiryStatus.AWARDED) {
             throw new IllegalStateException("Cannot cancel an awarded inquiry");
         }
-        
+
         inquiry.setStatus(BidInquiryStatus.CANCELLED);
         inquiry.setUpdatedAt(LocalDateTime.now());
-        
+
         BidInquiry cancelledInquiry = bidInquiryRepository.save(inquiry);
         log.info("Inquiry cancelled: {}", inquiryId);
-        
+
         return mapToResponse(cancelledInquiry);
     }
-    
+
     @Override
     @Transactional
     public BidInquiryResponse awardInquiry(String inquiryId, String bidId, String dmcUserId) {
         BidInquiry inquiry = bidInquiryRepository.findById(inquiryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inquiry not found"));
-        
+
         if (!inquiry.getDmcUserId().equals(dmcUserId)) {
             throw new UnauthorizedException("You can only award your own inquiries");
         }
-        
+
         HotelBid winningBid = hotelBidRepository.findById(bidId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bid not found"));
-        
+
         if (!winningBid.getInquiryId().equals(inquiryId)) {
             throw new IllegalArgumentException("Bid does not belong to this inquiry");
         }
-        
+
+        // ✅ Update both Inquiry & Hotel Bid statuses
         inquiry.setStatus(BidInquiryStatus.AWARDED);
         inquiry.setAwardedBidId(bidId);
         inquiry.setAwardedHotelId(winningBid.getHotelId());
         inquiry.setAwardedHotelName(winningBid.getHotelName());
         inquiry.setAwardedAt(LocalDateTime.now());
         inquiry.setUpdatedAt(LocalDateTime.now());
-        
+
+        winningBid.setStatus(BidStatus.ACCEPTED);
+        winningBid.setUpdatedAt(LocalDateTime.now());
+        hotelBidRepository.save(winningBid);
+
         BidInquiry awardedInquiry = bidInquiryRepository.save(inquiry);
-        log.info("Inquiry awarded: {} to hotel: {}", inquiryId, winningBid.getHotelName());
-        
+        log.info("Inquiry awarded: {} to hotel: {} and bid status set to ACCEPTED", inquiryId, winningBid.getHotelName());
+
         return mapToResponse(awardedInquiry);
     }
-    
+
     @Override
     public BidInquiryStatsResponse getInquiryStats(String dmcUserId) {
         long totalInquiries = bidInquiryRepository.countByDmcUserId(dmcUserId);
@@ -310,15 +299,14 @@ public class BidInquiryServiceImpl implements BidInquiryService {
         long closedInquiries = bidInquiryRepository.countByDmcUserIdAndStatus(dmcUserId, BidInquiryStatus.CLOSED);
         long awardedInquiries = bidInquiryRepository.countByDmcUserIdAndStatus(dmcUserId, BidInquiryStatus.AWARDED);
         long cancelledInquiries = bidInquiryRepository.countByDmcUserIdAndStatus(dmcUserId, BidInquiryStatus.CANCELLED);
-        
+
         long totalBidsReceived = hotelBidRepository.countByDmcUserId(dmcUserId);
-        
-        // Note: These counts would need custom queries for exact precision
+
         long pendingBids = 0;
         long acceptedBids = 0;
-        
+
         Double averageBids = totalInquiries > 0 ? (double) totalBidsReceived / totalInquiries : 0.0;
-        
+
         return BidInquiryStatsResponse.builder()
                 .totalInquiries(totalInquiries)
                 .openInquiries(openInquiries)
@@ -331,31 +319,28 @@ public class BidInquiryServiceImpl implements BidInquiryService {
                 .averageBidsPerInquiry(averageBids)
                 .build();
     }
-    
+
     @Override
     @Transactional
     public void autoCloseExpiredInquiries() {
         List<BidInquiry> expiredInquiries = bidInquiryRepository.findExpiredOpenInquiries(LocalDateTime.now());
-        
+
         for (BidInquiry inquiry : expiredInquiries) {
             inquiry.setStatus(BidInquiryStatus.CLOSED);
             inquiry.setClosedAt(LocalDateTime.now());
             inquiry.setUpdatedAt(LocalDateTime.now());
             bidInquiryRepository.save(inquiry);
-            
+
             log.info("Auto-closed expired inquiry: {}", inquiry.getId());
             notificationService.notifyHotelsAboutInquiryClosed(inquiry.getId());
         }
-        
+
         log.info("Auto-closed {} expired inquiries", expiredInquiries.size());
     }
-    
-    /**
-     * Map entity to response DTO
-     */
+
     private BidInquiryResponse mapToResponse(BidInquiry inquiry) {
         long hoursUntilDeadline = ChronoUnit.HOURS.between(LocalDateTime.now(), inquiry.getDeadline());
-        
+
         return BidInquiryResponse.builder()
                 .id(inquiry.getId())
                 .dmcUserId(inquiry.getDmcUserId())
