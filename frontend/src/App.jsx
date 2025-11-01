@@ -29,6 +29,7 @@ import InquiryDetailsPage from './pages/InquiryDetailsPage';
 import HotelInquiriesPage from './pages/HotelInquiriesPage';
 import SubmitBidForm from './pages/SubmitBidForm';
 import HotelBidsPage from './pages/HotelBidsPage';
+import HotelInquiryDetails from './pages/HotelInquiryDetails';
 
 const App = () => {
   return (
@@ -85,6 +86,9 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+
+          <Route path="/hotel/inquiries/:inquiryId" element={<HotelInquiryDetails />} />
+
           
           <Route
             path="/dmc/dashboard"

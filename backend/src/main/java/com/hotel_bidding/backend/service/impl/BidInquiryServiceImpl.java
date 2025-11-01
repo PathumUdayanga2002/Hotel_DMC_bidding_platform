@@ -168,13 +168,19 @@ public class BidInquiryServiceImpl implements BidInquiryService {
     @Transactional
     public BidInquiryResponse getInquiryByIdAndIncrementView(String inquiryId) {
         BidInquiry inquiry = bidInquiryRepository.findById(inquiryId)
-                .orElseThrow(() -> new ResourceNotFoundException("Inquiry not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Inquiry not found with id: " + inquiryId));
 
-        inquiry.incrementViewCount();
+        // ✅ Safely handle null view count
+        if (inquiry.getViewCount() == null) {
+            inquiry.setViewCount(0);
+        }
+
+        inquiry.setViewCount(inquiry.getViewCount() + 1);
         bidInquiryRepository.save(inquiry);
 
         return mapToResponse(inquiry);
     }
+
 
     @Override
     public Page<BidInquiryResponse> getInquiriesByDmcUser(String dmcUserId, Pageable pageable) {
