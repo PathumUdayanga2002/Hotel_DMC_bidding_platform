@@ -138,15 +138,26 @@ const HotelInquiriesPage = () => {
             <Loader2 className="w-12 h-12 text-cyan-600 animate-spin" />
           </div>
         ) : inquiries.length === 0 ? (
-          /* Empty State */
+          /* Empty State (Modified) */
           <div className="bg-white rounded-lg shadow-md p-12 text-center">
             <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No inquiries available</h3>
-            <p className="text-gray-600">
-              {cityFilter || searchKeyword
-                ? 'Try adjusting your search or filter criteria'
-                : 'Check back later for new opportunities'}
-            </p>
+            {!cityFilter ? (
+              <>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Select a destination to get started</h3>
+                <p className="text-gray-600">
+                  Please choose a city from the filter above to view available inquiries.
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No inquiries available</h3>
+                <p className="text-gray-600">
+                  {searchKeyword
+                    ? 'Try adjusting your search keyword or clear filters.'
+                    : 'No active inquiries found for this destination. Check back later!'}
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <>
@@ -313,7 +324,6 @@ const InquiryCard = ({ inquiry }) => {
 
       {/* Footer */}
       <div className="px-6 py-4 bg-gray-50 border-t">
-        {/* Deadline Warning */}
         {isExpiring && (
           <div className="mb-3 flex items-center text-red-600 text-sm font-medium">
             <AlertTriangle className="w-4 h-4 mr-1" />
