@@ -15,11 +15,14 @@ import {
   Clock,
   CheckCircle,
   Loader2,
+  Inbox,
+  TrendingUp,
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api'; // your axios instance
+import NotificationBell from '../components/NotificationBell';
 
 // --- UI Components ---
 const Card = ({ className = '', children }) => (
@@ -108,6 +111,8 @@ const Sidebar = ({ profileStatus }) => {
   const isApproved = profileStatus === 'APPROVED';
   const navItems = [
     { name: 'My Profile', icon: User, path: '/hotel/profile/register', locked: false },
+    { name: 'Available Inquiries', icon: Inbox, path: '/hotel/inquiries', locked: !isApproved },
+    { name: 'My Bids', icon: TrendingUp, path: '/hotel/bids', locked: !isApproved },
     { name: 'Browse DMCs', icon: Compass, locked: !isApproved },
     { name: 'My Inquiries', icon: FileText, locked: !isApproved },
     { name: 'Received Proposals', icon: Send, locked: !isApproved },
@@ -215,14 +220,11 @@ const DashboardHeader = ({ user, handleLogout, profileStatus }) => {
   };
 
   return (
-    <header className="bg-white shadow-sm p-4 flex justify-between items-center flex-shrink-0 z-10">
+    <header className="bg-white shadow-sm p-4 flex justify-between items-center shrink-0 z-10">
       <div>{renderProfileStatus()}</div>
 
       <div className="flex items-center space-x-4">
-        <Button variant="ghost" className="relative">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-        </Button>
+        <NotificationBell />
 
         <div className="flex items-center space-x-3">
           <div className="text-right">
