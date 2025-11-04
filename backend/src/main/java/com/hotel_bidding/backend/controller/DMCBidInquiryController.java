@@ -3,6 +3,7 @@ package com.hotel_bidding.backend.controller;
 import com.hotel_bidding.backend.constants.BidInquiryStatus;
 import com.hotel_bidding.backend.dto.request.CreateBidInquiryRequest;
 import com.hotel_bidding.backend.dto.request.UpdateBidInquiryRequest;
+import com.hotel_bidding.backend.dto.response.AwardBidResponse;
 import com.hotel_bidding.backend.dto.response.BidInquiryResponse;
 import com.hotel_bidding.backend.dto.response.BidInquiryStatsResponse;
 import com.hotel_bidding.backend.dto.response.HotelBidResponse;
@@ -147,9 +148,10 @@ public class DMCBidInquiryController {
 
     /**
      * Award a bid to a hotel
+     * After awarding, DMC needs to initiate payment
      */
     @PutMapping("/{inquiryId}/award/{bidId}")
-    public ResponseEntity<BidInquiryResponse> awardBid(
+    public ResponseEntity<AwardBidResponse> awardBid(
             @PathVariable String inquiryId,
             @PathVariable String bidId,
             Authentication authentication) {
@@ -158,7 +160,24 @@ public class DMCBidInquiryController {
         
         String dmcUserId = getUserId(authentication);
         BidInquiryResponse awardedInquiry = bidInquiryService.awardInquiry(inquiryId, bidId, dmcUserId);
-        return ResponseEntity.ok(awardedInquiry);
+        
+        // Get the winning bid details
+        HotelBidResponse winningBid = hotelBidService.getBidById(bidId);
+        
+        // Build response with payment information
+        AwardBidResponse response = AwardBidResponse.builder()
+                .inquiry(awardedInquiry)
+                .message("Bid awarded successfully. Please proceed to payment.")
+                .paymentRequired("true")
+                .nextStep("INITIATE_PAYMENT")
+                .paymentUrl("/api/payments/initiate")
+                .inquiryId(inquiryId)
+                .bidId(bidId)
+                .bidAmount(winningBid.getTotalPrice())
+                .currency(awardedInquiry.getCurrency())
+                .build();
+        
+        return ResponseEntity.ok(response);
     }
 
     /**
