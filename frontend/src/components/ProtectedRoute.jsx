@@ -28,7 +28,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       case 'DMC_USER':
         return <Navigate to="/dmc/dashboard" replace />;
       case 'ADMIN':
-        return <Navigate to="/admin/dashboard" replace />;
+        return <Navigate to="/admin" replace />;
       default:
         return <Navigate to="/login" replace />;
     }

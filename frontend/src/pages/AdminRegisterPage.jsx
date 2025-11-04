@@ -68,7 +68,7 @@ const AdminRegisterPage = () => {
       await registerUser(data, 'admin');
       toast.success('Registration successful! Redirecting to dashboard...');
       setTimeout(() => {
-        navigate('/admin/dashboard');
+        navigate('/admin');
       }, 1500);
     } catch (error) {
       const message = error.response?.data?.message || 'Registration failed. Please try again.';

@@ -49,7 +49,7 @@ const LoginPage = () => {
           navigate('/dmc/dashboard');
           break;
         case 'ADMIN':
-          navigate('/admin/dashboard');
+          navigate('/admin');
           break;
         default:
           navigate('/');

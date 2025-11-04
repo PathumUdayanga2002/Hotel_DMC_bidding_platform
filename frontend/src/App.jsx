@@ -16,6 +16,9 @@ import DMCDashboard from './pages/DMCDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminDashboardNew from './pages/AdminDashboardNew';
 import AdminHome from './pages/AdminHome';
+import AdminUserManagement from './pages/AdminUserManagement';
+import AdminPlatformAnalytics from './pages/AdminPlatformAnalytics';
+import AdminSettings from './pages/AdminSettings';
 import DMCApprovals from './pages/DMCApprovals';
 import HotelApprovals from './pages/HotelApprovals';
 import DMCProfileRegister from './pages/DMCProfileRegister';
@@ -143,28 +146,18 @@ const App = () => {
           />
           
           <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
-                {/* <AdminDashboard /> */}
-                {/* <AdminDashboardNew /> */}
-                <MainDashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          
-          <Route
             path="/admin"
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminDashboardNew />
-                {/* <MainDashboard /> */}
               </ProtectedRoute>
             }
           >
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminHome />} />
+            <Route path="user-management" element={<AdminUserManagement />} />
+            <Route path="analytics" element={<AdminPlatformAnalytics />} />
+            <Route path="settings" element={<AdminSettings />} />
             <Route path="dmc-approvals" element={<DMCApprovals />} />
             <Route path="hotel-approvals" element={<HotelApprovals />} />
           </Route>

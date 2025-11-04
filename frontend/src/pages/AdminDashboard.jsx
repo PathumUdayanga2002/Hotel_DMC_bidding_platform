@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { Shield, LogOut, User, Mail } from 'lucide-react';
+import { Shield, LogOut, User, Mail, Users, Building, CheckSquare, BarChart3 } from 'lucide-react';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -88,20 +88,35 @@ const AdminDashboard = () => {
           <Card>
             <h3 className="text-xl font-bold text-gray-900 mb-4">Admin Actions</h3>
             <div className="grid md:grid-cols-2 gap-4">
+              <button
+                onClick={() => navigate('/admin/user-management')}
+                className="border-2 border-green-300 bg-green-50 hover:bg-green-100 rounded-lg p-6 text-left transition-all hover:shadow-md"
+              >
+                <div className="flex items-center mb-2">
+                  <Users className="w-6 h-6 text-green-600 mr-2" />
+                  <p className="font-semibold text-green-800">User Management</p>
+                </div>
+                <p className="text-sm text-gray-600">Manage hotels, DMCs and approvals</p>
+              </button>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <p className="text-gray-500">User Management</p>
+                <div className="flex items-center justify-center mb-2">
+                  <CheckSquare className="w-6 h-6 text-gray-400 mr-2" />
+                  <p className="text-gray-500">Profile Approvals</p>
+                </div>
                 <p className="text-sm text-gray-400 mt-2">Coming soon in Phase 2</p>
               </div>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <p className="text-gray-500">Profile Approvals</p>
+                <div className="flex items-center justify-center mb-2">
+                  <BarChart3 className="w-6 h-6 text-gray-400 mr-2" />
+                  <p className="text-gray-500">Platform Analytics</p>
+                </div>
                 <p className="text-sm text-gray-400 mt-2">Coming soon in Phase 2</p>
               </div>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <p className="text-gray-500">Platform Analytics</p>
-                <p className="text-sm text-gray-400 mt-2">Coming soon in Phase 2</p>
-              </div>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <p className="text-gray-500">Settings</p>
+                <div className="flex items-center justify-center mb-2">
+                  <Building className="w-6 h-6 text-gray-400 mr-2" />
+                  <p className="text-gray-500">Settings</p>
+                </div>
                 <p className="text-sm text-gray-400 mt-2">Coming soon in Phase 2</p>
               </div>
             </div>

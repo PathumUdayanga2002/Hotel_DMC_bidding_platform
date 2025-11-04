@@ -66,6 +66,13 @@ const AdminDashboardNew = () => {
       submenu: null
     },
     {
+      id: 'user-management',
+      name: 'User Management',
+      icon: Users,
+      path: '/admin/user-management',
+      disabled: false
+    },
+    {
       id: 'approvals',
       name: 'Profile Approvals',
       icon: FileCheck,
@@ -76,25 +83,18 @@ const AdminDashboardNew = () => {
       ]
     },
     {
-      id: 'users',
-      name: 'User Management',
-      icon: Users,
-      path: '/admin/users',
-      disabled: true
-    },
-    {
       id: 'analytics',
       name: 'Platform Analytics',
       icon: BarChart3,
       path: '/admin/analytics',
-      disabled: true
+      disabled: false
     },
     {
       id: 'settings',
       name: 'Settings',
       icon: Settings,
       path: '/admin/settings',
-      disabled: true
+      disabled: false
     }
   ];
 

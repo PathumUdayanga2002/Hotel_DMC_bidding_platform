@@ -1,24 +1,36 @@
 package com.hotel_bidding.backend.config;
 
-import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
-@Data
-@Configuration
+@Component
 @ConfigurationProperties(prefix = "jwt")
 public class JwtConfig {
     private String secret;
-    private AccessToken accessToken = new AccessToken();
-    private RefreshToken refreshToken = new RefreshToken();
+    private long accessTokenExpiration;
+    private long refreshTokenExpiration;
 
-    @Data
-    public static class AccessToken {
-        private Long expiration;
+    public String getSecret() {
+        return secret;
     }
 
-    @Data
-    public static class RefreshToken {
-        private Long expiration;
+    public void setSecret(String secret) {
+        this.secret = secret;
+    }
+
+    public long getAccessTokenExpiration() {
+        return accessTokenExpiration;
+    }
+
+    public void setAccessTokenExpiration(long accessTokenExpiration) {
+        this.accessTokenExpiration = accessTokenExpiration;
+    }
+
+    public long getRefreshTokenExpiration() {
+        return refreshTokenExpiration;
+    }
+
+    public void setRefreshTokenExpiration(long refreshTokenExpiration) {
+        this.refreshTokenExpiration = refreshTokenExpiration;
     }
 }
