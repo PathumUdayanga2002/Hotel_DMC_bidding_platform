@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import NotificationBell from '../components/NotificationBell';
 import {
   Plane,
   LogOut,
@@ -17,7 +18,10 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  XCircle
+  XCircle,
+  PlusCircle,
+  Inbox,
+  TrendingUp
 } from 'lucide-react';
 
 const DMCDashboard = () => {
@@ -126,6 +130,20 @@ const DMCDashboard = () => {
       locked: false
     },
     {
+      id: 'post-inquiry',
+      name: 'Post Bid Inquiry',
+      icon: PlusCircle,
+      path: '/dmc/inquiries/post',
+      locked: false
+    },
+    {
+      id: 'my-inquiries',
+      name: 'My Inquiries',
+      icon: Inbox,
+      path: '/dmc/inquiries',
+      locked: false
+    },
+    {
       id: 'browse',
       name: 'Browse Inquiries',
       icon: Search,
@@ -142,7 +160,7 @@ const DMCDashboard = () => {
     {
       id: 'direct',
       name: 'Direct Inquiries',
-      icon: FileText,
+      icon: TrendingUp,
       path: '/dmc/direct-inquiries',
       locked: true
     },
@@ -188,10 +206,7 @@ const DMCDashboard = () => {
             {getStatusBadge()}
 
             {/* Notifications */}
-            <button className="relative p-2 rounded-full hover:bg-gray-100">
-              <Bell className="w-6 h-6 text-gray-600" />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            <NotificationBell />
 
             {/* Messages */}
             <button className="relative p-2 rounded-full hover:bg-gray-100">

@@ -5,6 +5,7 @@ import com.hotel_bidding.backend.dto.request.LoginRequest;
 import com.hotel_bidding.backend.dto.request.RegisterRequest;
 import com.hotel_bidding.backend.dto.response.ApiResponse;
 import com.hotel_bidding.backend.dto.response.AuthResponse;
+import com.hotel_bidding.backend.security.UserDetailsImpl;
 import com.hotel_bidding.backend.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -87,10 +89,25 @@ public class AuthController {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<ApiResponse> checkAuth() {
+    public ResponseEntity<ApiResponse> checkAuth(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.builder()
+                            .success(false)
+                            .message("Not authenticated")
+                            .build());
+        }
+        
+        AuthResponse authResponse = new AuthResponse();
+        authResponse.setId(userDetails.getId());
+        authResponse.setUsername(userDetails.getUsername());
+        authResponse.setEmail(userDetails.getEmail());
+        authResponse.setRole(userDetails.getRole());
+        
         return ResponseEntity.ok(ApiResponse.builder()
                 .success(true)
                 .message("Authenticated")
+                .data(authResponse)
                 .build());
     }
 }

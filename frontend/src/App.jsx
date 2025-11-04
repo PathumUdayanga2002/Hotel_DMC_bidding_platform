@@ -17,10 +17,20 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminDashboardNew from './pages/AdminDashboardNew';
 import AdminHome from './pages/AdminHome';
 import DMCApprovals from './pages/DMCApprovals';
+import HotelApprovals from './pages/HotelApprovals';
 import DMCProfileRegister from './pages/DMCProfileRegister';
 import DMCProfile from './pages/DMCProfile';
 import HotelProfileRegister from './pages/HotelProfileRegister';
 import MainDashboard from './components/MainDashboard';
+
+// Bid Inquiry Pages
+import PostInquiryForm from './pages/PostInquiryForm';
+import DMCInquiriesPage from './pages/DMCInquiriesPage';
+import InquiryDetailsPage from './pages/InquiryDetailsPage';
+import HotelInquiriesPage from './pages/HotelInquiriesPage';
+import SubmitBidForm from './pages/SubmitBidForm';
+import HotelBidsPage from './pages/HotelBidsPage';
+import HotelInquiryDetails from './pages/HotelInquiryDetails';
 
 const App = () => {
   return (
@@ -51,6 +61,36 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          
+          {/* Hotel Bid Inquiry Routes */}
+          <Route
+            path="/hotel/inquiries"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <HotelInquiriesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hotel/inquiries/:inquiryId/bid"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <SubmitBidForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hotel/bids"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <HotelBidsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="/hotel/inquiries/:inquiryId" element={<HotelInquiryDetails />} />
+
+          
           <Route
             path="/dmc/dashboard"
             element={
@@ -75,6 +115,33 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          
+          {/* DMC Bid Inquiry Routes */}
+          <Route
+            path="/dmc/inquiries"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCInquiriesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dmc/inquiries/post"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <PostInquiryForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dmc/inquiries/:inquiryId"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <InquiryDetailsPage />
+              </ProtectedRoute>
+            }
+          />
+          
           <Route
             path="/admin/dashboard"
             element={
@@ -99,6 +166,7 @@ const App = () => {
             <Route index element={<Navigate to="/admin/dashboard" replace />} />
             <Route path="dashboard" element={<AdminHome />} />
             <Route path="dmc-approvals" element={<DMCApprovals />} />
+            <Route path="hotel-approvals" element={<HotelApprovals />} />
           </Route>
 
           {/* 404 Redirect */}
