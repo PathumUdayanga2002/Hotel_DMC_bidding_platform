@@ -45,6 +45,14 @@ public class User {
 
     private Boolean emailVerified = false;
 
+    // Profile fields
+    private String firstName;
+    private String lastName;
+    private String phoneNumber;
+    private String department;
+    private String position;
+    private String profileImageUrl;
+
     @CreatedDate
     private LocalDateTime createdAt;
 
