@@ -163,7 +163,7 @@ const AdminSettings = () => {
             Manage commission rates, payment fees, and system configurations
           </p>
           {settings?.updatedAt && (
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-600 mt-1">
               Last updated: {new Date(settings.updatedAt).toLocaleString()}
               {settings.updatedBy && ` by ${settings.updatedBy}`}
             </p>
