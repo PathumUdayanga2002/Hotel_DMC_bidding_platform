@@ -237,6 +237,10 @@ public class AdminHotelServiceImpl implements AdminHotelService {
         response.setTotalRooms(profile.getTotalRooms());
         response.setCertifications(profile.getCertifications());
         response.setStatus(profile.getStatus());
+    // Additional fields
+    response.setRoomEnvironment(profile.getRoomEnvironment());
+    response.setHotelStars(profile.getHotelStars());
+    response.setTermsAndConditions(profile.getTermsAndConditions());
         response.setApprovedBy(profile.getApprovedBy());
         response.setApprovedByUsername(profile.getApprovedByUsername());
         response.setApprovedAt(profile.getApprovedAt());

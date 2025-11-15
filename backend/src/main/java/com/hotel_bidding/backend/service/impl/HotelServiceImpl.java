@@ -52,6 +52,12 @@ public class HotelServiceImpl implements HotelService {
         profile.setAmenities(request.getAmenities());
         profile.setTotalRooms(request.getTotalRooms());
 
+        // =================== NEW FIELDS ===================
+        profile.setRoomEnvironment(request.getRoomEnvironment());
+        profile.setHotelStars(request.getHotelStars());
+        profile.setTermsAndConditions(request.getTermsAndConditions());
+        // ===================================================
+
         // Upload certifications
         if (certifications != null && !certifications.isEmpty()) {
             List<String> uploadedCerts = certifications.stream().map(file -> {
