@@ -29,6 +29,11 @@ import InquiryDetailsPage from './pages/InquiryDetailsPage';
 import HotelInquiriesPage from './pages/HotelInquiriesPage';
 import SubmitBidForm from './pages/SubmitBidForm';
 import HotelBidsPage from './pages/HotelBidsPage';
+import HotelInquiryDetails from './pages/HotelInquiryDetails';
+
+//messages
+import DMCMessages from './pages/DMCMessages.jsx';
+import HotelMessages from './pages/HotelMessages.jsx';
 
 const App = () => {
   return (
@@ -85,6 +90,18 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          {/* DMC Messages */} 
+            <Route
+            path="/hotel/messages"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <HotelMessages />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route path="/hotel/inquiries/:inquiryId" element={<HotelInquiryDetails />} />
+
           
           <Route
             path="/dmc/dashboard"
@@ -102,11 +119,23 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+
+          
           <Route
             path="/dmc/profile"
             element={
               <ProtectedRoute allowedRoles={['DMC_USER']}>
                 <DMCProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* DMC Messages */} 
+            <Route
+            path="/dmc/messages"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCMessages />
               </ProtectedRoute>
             }
           />

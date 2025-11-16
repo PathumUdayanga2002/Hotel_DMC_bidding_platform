@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import api from '../services/api';
 import {
@@ -32,6 +32,11 @@ const HotelDetailsModal = ({ profile, onClose }) => {
 
   // Image viewer state
   const [viewingImage, setViewingImage] = useState(null);
+
+  // Debug: log profile data whenever it changes or when modal opens
+  useEffect(() => {
+    console.log('HotelDetailsModal - profile data:', profile);
+  }, [profile]);
 
   const handleApprove = async () => {
     if (!window.confirm('Are you sure you want to approve this hotel profile?')) {
@@ -253,6 +258,39 @@ const HotelDetailsModal = ({ profile, onClose }) => {
                   </p>
                 </div>
               </div>
+
+              
+              {/* Additional Details */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Room Environment</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-700">
+                    {profile.roomEnvironment || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Hotel Star Rating */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Hotel Star Rating</h3>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-700">
+                    {profile.hotelStars ? `${profile.hotelStars} Star${profile.hotelStars > 1 ? "s" : ""}` : "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Terms & Conditions */}
+              {profile.termsAndConditions && profile.termsAndConditions.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Terms & Conditions</h3>
+                  <ul className="list-disc pl-6 text-sm text-gray-700 space-y-1">
+                    {profile.termsAndConditions.map((t, index) => (
+                      <li key={index}>{t}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {/* Submission Details */}
               <div>

@@ -39,17 +39,30 @@ public class HotelProfile {
     private List<String> certifications;
 
     private String status; // PENDING, UNDER_REVIEW, APPROVED, REJECTED, SUSPENDED
-    
+
+    // ================= NEW FIELDS =================
+
+    // Room environment type (AC, Non-AC, Mixed)
+    private String roomEnvironment;
+
+    // Hotel star rating (1–5)
+    private Integer hotelStars;
+
+    // Terms and conditions for the hotel
+    private List<String> termsAndConditions = new ArrayList<>();
+
+    // =================================================
+
     // Admin approval tracking
-    private String approvedBy; // Admin user ID who approved
-    private String approvedByUsername; // Admin username who approved
+    private String approvedBy;
+    private String approvedByUsername;
     private LocalDateTime approvedAt;
-    
+
     // Rejection tracking
-    private String rejectionReason; // Current rejection reason (if rejected)
+    private String rejectionReason;
     private List<HotelRejectionHistory> rejectionHistory = new ArrayList<>();
-    
-    // Admin notes (internal only, not visible to hotel users)
+
+    // Admin notes (internal only)
     private List<HotelAdminNote> adminNotes = new ArrayList<>();
 
     @CreatedDate
