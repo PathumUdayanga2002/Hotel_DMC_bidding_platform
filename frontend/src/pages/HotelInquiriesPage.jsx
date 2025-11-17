@@ -10,6 +10,7 @@ import {
   Clock,
   Eye,
   ArrowRight,
+  ArrowLeft,
   Loader2,
   AlertTriangle,
   FileText
@@ -70,8 +71,19 @@ const HotelInquiriesPage = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Available Bid Inquiries</h1>
-          <p className="text-gray-600">Browse and submit bids for available inquiries from DMCs</p>
+          <div className="flex items-center mb-4">
+            <button
+              onClick={() => navigate('/hotel/dashboard')}
+              className="flex items-center text-gray-600 hover:text-blue-600 mr-4"
+            >
+              <ArrowLeft className="w-5 h-5 mr-1" />
+              Back to Dashboard
+            </button>
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">Available Bid Inquiries</h1>
+              <p className="text-gray-600">Browse and submit bids for available inquiries from DMCs</p>
+            </div>
+          </div>
         </div>
 
         {/* Search and Filter */}

@@ -13,7 +13,8 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
-  Eye
+  Eye,
+  ArrowLeft
 } from 'lucide-react';
 import { getMyBids, withdrawBid, getHotelStats } from '../services/bidInquiryService';
 import {
@@ -102,8 +103,21 @@ const HotelBidsPage = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">My Bids</h1>
-          <p className="text-gray-600">Track and manage all your submitted bids</p>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <button
+                onClick={() => navigate('/hotel/dashboard')}
+                className="flex items-center text-gray-600 hover:text-blue-600 mr-4"
+              >
+                <ArrowLeft className="w-5 h-5 mr-1" />
+                Back to Dashboard
+              </button>
+              <div>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">My Bids</h1>
+                <p className="text-gray-600">Track and manage all your submitted bids</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Statistics Cards */}
@@ -318,9 +332,26 @@ const BidRow = ({ bid, onWithdraw, onViewDetails }) => {
             <div className="flex-1">
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    {bid.inquiryTitle || 'Untitled Inquiry'}
-                  </h3>
+                  <div className="flex items-center mb-1">
+                    <span
+                      className={`px-3 py-1 rounded-lg font-medium transition-colors mr-3 text-sm ${
+                        bid.status === BID_STATUS.ACCEPTED
+                          ? 'bg-green-50 text-green-700'
+                          : bid.status === BID_STATUS.PENDING
+                          ? 'bg-yellow-50 text-yellow-700'
+                          : bid.status === BID_STATUS.REJECTED
+                          ? 'bg-red-50 text-red-700'
+                          : bid.status === BID_STATUS.WITHDRAWN
+                          ? 'bg-gray-100 text-gray-600'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {`BidID - ${bid.hotelBidId || bid.id || '—'}`}
+                    </span>
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {bid.inquiryTitle || 'Untitled Inquiry'}
+                    </h3>
+                  </div>
                   <div className="flex items-center space-x-3 text-sm text-gray-600">
                     {bid.inquiryCities && (
                       <span className="flex items-center">

@@ -15,6 +15,7 @@ import {
   MapPin,
   DollarSign,
   Loader2
+  ,ArrowLeft
 } from 'lucide-react';
 import { getMyInquiries, getDMCStats, searchInquiries } from '../services/bidInquiryService';
 import {
@@ -138,9 +139,18 @@ const DMCInquiriesPage = () => {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Bid Inquiries</h1>
-              <p className="text-gray-600 mt-1">Manage your hotel booking inquiries and review bids</p>
+            <div className="flex items-center">
+              <button
+                onClick={() => navigate('/dmc/dashboard')}
+                className="flex items-center text-gray-600 hover:text-blue-600 mr-4"
+              >
+                <ArrowLeft className="w-5 h-5 mr-1" />
+                Back to Dashboard
+              </button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">My Bid Inquiries</h1>
+                <p className="text-gray-600 mt-1">Manage your hotel booking inquiries and review bids</p>
+              </div>
             </div>
             <button
               onClick={() => navigate('/dmc/inquiries/post')}
