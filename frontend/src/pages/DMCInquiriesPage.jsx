@@ -370,6 +370,36 @@ const InquiryCard = ({ inquiry, navigate }) => {
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center space-x-3 mb-2">
+            {/* BidID pill: short readable id, tooltip with full id, click to copy */}
+            {inquiry.id && (
+              (() => {
+                const fullId = String(inquiry.id);
+                const short = fullId.length > 8 ? fullId.slice(0, 8).toUpperCase() : fullId.toUpperCase();
+                const pillClasses = inquiry.status === BID_INQUIRY_STATUS.OPEN
+                  ? 'bg-green-50 text-green-700'
+                  : inquiry.status === BID_INQUIRY_STATUS.AWARDED
+                  ? 'bg-yellow-50 text-yellow-700'
+                  : inquiry.status === BID_INQUIRY_STATUS.CANCELLED
+                  ? 'bg-red-50 text-red-700'
+                  : 'bg-gray-100 text-gray-600';
+                return (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigator.clipboard?.writeText(fullId)
+                        .then(() => toast.success('Full ID copied'))
+                        .catch(() => toast.error('Copy failed'));
+                    }}
+                    title={`Full ID: ${fullId} — click to copy`}
+                    className={`px-3 py-1 rounded-lg font-medium text-sm transition-colors mr-2 ${pillClasses}`}
+                  >
+                    {`BidID-${short}`}
+                  </button>
+                );
+              })()
+            )}
+
             <h3 className="text-xl font-bold text-gray-900">{inquiry.title}</h3>
             <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(inquiry.status)}`}>
               {getStatusLabel(inquiry.status)}
