@@ -35,6 +35,10 @@ import HotelInquiryDetails from './pages/HotelInquiryDetails';
 import DMCMessages from './pages/DMCMessages.jsx';
 import HotelMessages from './pages/HotelMessages.jsx';
 
+// Contracts
+import MyContracts from './pages/MyContracts.jsx';
+import HotelContractBuilder from './pages/HotelContractBuilder.jsx';
+
 const App = () => {
   return (
     <Router>
@@ -90,6 +94,25 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/hotel/mycontracts"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <MyContracts />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/hotel/sendcontracts"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <HotelContractBuilder />
+              </ProtectedRoute>
+            }
+          />
+
           {/* DMC Messages */} 
             <Route
             path="/hotel/messages"
