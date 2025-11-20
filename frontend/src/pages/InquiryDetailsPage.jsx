@@ -111,10 +111,23 @@ const InquiryDetailsPage = () => {
   const handleAwardBid = async (bidId) => {
     setActionLoading(true);
     try {
-      await awardBid(inquiryId, bidId);
-      toast.success('Bid awarded successfully! Hotel has been notified.');
-      fetchInquiryDetails();
-      fetchBids();
+      const response = await awardBid(inquiryId, bidId);
+      toast.success('Bid awarded successfully! Redirecting to payment...');
+      
+      console.log('Award bid response:', response); // Debug log
+      
+      // Backend returns AwardBidResponse with payment info
+      if (response?.inquiryId && response?.bidId) {
+        // Redirect to payment initiation page with payment details
+        setTimeout(() => {
+          navigate(`/payment/initiate?inquiryId=${response.inquiryId}&bidId=${response.bidId}&amount=${response.bidAmount}&currency=${response.currency || 'USD'}`);
+        }, 1500);
+      } else {
+        // If no payment info, just refresh the page
+        fetchInquiryDetails();
+        fetchBids();
+      }
+      
       setShowConfirmModal(null);
       setSelectedBid(null);
     } catch (error) {

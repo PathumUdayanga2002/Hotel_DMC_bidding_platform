@@ -110,4 +110,16 @@ public class AuthController {
                 .data(authResponse)
                 .build());
     }
+
+    /**
+     * Health check endpoint for Docker and monitoring
+     * GET /auth/health
+     */
+    @GetMapping("/health")
+    public ResponseEntity<ApiResponse> healthCheck() {
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Application is running")
+                .build());
+    }
 }

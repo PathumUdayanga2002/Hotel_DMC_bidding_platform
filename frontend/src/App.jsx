@@ -31,6 +31,15 @@ import SubmitBidForm from './pages/SubmitBidForm';
 import HotelBidsPage from './pages/HotelBidsPage';
 import HotelInquiryDetails from './pages/HotelInquiryDetails';
 
+// Payment Pages
+import PaymentInitiation from './pages/PaymentInitiation';
+import PaymentReturn from './pages/PaymentReturn';
+import PaymentCancel from './pages/PaymentCancel';
+import DMCPaymentHistory from './pages/DMCPaymentHistory';
+import HotelPaymentHistory from './pages/HotelPaymentHistory';
+import AdminPaymentDashboard from './pages/AdminPaymentDashboard';
+import AdminPayoutManagement from './pages/AdminPayoutManagement';
+
 const App = () => {
   return (
     <Router>
@@ -89,6 +98,16 @@ const App = () => {
 
           <Route path="/hotel/inquiries/:inquiryId" element={<HotelInquiryDetails />} />
 
+          {/* Hotel Payment Routes */}
+          <Route
+            path="/hotel/payments"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <HotelPaymentHistory />
+              </ProtectedRoute>
+            }
+          />
+
           
           <Route
             path="/dmc/dashboard"
@@ -141,6 +160,40 @@ const App = () => {
             }
           />
           
+          {/* DMC Payment Routes */}
+          <Route
+            path="/dmc/payments"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCPaymentHistory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment/initiate"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <PaymentInitiation />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment/return"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <PaymentReturn />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment/cancel"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <PaymentCancel />
+              </ProtectedRoute>
+            }
+          />
+          
           <Route
             path="/admin/dashboard"
             element={
@@ -162,6 +215,8 @@ const App = () => {
             <Route path="dashboard" element={<AdminHome />} />
             <Route path="dmc-approvals" element={<DMCApprovals />} />
             <Route path="hotel-approvals" element={<HotelApprovals />} />
+            <Route path="payments" element={<AdminPaymentDashboard />} />
+            <Route path="payouts" element={<AdminPayoutManagement />} />
           </Route>
 
           {/* 404 Redirect */}
