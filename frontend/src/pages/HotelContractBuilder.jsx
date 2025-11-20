@@ -9,7 +9,7 @@ import TermsConditionsForm from "./contract/TermsConditionsForm";
 import Tabs from "./contract/Tabs";
 import api from "../services/api";
 
-export default function ContractBuilder({ hotelId }) {
+export default function ContractBuilder() {
   const [activeTab, setActiveTab] = useState(0);
 
   const [general, setGeneral] = useState({
@@ -40,6 +40,7 @@ export default function ContractBuilder({ hotelId }) {
     driverAllowanceAmount: 0,
     driverAllowanceCurrency: "",
   });
+
   const [offers, setOffers] = useState([]);
   const [valueAdded, setValueAdded] = useState([]);
   const [terms, setTerms] = useState([]);
@@ -54,43 +55,41 @@ export default function ContractBuilder({ hotelId }) {
     { label: "T&C", content: <TermsConditionsForm terms={terms} setTerms={setTerms} /> },
   ];
 
-const handleSave = async () => {
-  try {
-    // Assume hotelId is retrieved from the logged-in user context or auth state
-    const hotelId = loggedInUser.hotelId; // replace with your actual user state
+  const handleSave = async () => {
+    try {
+      const finalContract = {
+        general,
+        rooms,
+        meals,
+        childPolicy,
+        offers,
+        valueAdded,
+        terms,
+      };
 
-    const finalContract = {
-      hotelId, // include hotel id
-      general,
-      rooms,
-      meals,
-      childPolicy,
-      offers,
-      valueAdded,
-      terms,
-    };
-
-    const response = await api.post("/hotel/contracts", finalContract);
-    console.log("Contract saved:", response.data);
-    alert("Contract saved successfully!");
-  } catch (error) {
-    console.error("Error saving contract:", error);
-    alert("Failed to save contract. Check console for details.");
-  }
-};
+      const response = await api.post("/hotel/contracts", finalContract);
+      console.log("Contract saved:", response.data);
+      alert("Contract saved successfully!");
+    } catch (error) {
+      console.error("Error saving contract:", error);
+      alert("Failed to save contract. Check console for details.");
+    }
+  };
 
   return (
- <div className=" mx-auto p-6 bg-gray-50 min-h-screen">
-  <h1 className="text-2xl font-bold mb-6 text-center">📝 Hotel Contract Builder</h1>
-  <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
-  {/* Remove this line below */}
-  {/* <div>{tabs[activeTab].content}</div> */}
-  <div className="mt-6 text-center">
-    <button onClick={handleSave} className="bg-green-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-green-600">
-      Save Contract
-    </button>
-  </div>
-</div>
+    <div className="mx-auto p-6 bg-gray-50 min-h-screen">
+      <h1 className="text-2xl font-bold mb-6 text-center">📝 Hotel Contract Builder</h1>
 
+      <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
+
+      <div className="mt-6 text-center">
+        <button
+          onClick={handleSave}
+          className="bg-green-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-green-600"
+        >
+          Save Contract
+        </button>
+      </div>
+    </div>
   );
 }

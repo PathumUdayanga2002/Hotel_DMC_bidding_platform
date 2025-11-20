@@ -14,52 +14,63 @@ export default function GeneralContractForm({ general, setGeneral }) {
   const updateField = (field, value) => setGeneral({ ...general, [field]: value });
 
   // Array defining the form fields that will be displayed in the table-like layout
-  const formFields = [
-    { 
-      label: "Rate Basis", 
-      field: "rateBasis", 
-      type: "text", 
-      placeholder: "e.g., half board" 
-    },
-    { 
-      label: "Currency", 
-      field: "currency", 
-      type: "text", 
-      placeholder: "e.g., USD" 
-    },
-    { 
-      label: "Inclusivity", 
-      field: "inclusivity", 
-      type: "textarea", 
-      placeholder: "Rates include breakfast, dinner, and all local taxes..." 
-    },
-    { 
-      label: "Online Markup Policy", 
-      field: "onlineMarkupPolicy", 
-      type: "textarea", 
-      placeholder: "Contracted rates must not be published online..." 
-    },
-    // The Peak Dates field from the image, typically handled as a date range in a form
-    { 
-      label: "Peak: Christmas & New Year Start", 
-      field: "peakStart", 
-      type: "date", 
-      placeholder: "" 
-    },
-    { 
-      label: "Peak: Christmas & New Year End", 
-      field: "peakEnd", 
-      type: "date", 
-      placeholder: "" 
-    },
-    // Adding the Government Tax Note field from your original code, as it's relevant to General Info
-    { 
-      label: "Government Tax Note", 
-      field: "governmentTaxNote", 
-      type: "textarea", 
-      placeholder: "Any special notes regarding government taxes." 
-    },
-  ];
+const formFields = [
+  {
+    label: "Contract Name",
+    field: "contractName",
+    type: "text",
+    placeholder: "e.g., Summer 2028 International DMC"
+  },
+  {
+    label: "Hotel Name",
+    field: "hotelName",
+    type: "text",
+    placeholder: "e.g., Oceanview Retreat"
+  },
+  { 
+    label: "Rate Basis", 
+    field: "rateBasis", 
+    type: "text", 
+    placeholder: "e.g., half board" 
+  },
+  { 
+    label: "Currency", 
+    field: "currency", 
+    type: "text", 
+    placeholder: "e.g., USD" 
+  },
+  { 
+    label: "Inclusivity", 
+    field: "inclusivity", 
+    type: "textarea", 
+    placeholder: "Rates include breakfast, dinner, and all local taxes..." 
+  },
+  { 
+    label: "Online Markup Policy", 
+    field: "onlineMarkupPolicy", 
+    type: "textarea", 
+    placeholder: "Contracted rates must not be published online..." 
+  },
+  { 
+    label: "Peak: Christmas & New Year Start", 
+    field: "peakStart", 
+    type: "date", 
+    placeholder: "" 
+  },
+  { 
+    label: "Peak: Christmas & New Year End", 
+    field: "peakEnd", 
+    type: "date", 
+    placeholder: "" 
+  },
+  { 
+    label: "Government Tax Note", 
+    field: "governmentTaxNote", 
+    type: "textarea", 
+    placeholder: "Any special notes regarding government taxes." 
+  },
+];
+
 
   return (
     <div className="bg-white border border-gray-200 rounded-md shadow-sm overflow-hidden">
