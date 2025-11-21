@@ -1,6 +1,17 @@
 import React from "react";
 
-export default function Tabs({ tabs, activeTab, setActiveTab }) {
+export default function Tabs({ tabs, activeTab, setActiveTab, onSave }) {
+  const isFirst = activeTab === 0;
+  const isLast = activeTab === tabs.length - 1;
+
+  const goNext = () => {
+    if (!isLast) setActiveTab(activeTab + 1);
+  };
+
+  const goPrev = () => {
+    if (!isFirst) setActiveTab(activeTab - 1);
+  };
+
   return (
     <div className="mb-6">
       {/* Tab buttons */}
@@ -21,7 +32,38 @@ export default function Tabs({ tabs, activeTab, setActiveTab }) {
       </div>
 
       {/* Active tab content */}
-      <div>{tabs[activeTab]?.content}</div>
+      <div className="mb-4">{tabs[activeTab]?.content}</div>
+
+      {/* Navigation controls: Prev / Next or Save on last tab */}
+      <div className="flex justify-between items-center mt-4">
+        <div>
+          <button
+            onClick={goPrev}
+            disabled={isFirst}
+            className={`px-4 py-2 rounded-md border ${isFirst ? 'text-gray-400 border-gray-200 bg-gray-50' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+          >
+            Previous
+          </button>
+        </div>
+
+        <div>
+          {!isLast ? (
+            <button
+              onClick={goNext}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Next
+            </button>
+          ) : (
+            <button
+              onClick={onSave}
+              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+            >
+              Save Contract
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

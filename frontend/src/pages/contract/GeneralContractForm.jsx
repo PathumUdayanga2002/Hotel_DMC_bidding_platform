@@ -22,6 +22,18 @@ const formFields = [
     placeholder: "e.g., Summer 2028 International DMC"
   },
   {
+    label: "Contract Start Date",
+    field: "startDate",
+    type: "date",
+    placeholder: ""
+  },
+  {
+    label: "Contract End Date",
+    field: "endDate",
+    type: "date",
+    placeholder: ""
+  },
+  {
     label: "Hotel Name",
     field: "hotelName",
     type: "text",
@@ -50,18 +62,6 @@ const formFields = [
     field: "onlineMarkupPolicy", 
     type: "textarea", 
     placeholder: "Contracted rates must not be published online..." 
-  },
-  { 
-    label: "Peak: Christmas & New Year Start", 
-    field: "peakStart", 
-    type: "date", 
-    placeholder: "" 
-  },
-  { 
-    label: "Peak: Christmas & New Year End", 
-    field: "peakEnd", 
-    type: "date", 
-    placeholder: "" 
   },
   { 
     label: "Government Tax Note", 

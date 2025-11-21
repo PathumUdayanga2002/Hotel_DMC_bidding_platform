@@ -80,16 +80,7 @@ export default function ContractBuilder() {
     <div className="mx-auto p-6 bg-gray-50 min-h-screen">
       <h1 className="text-2xl font-bold mb-6 text-center">📝 Hotel Contract Builder</h1>
 
-      <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
-
-      <div className="mt-6 text-center">
-        <button
-          onClick={handleSave}
-          className="bg-green-500 text-white px-6 py-3 rounded-lg text-lg hover:bg-green-600"
-        >
-          Save Contract
-        </button>
-      </div>
+      <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} onSave={handleSave} />
     </div>
   );
 }
