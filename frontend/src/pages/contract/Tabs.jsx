@@ -1,11 +1,22 @@
 import React from "react";
 
-export default function Tabs({ tabs, activeTab, setActiveTab, onSave }) {
+export default function Tabs({ tabs, activeTab, setActiveTab, onSave, beforeNext }) {
   const isFirst = activeTab === 0;
   const isLast = activeTab === tabs.length - 1;
 
-  const goNext = () => {
-    if (!isLast) setActiveTab(activeTab + 1);
+  const goNext = async () => {
+    if (isLast) return;
+    // call beforeNext hook if provided; if it returns false, cancel navigation
+    if (beforeNext) {
+      try {
+        const result = await beforeNext(activeTab);
+        if (result === false) return;
+      } catch (e) {
+        console.error('beforeNext hook failed:', e);
+        return;
+      }
+    }
+    setActiveTab(activeTab + 1);
   };
 
   const goPrev = () => {

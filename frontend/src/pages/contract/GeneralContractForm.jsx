@@ -98,6 +98,9 @@ const formFields = [
       {/* Content Section (Editable Table) - Conditionally Rendered */}
       {isOpen && (
         <div className="p-0">
+          <div className="px-6 py-4">
+            <p className="text-sm text-gray-600 mb-3">Provide the main contract metadata. Dates define the contract validity period.</p>
+          </div>
           <table className="min-w-full divide-y divide-gray-200">
             <tbody className="bg-white divide-y divide-gray-200">
               {formFields.map((item, index) => (

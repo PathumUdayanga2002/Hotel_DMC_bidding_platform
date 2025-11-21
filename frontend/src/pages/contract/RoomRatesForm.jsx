@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, forwardRef, useImperativeHandle } from "react";
 import { Trash2, PlusCircle, Save, PlusSquare } from "lucide-react";
 
 // ====================================================================
@@ -134,8 +134,9 @@ const RoomCard = ({ room, updateLocalRoom, updateLocalPeriod, addPeriod, removeP
 // ====================================================================
 // Main Component
 // ====================================================================
-export default function RoomRatesFormModern({ rooms, setRooms }) {
+const RoomRatesFormModern = forwardRef(({ rooms, setRooms }, ref) => {
   const [localRooms, setLocalRooms] = useState([]);
+  const [savedBanner, setSavedBanner] = useState(false);
 
   useEffect(() => {
     if (!rooms || rooms.length === 0) {
@@ -240,7 +241,7 @@ export default function RoomRatesFormModern({ rooms, setRooms }) {
     );
   };
 
-  const saveToParent = () => {
+  const saveToParent = (silent = false) => {
     const normalized = localRooms.map((r) => ({
       name: r.name,
       units: Number(r.units) || 0,
@@ -257,14 +258,27 @@ export default function RoomRatesFormModern({ rooms, setRooms }) {
     }));
 
     setRooms(normalized);
-    alert("Rates saved to parent state!");
+    if (!silent) {
+      // show small inline banner instead of blocking alert
+      setSavedBanner(true);
+      window.setTimeout(() => setSavedBanner(false), 1800);
+    }
   };
+
+  // expose save method to parent via ref
+  useImperativeHandle(ref, () => ({
+    save: (silent = true) => saveToParent(silent),
+  }));
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap">
-        <h3 className="text-lg font-semibold">Room Rates (Modern)</h3>
-        <div className="flex gap-2 flex-wrap">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800">Room Rates</h3>
+          <p className="text-sm text-gray-500">Define rooms and period rates. Changes are saved when you move to the next step.</p>
+        </div>
+        <div className="flex gap-2 flex-wrap items-center">
+          {savedBanner && <div className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded text-sm">Saved</div>}
           <button
             type="button"
             onClick={addRoom}
@@ -274,7 +288,7 @@ export default function RoomRatesFormModern({ rooms, setRooms }) {
           </button>
           <button
             type="button"
-            onClick={saveToParent}
+            onClick={() => saveToParent(false)}
             className="flex items-center gap-1 px-3 py-1 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
           >
             <Save size={16} /> Save
@@ -297,8 +311,10 @@ export default function RoomRatesFormModern({ rooms, setRooms }) {
       </div>
 
       <div className="pt-4 text-sm text-gray-500">
-        Tip: fields are stored as text while typing to keep focus/caret stable. Click **Save** to convert numbers for backend use.
+        Tip: fields are stored as text while typing to keep focus/caret stable. The form auto-saves when you navigate forward.
       </div>
     </div>
   );
-}
+});
+
+export default RoomRatesFormModern;
