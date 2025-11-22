@@ -1,5 +1,6 @@
 package com.hotel_bidding.backend.dto.response;
 
+import com.hotel_bidding.backend.constants.AccountType;
 import com.hotel_bidding.backend.constants.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,5 +16,7 @@ public class AuthResponse {
     private String username;
     private String email;
     private UserRole role;
+    private AccountType accountType;
+    private String fullName;
     private String message;
 }

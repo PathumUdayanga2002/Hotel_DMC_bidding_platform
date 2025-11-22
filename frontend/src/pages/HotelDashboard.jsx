@@ -17,6 +17,8 @@ import {
   Loader2,
   Inbox,
   TrendingUp,
+  Users,
+  Activity
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
@@ -106,17 +108,21 @@ const StatCards = ({ dashboardData }) => {
 };
 
 // --- Sidebar ---
-const Sidebar = ({ profileStatus }) => {
+const Sidebar = ({ profileStatus, isSuperAdmin, isStaff }) => {
   const navigate = useNavigate();
   const isApproved = profileStatus === 'APPROVED';
   const navItems = [
-    { name: 'My Profile', icon: User, path: '/hotel/profile/register', locked: false },
+    { name: 'My Profile', icon: User, path: '/hotel/profile/register', locked: false, hideForStaff: true },
     { name: 'Available Inquiries', icon: Inbox, path: '/hotel/inquiries', locked: !isApproved },
     { name: 'My Bids', icon: TrendingUp, path: '/hotel/bids', locked: !isApproved },
     { name: 'Browse DMCs', icon: Compass, locked: !isApproved },
     { name: 'My Inquiries', icon: FileText, locked: !isApproved },
     { name: 'Received Proposals', icon: Send, locked: !isApproved },
+    { name: 'My Contracts', icon: FileText, path: '/hotel/mycontracts', locked: !isApproved },
+    { name: 'Send Contracts', icon: FileText, path: '/hotel/sendcontracts', locked: !isApproved },
     { name: 'Messages', icon: MessageSquare, locked: !isApproved },
+    { name: 'Staff Management', icon: Users, path: '/hotel/staff', locked: false, showForSuperAdminOnly: true },
+    { name: 'Activity Logs', icon: Activity, path: '/hotel/activity-logs', locked: false },
   ];
 
   return (
@@ -129,45 +135,53 @@ const Sidebar = ({ profileStatus }) => {
       </div>
 
       <nav className="p-4 space-y-2">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const locked = item.locked; // already reflects approval state
+        {navItems
+          .filter((item) => {
+            // Hide items marked hideForStaff if user is staff
+            if (item.hideForStaff && isStaff) return false;
+            // Only show items marked showForSuperAdminOnly if user is super admin
+            if (item.showForSuperAdminOnly && !isSuperAdmin) return false;
+            return true;
+          })
+          .map((item) => {
+            const Icon = item.icon;
+            const locked = item.locked; // already reflects approval state
 
-          return (
-            <button
-              key={item.name}
-              onClick={() => {
-                if (!locked) {
-                  navigate(item.path);
-                } else {
-                  toast.warning('Please complete profile registration and wait for admin approval');
-                }
-              }}
-              disabled={locked}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                locked
-                  ? 'text-gray-400 cursor-not-allowed bg-gray-50'
-                  : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="font-medium">{item.name}</span>
-              {locked && (
-                <svg
-                  className="w-4 h-4 ml-auto"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              )}
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={item.name}
+                onClick={() => {
+                  if (!locked) {
+                    navigate(item.path);
+                  } else {
+                    toast.warning('Please complete profile registration and wait for admin approval');
+                  }
+                }}
+                disabled={locked}
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  locked
+                    ? 'text-gray-400 cursor-not-allowed bg-gray-50'
+                    : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="font-medium">{item.name}</span>
+                {locked && (
+                  <svg
+                    className="w-4 h-4 ml-auto"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+              </button>
+            );
+          })}
       </nav>
 
       <div className="p-4 border-t">
@@ -246,7 +260,7 @@ const DashboardHeader = ({ user, handleLogout, profileStatus }) => {
 // --- Main HotelDashboard Component ---
 const HotelDashboard = () => {
   const navigate = useNavigate();
-  const { user, logout, token } = useAuth();
+  const { user, logout, token, isSuperAdmin, isStaff } = useAuth();
 
   const [profileStatus, setProfileStatus] = useState('LOADING');
   const [dashboardData, setDashboardData] = useState(null);
@@ -306,7 +320,7 @@ const HotelDashboard = () => {
 
   return (
     <div className="flex h-screen bg-slate-50 font-inter">
-      <Sidebar profileStatus={profileStatus} />
+      <Sidebar profileStatus={profileStatus} isSuperAdmin={isSuperAdmin()} isStaff={isStaff()} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <DashboardHeader user={user} handleLogout={handleLogout} profileStatus={profileStatus} />
         <main className="flex-1 overflow-y-auto p-6 md:p-8">

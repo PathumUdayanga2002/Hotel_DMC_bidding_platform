@@ -80,8 +80,11 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse> logout(HttpServletResponse response) {
-        authService.logout(response);
+    public ResponseEntity<ApiResponse> logout(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            HttpServletResponse response) {
+        String userId = userDetails != null ? userDetails.getId() : null;
+        authService.logout(userId, response);
         return ResponseEntity.ok(ApiResponse.builder()
                 .success(true)
                 .message("Logout successful")
@@ -103,6 +106,8 @@ public class AuthController {
         authResponse.setUsername(userDetails.getUsername());
         authResponse.setEmail(userDetails.getEmail());
         authResponse.setRole(userDetails.getRole());
+        authResponse.setAccountType(userDetails.getAccountType());
+        authResponse.setFullName(userDetails.getFullName());
         
         return ResponseEntity.ok(ApiResponse.builder()
                 .success(true)

@@ -22,6 +22,11 @@ import DMCProfileRegister from './pages/DMCProfileRegister';
 import DMCProfile from './pages/DMCProfile';
 import HotelProfileRegister from './pages/HotelProfileRegister';
 
+// RBAC Pages
+import DMCStaffManagement from './pages/DMCStaffManagement';
+import HotelStaffManagement from './pages/HotelStaffManagement';
+import ActivityLogs from './pages/ActivityLogs';
+
 // Bid Inquiry Pages
 import PostInquiryForm from './pages/PostInquiryForm';
 import DMCInquiriesPage from './pages/DMCInquiriesPage';
@@ -39,6 +44,14 @@ import DMCPaymentHistory from './pages/DMCPaymentHistory';
 import HotelPaymentHistory from './pages/HotelPaymentHistory';
 import AdminPaymentDashboard from './pages/AdminPaymentDashboard';
 import AdminPayoutManagement from './pages/AdminPayoutManagement';
+
+//messages
+import DMCMessages from './pages/DMCMessages.jsx';
+import HotelMessages from './pages/HotelMessages.jsx';
+
+// Contracts
+import MyContracts from './pages/MyContracts.jsx';
+// import HotelContractBuilder from './pages/HotelContractBuilder.jsx';
 
 const App = () => {
   return (
@@ -96,6 +109,54 @@ const App = () => {
             }
           />
 
+          <Route
+            path="/hotel/mycontracts"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <MyContracts />
+              </ProtectedRoute>
+            }
+          />
+          {/*
+          <Route
+            path="/hotel/sendcontracts"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <HotelContractBuilder />
+              </ProtectedRoute>
+            }
+          />*/}
+
+          {/* Hotel Messages */} 
+            <Route
+            path="/hotel/messages"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <HotelMessages />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Hotel Staff Management - Super Admin Only */}
+          <Route
+            path="/hotel/staff"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']} requireSuperAdmin={true}>
+                <HotelStaffManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Hotel Activity Logs */}
+          <Route
+            path="/hotel/activity-logs"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <ActivityLogs portalType="hotel" />
+              </ProtectedRoute>
+            }
+          />
+
           <Route path="/hotel/inquiries/:inquiryId" element={<HotelInquiryDetails />} />
 
           {/* Hotel Payment Routes */}
@@ -125,11 +186,43 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+
+          
           <Route
             path="/dmc/profile"
             element={
               <ProtectedRoute allowedRoles={['DMC_USER']}>
                 <DMCProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* DMC Messages */} 
+            <Route
+            path="/dmc/messages"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCMessages />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* DMC Staff Management - Super Admin Only */}
+          <Route
+            path="/dmc/staff"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']} requireSuperAdmin={true}>
+                <DMCStaffManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* DMC Activity Logs */}
+          <Route
+            path="/dmc/activity-logs"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <ActivityLogs portalType="dmc" />
               </ProtectedRoute>
             }
           />
