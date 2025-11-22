@@ -53,7 +53,7 @@ import HotelMessages from './pages/HotelMessages.jsx';
 
 // Contracts
 import MyContracts from './pages/MyContracts.jsx';
-// import HotelContractBuilder from './pages/HotelContractBuilder.jsx';
+import HotelContractBuilder from './pages/HotelContractBuilder.jsx';
 
 const App = () => {
   return (
@@ -119,7 +119,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          {/*
+          
           <Route
             path="/hotel/sendcontracts"
             element={
@@ -127,7 +127,7 @@ const App = () => {
                 <HotelContractBuilder />
               </ProtectedRoute>
             }
-          />*/}
+          />
 
           {/* Hotel Messages */} 
             <Route

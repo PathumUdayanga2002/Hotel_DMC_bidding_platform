@@ -8,11 +8,13 @@ import com.hotel_bidding.backend.dto.response.HotelBidStatsResponse;
 import com.hotel_bidding.backend.entity.BidInquiry;
 import com.hotel_bidding.backend.entity.HotelBid;
 import com.hotel_bidding.backend.entity.HotelProfile;
+import com.hotel_bidding.backend.entity.User;
 import com.hotel_bidding.backend.exception.ResourceNotFoundException;
 import com.hotel_bidding.backend.exception.UnauthorizedException;
 import com.hotel_bidding.backend.repository.BidInquiryRepository;
 import com.hotel_bidding.backend.repository.HotelBidRepository;
 import com.hotel_bidding.backend.repository.HotelRepository;
+import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.HotelBidService;
 import com.hotel_bidding.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,7 @@ public class HotelBidServiceImpl implements HotelBidService {
     private final HotelBidRepository hotelBidRepository;
     private final BidInquiryRepository bidInquiryRepository;
     private final HotelRepository hotelRepository;
+    private final UserRepository userRepository;
     private final NotificationService notificationService;
     
     @Override
@@ -44,8 +47,11 @@ public class HotelBidServiceImpl implements HotelBidService {
     public HotelBidResponse createBid(CreateHotelBidRequest request, String hotelUserId) {
         log.info("Creating bid for inquiry: {} by hotel user: {}", request.getInquiryId(), hotelUserId);
         
+        // Get effective user ID (if staff, use parent's ID)
+        String effectiveUserId = getEffectiveUserId(hotelUserId);
+        
         // Check if hotel is approved
-        HotelProfile hotelProfile = hotelRepository.findByUserId(hotelUserId)
+        HotelProfile hotelProfile = hotelRepository.findByUserId(effectiveUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel profile not found"));
         
         if (!"APPROVED".equals(hotelProfile.getStatus())) {
@@ -303,17 +309,20 @@ public class HotelBidServiceImpl implements HotelBidService {
     
     @Override
     public HotelBidStatsResponse getBidStats(String hotelUserId) {
-        long totalBidsSubmitted = hotelBidRepository.countByHotelUserId(hotelUserId);
-        long pendingBids = hotelBidRepository.countByHotelUserIdAndStatus(hotelUserId, BidStatus.PENDING);
-        long acceptedBids = hotelBidRepository.countByHotelUserIdAndStatus(hotelUserId, BidStatus.ACCEPTED);
-        long rejectedBids = hotelBidRepository.countByHotelUserIdAndStatus(hotelUserId, BidStatus.REJECTED);
-        long withdrawnBids = hotelBidRepository.countByHotelUserIdAndStatus(hotelUserId, BidStatus.WITHDRAWN);
+        // Get effective user ID (if staff, use parent's ID)
+        String effectiveUserId = getEffectiveUserId(hotelUserId);
+        
+        long totalBidsSubmitted = hotelBidRepository.countByHotelUserId(effectiveUserId);
+        long pendingBids = hotelBidRepository.countByHotelUserIdAndStatus(effectiveUserId, BidStatus.PENDING);
+        long acceptedBids = hotelBidRepository.countByHotelUserIdAndStatus(effectiveUserId, BidStatus.ACCEPTED);
+        long rejectedBids = hotelBidRepository.countByHotelUserIdAndStatus(effectiveUserId, BidStatus.REJECTED);
+        long withdrawnBids = hotelBidRepository.countByHotelUserIdAndStatus(effectiveUserId, BidStatus.WITHDRAWN);
         
         // Calculate win rate
         Double winRate = totalBidsSubmitted > 0 ? (double) acceptedBids / totalBidsSubmitted * 100 : 0.0;
         
         // Get city from hotel profile to find available inquiries
-        HotelProfile hotelProfile = hotelRepository.findByUserId(hotelUserId).orElse(null);
+        HotelProfile hotelProfile = hotelRepository.findByUserId(effectiveUserId).orElse(null);
         long totalAvailableInquiries = 0;
         if (hotelProfile != null) {
             List<String> cities = List.of(hotelProfile.getCity());
@@ -381,5 +390,22 @@ public class HotelBidServiceImpl implements HotelBidService {
                 .isValidityExpired(bid.isValidityExpired())
                 .isEdited(bid.getEditHistory() != null && !bid.getEditHistory().isEmpty())
                 .build();
+    }
+    
+    /**
+     * Get effective user ID - if user is staff, return parent's ID, otherwise return own ID
+     */
+    private String getEffectiveUserId(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        // If staff, return parent user ID (super admin's ID)
+        if (user.getAccountType() == com.hotel_bidding.backend.constants.AccountType.STAFF && user.getParentUserId() != null) {
+            log.debug("Staff user {} accessing parent hotel profile {}", userId, user.getParentUserId());
+            return user.getParentUserId();
+        }
+        
+        // For super admins, return their own ID
+        return userId;
     }
 }

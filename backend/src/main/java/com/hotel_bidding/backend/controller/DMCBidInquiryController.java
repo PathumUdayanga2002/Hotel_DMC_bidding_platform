@@ -224,7 +224,11 @@ public class DMCBidInquiryController {
                 null
         );
         
-        return ResponseEntity.ok(awardedInquiry);
+        AwardBidResponse response = new AwardBidResponse();
+        response.setInquiry(awardedInquiry);
+        response.setMessage("Bid awarded successfully. Please proceed with payment.");
+        
+        return ResponseEntity.ok(response);
     }
 
     /**
