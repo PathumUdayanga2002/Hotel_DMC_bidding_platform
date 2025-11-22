@@ -1,14 +1,17 @@
 package com.hotel_bidding.backend.controller;
 
+import com.hotel_bidding.backend.constants.ActivityType;
 import com.hotel_bidding.backend.dto.request.CreateHotelBidRequest;
 import com.hotel_bidding.backend.dto.request.UpdateHotelBidRequest;
 import com.hotel_bidding.backend.dto.response.BidInquiryResponse;
 import com.hotel_bidding.backend.dto.response.HotelBidResponse;
 import com.hotel_bidding.backend.dto.response.HotelBidStatsResponse;
 import com.hotel_bidding.backend.entity.HotelProfile;
+import com.hotel_bidding.backend.entity.User;
 import com.hotel_bidding.backend.exception.ResourceNotFoundException;
 import com.hotel_bidding.backend.repository.HotelRepository;
 import com.hotel_bidding.backend.repository.UserRepository;
+import com.hotel_bidding.backend.service.ActivityLogService;
 import com.hotel_bidding.backend.service.BidInquiryService;
 import com.hotel_bidding.backend.service.HotelBidService;
 import jakarta.validation.Valid;
@@ -39,6 +42,7 @@ public class HotelBidController {
     private final HotelBidService hotelBidService;
     private final UserRepository userRepository;
     private final HotelRepository hotelRepository;
+    private final ActivityLogService activityLogService;
 
     /**
      * Helper method to get user ID from authentication
@@ -99,7 +103,26 @@ public class HotelBidController {
         log.info("Submitting bid by hotel: {}", authentication.getName());
         
         String hotelUserId = getUserId(authentication);
+        User hotelUser = userRepository.findById(hotelUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
         HotelBidResponse bid = hotelBidService.createBid(request, hotelUserId);
+        
+        // Log activity
+        String companyName = hotelUser.getFullName() != null ? hotelUser.getFullName() : hotelUser.getUsername();
+        activityLogService.logActivity(
+                ActivityType.BID_SUBMITTED,
+                hotelUserId,
+                hotelUser.getFullName(),
+                companyName,
+                hotelUserId,
+                bid.getId(),
+                "HotelBid",
+                String.format("Submitted bid for inquiry: %s", request.getInquiryId()),
+                String.format("Price: %s %.2f", request.getCurrency(), request.getTotalPrice()),
+                null
+        );
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(bid);
     }
 
@@ -140,7 +163,26 @@ public class HotelBidController {
         log.info("Updating bid {} by hotel: {}", bidId, authentication.getName());
         
         String hotelUserId = getUserId(authentication);
+        User hotelUser = userRepository.findById(hotelUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
         HotelBidResponse updatedBid = hotelBidService.updateBid(bidId, request, hotelUserId);
+        
+        // Log activity
+        String companyName = hotelUser.getFullName() != null ? hotelUser.getFullName() : hotelUser.getUsername();
+        activityLogService.logActivity(
+                ActivityType.BID_UPDATED,
+                hotelUserId,
+                hotelUser.getFullName(),
+                companyName,
+                hotelUserId,
+                bidId,
+                "HotelBid",
+                String.format("Updated bid: %s", bidId),
+                null,
+                null
+        );
+        
         return ResponseEntity.ok(updatedBid);
     }
 

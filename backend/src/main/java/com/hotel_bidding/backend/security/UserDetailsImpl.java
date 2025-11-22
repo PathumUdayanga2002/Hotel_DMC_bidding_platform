@@ -1,5 +1,6 @@
 package com.hotel_bidding.backend.security;
 
+import com.hotel_bidding.backend.constants.AccountType;
 import com.hotel_bidding.backend.constants.UserRole;
 import com.hotel_bidding.backend.entity.User;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,8 @@ public class UserDetailsImpl implements UserDetails {
     private String email;
     private String password;
     private UserRole role;
+    private AccountType accountType;
+    private String fullName;
     private Collection<? extends GrantedAuthority> authorities;
 
     public static UserDetailsImpl build(User user) {
@@ -33,6 +36,8 @@ public class UserDetailsImpl implements UserDetails {
                 user.getEmail(),
                 user.getPassword(),
                 user.getRole(),
+                user.getAccountType(),
+                user.getFullName(),
                 Collections.singletonList(authority)
         );
     }

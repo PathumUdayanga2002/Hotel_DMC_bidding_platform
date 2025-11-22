@@ -21,12 +21,14 @@ import {
   XCircle,
   PlusCircle,
   Inbox,
-  TrendingUp
+  TrendingUp,
+  Users,
+  Activity
 } from 'lucide-react';
 
 const DMCDashboard = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isSuperAdmin, isStaff } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [profileStatus, setProfileStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -127,7 +129,8 @@ const DMCDashboard = () => {
       name: 'Complete Profile',
       icon: FileText,
       path: '/dmc/profile/register',
-      locked: false
+      locked: false,
+      hideForStaff: true // Hide for staff members
     },
     {
       id: 'post-inquiry',
@@ -172,11 +175,27 @@ const DMCDashboard = () => {
       locked: true
     },
     {
+      id: 'staff',
+      name: 'Staff Management',
+      icon: Users,
+      path: '/dmc/staff',
+      locked: false,
+      showForSuperAdminOnly: true // Only show to super admin
+    },
+    {
+      id: 'activity-logs',
+      name: 'Activity Logs',
+      icon: Activity,
+      path: '/dmc/activity-logs',
+      locked: false
+    },
+    {
       id: 'myprofile',
       name: 'Profile',
       icon: User,
       path: '/dmc/profile',
-      locked: false
+      locked: false,
+      hideForStaff: true // Hide for staff members
     }
   ];
 
@@ -246,45 +265,53 @@ const DMCDashboard = () => {
           } lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out pt-16 lg:pt-0`}
         >
           <nav className="p-4 space-y-2">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const locked = item.locked && isFeatureLocked();
+            {menuItems
+              .filter((item) => {
+                // Hide items marked hideForStaff if user is staff
+                if (item.hideForStaff && isStaff()) return false;
+                // Only show items marked showForSuperAdminOnly if user is super admin
+                if (item.showForSuperAdminOnly && !isSuperAdmin()) return false;
+                return true;
+              })
+              .map((item) => {
+                const Icon = item.icon;
+                const locked = item.locked && isFeatureLocked();
 
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    if (!locked) {
-                      navigate(item.path);
-                    } else {
-                      toast.warning('Please complete profile registration and wait for admin approval');
-                    }
-                  }}
-                  disabled={locked}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                    locked
-                      ? 'text-gray-400 cursor-not-allowed bg-gray-50'
-                      : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.name}</span>
-                  {locked && (
-                    <svg
-                      className="w-4 h-4 ml-auto"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  )}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      if (!locked) {
+                        navigate(item.path);
+                      } else {
+                        toast.warning('Please complete profile registration and wait for admin approval');
+                      }
+                    }}
+                    disabled={locked}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                      locked
+                        ? 'text-gray-400 cursor-not-allowed bg-gray-50'
+                        : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium">{item.name}</span>
+                    {locked && (
+                      <svg
+                        className="w-4 h-4 ml-auto"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
           </nav>
         </aside>
 

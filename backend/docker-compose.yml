@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotel-bidding-backend
+    ports:
+      - "8081:8081"
+    environment:
+      # Application
+      - SPRING_APPLICATION_NAME=hotel-bidding-backend
+      - SERVER_PORT=8081
+      - SERVER_SERVLET_CONTEXT_PATH=/api/v1
+      
+      # MongoDB (using existing cloud MongoDB)
+      - SPRING_DATA_MONGODB_URI=mongodb+srv://udayangap996_db_user:zRIsBOCv3QBQkGAo@cluster0.7ssrivn.mongodb.net/hotel_bidding_db
+      - SPRING_DATA_MONGODB_AUTO_INDEX_CREATION=true
+      
+      # JWT
+      - JWT_SECRET=5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
+      - JWT_ACCESS_TOKEN_EXPIRATION=900000
+      - JWT_REFRESH_TOKEN_EXPIRATION=604800000
+      
+      # Email (Gmail SMTP)
+      - SPRING_MAIL_HOST=smtp.gmail.com
+      - SPRING_MAIL_PORT=587
+      - SPRING_MAIL_USERNAME=movoinfo.com@gmail.com
+      - SPRING_MAIL_PASSWORD=mkad evuk rwai hsbi
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED=true
+      
+      # File Upload
+      - SPRING_SERVLET_MULTIPART_ENABLED=true
+      - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=50MB
+      - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=60MB
+      - FILE_UPLOAD_DIR=/app/uploads
+      
+      # Cloudinary
+      - CLOUDINARY_CLOUD_NAME=dbnj1gbnn
+      - CLOUDINARY_API_KEY=218137913918245
+      - CLOUDINARY_API_SECRET=cyJl_kWgtgv-SrTVtCTOPhipDvM
+      
+      # Admin
+      - ADMIN_EMAIL=movoinfo.com@gmail.com
+      
+      # Logging
+      - LOGGING_LEVEL_ROOT=INFO
+      - LOGGING_LEVEL_COM_HOTEL_BIDDING=DEBUG
+      - LOGGING_PATTERN_CONSOLE=%d{yyyy-MM-dd HH:mm:ss} - %msg%n
+      
+      # CORS
+      - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+      - CORS_ALLOWED_METHODS=GET,POST,PUT,DELETE,OPTIONS
+      - CORS_ALLOWED_HEADERS=*
+      - CORS_ALLOW_CREDENTIALS=true
+      
+      # Timezone
+      - SPRING_JACKSON_TIME_ZONE=UTC
+      - SPRING_JACKSON_DATE_FORMAT=yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+      
+      # Commission
+      - COMMISSION_RATE=5.0
+      
+      # OTP
+      - OTP_EXPIRATION_MINUTES=10
+      
+      # PayHere Payment Gateway
+      - PAYHERE_MERCHANT_ID=1230399
+      - PAYHERE_MERCHANT_SECRET=MTUxMTE5NjM4OTMxNDc2MzkyMDAyMzUwNjE2NzYyMTI0OTIwMzMyMg==
+      - PAYHERE_CHECKOUT_URL=https://sandbox.payhere.lk/pay/checkout
+      - PAYHERE_API_URL=https://sandbox.payhere.lk/merchant/v1
+      - PAYHERE_CURRENCY=LKR
+      
+      # Payment Configuration
+      - PAYMENT_TIMEOUT_MINUTES=15
+      - PAYMENT_COMMISSION_RATE=0.05
+      - PAYMENT_COMMISSION_PERCENTAGE=5.0
+      
+      # Application URLs
+      - APP_FRONTEND_URL=http://localhost:5173
+      - APP_BACKEND_URL=http://localhost:8081/api/v1
+      
+      # Exchange Rates (to LKR)
+      - CURRENCY_RATE_USD=330.00
+      - CURRENCY_RATE_EUR=360.00
+      - CURRENCY_RATE_GBP=420.00
+      - CURRENCY_RATE_INR=4.00
+      - CURRENCY_RATE_AED=90.00
+      - CURRENCY_RATE_LKR=1.00
+      
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - hotel-bidding-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/api/v1/auth/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  hotel-bidding-network:
+    driver: bridge
+
+volumes:
+  uploads:
+  logs:

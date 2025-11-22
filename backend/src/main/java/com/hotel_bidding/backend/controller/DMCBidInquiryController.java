@@ -1,14 +1,17 @@
 package com.hotel_bidding.backend.controller;
 
+import com.hotel_bidding.backend.constants.ActivityType;
 import com.hotel_bidding.backend.constants.BidInquiryStatus;
 import com.hotel_bidding.backend.dto.request.CreateBidInquiryRequest;
 import com.hotel_bidding.backend.dto.request.UpdateBidInquiryRequest;
+import com.hotel_bidding.backend.dto.response.AwardBidResponse;
 import com.hotel_bidding.backend.dto.response.BidInquiryResponse;
 import com.hotel_bidding.backend.dto.response.BidInquiryStatsResponse;
 import com.hotel_bidding.backend.dto.response.HotelBidResponse;
 import com.hotel_bidding.backend.entity.User;
 import com.hotel_bidding.backend.exception.ResourceNotFoundException;
 import com.hotel_bidding.backend.repository.UserRepository;
+import com.hotel_bidding.backend.service.ActivityLogService;
 import com.hotel_bidding.backend.service.BidInquiryService;
 import com.hotel_bidding.backend.service.HotelBidService;
 import jakarta.validation.Valid;
@@ -41,6 +44,7 @@ public class DMCBidInquiryController {
     private final BidInquiryService bidInquiryService;
     private final HotelBidService hotelBidService;
     private final UserRepository userRepository;
+    private final ActivityLogService activityLogService;
 
     /**
      * Helper method to get user ID from authentication
@@ -61,7 +65,30 @@ public class DMCBidInquiryController {
         
         log.info("Creating new inquiry by DMC: {}", authentication.getName());
         
+        String dmcUserId = getUserId(authentication);
+        User dmcUser = userRepository.findById(dmcUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
         BidInquiryResponse inquiry = bidInquiryService.createInquiry(request, authentication.getName());
+        
+        // Log activity
+        String companyName = dmcUser.getFullName() != null ? dmcUser.getFullName() : dmcUser.getUsername();
+        activityLogService.logActivity(
+                ActivityType.INQUIRY_CREATED,
+                dmcUserId,
+                dmcUser.getFullName(),
+                companyName,
+                dmcUserId,
+                inquiry.getId(),
+                "BidInquiry",
+                String.format("Created inquiry: %s", inquiry.getTitle()),
+                String.format("Destinations: %s, Adults: %d, Rooms: %d", 
+                        String.join(", ", request.getDestinationCities()), 
+                        request.getNumberOfAdults(), 
+                        request.getNumberOfRooms()),
+                null
+        );
+        
         return ResponseEntity.status(HttpStatus.CREATED).body(inquiry);
     }
 
@@ -111,7 +138,26 @@ public class DMCBidInquiryController {
         log.info("Updating inquiry {} by DMC: {}", inquiryId, authentication.getName());
         
         String dmcUserId = getUserId(authentication);
+        User dmcUser = userRepository.findById(dmcUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
         BidInquiryResponse updatedInquiry = bidInquiryService.updateInquiry(inquiryId, request, dmcUserId);
+        
+        // Log activity
+        String companyName = dmcUser.getFullName() != null ? dmcUser.getFullName() : dmcUser.getUsername();
+        activityLogService.logActivity(
+                ActivityType.INQUIRY_UPDATED,
+                dmcUserId,
+                dmcUser.getFullName(),
+                companyName,
+                dmcUserId,
+                inquiryId,
+                "BidInquiry",
+                String.format("Updated inquiry: %s", updatedInquiry.getTitle()),
+                null,
+                null
+        );
+        
         return ResponseEntity.ok(updatedInquiry);
     }
 
@@ -147,9 +193,10 @@ public class DMCBidInquiryController {
 
     /**
      * Award a bid to a hotel
+     * After awarding, DMC needs to initiate payment
      */
     @PutMapping("/{inquiryId}/award/{bidId}")
-    public ResponseEntity<BidInquiryResponse> awardBid(
+    public ResponseEntity<AwardBidResponse> awardBid(
             @PathVariable String inquiryId,
             @PathVariable String bidId,
             Authentication authentication) {
@@ -157,8 +204,31 @@ public class DMCBidInquiryController {
         log.info("Awarding bid {} for inquiry {} by DMC: {}", bidId, inquiryId, authentication.getName());
         
         String dmcUserId = getUserId(authentication);
+        User dmcUser = userRepository.findById(dmcUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
         BidInquiryResponse awardedInquiry = bidInquiryService.awardInquiry(inquiryId, bidId, dmcUserId);
-        return ResponseEntity.ok(awardedInquiry);
+        
+        // Log activity
+        String companyName = dmcUser.getFullName() != null ? dmcUser.getFullName() : dmcUser.getUsername();
+        activityLogService.logActivity(
+                ActivityType.BID_AWARDED,
+                dmcUserId,
+                dmcUser.getFullName(),
+                companyName,
+                dmcUserId,
+                inquiryId,
+                "BidInquiry",
+                String.format("Awarded bid for inquiry: %s", awardedInquiry.getTitle()),
+                String.format("Awarded to bid ID: %s", bidId),
+                null
+        );
+        
+        AwardBidResponse response = new AwardBidResponse();
+        response.setInquiry(awardedInquiry);
+        response.setMessage("Bid awarded successfully. Please proceed with payment.");
+        
+        return ResponseEntity.ok(response);
     }
 
     /**

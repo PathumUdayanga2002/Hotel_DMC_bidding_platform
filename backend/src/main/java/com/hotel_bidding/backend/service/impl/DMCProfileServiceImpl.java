@@ -6,9 +6,11 @@ import com.hotel_bidding.backend.dto.DMCProfileResponse;
 import com.hotel_bidding.backend.dto.RejectionHistoryDTO;
 import com.hotel_bidding.backend.entity.DMCProfile;
 import com.hotel_bidding.backend.entity.RejectionHistory;
+import com.hotel_bidding.backend.entity.User;
 import com.hotel_bidding.backend.exception.BadRequestException;
 import com.hotel_bidding.backend.exception.ResourceNotFoundException;
 import com.hotel_bidding.backend.repository.DMCProfileRepository;
+import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.CloudinaryService;
 import com.hotel_bidding.backend.service.DMCProfileService;
 import com.hotel_bidding.backend.service.EmailService;
@@ -30,6 +32,7 @@ import java.util.List;
 public class DMCProfileServiceImpl implements DMCProfileService {
 
     private final DMCProfileRepository dmcProfileRepository;
+    private final UserRepository userRepository;
     private final CloudinaryService cloudinaryService;
     private final EmailService emailService;
 
@@ -142,18 +145,41 @@ public class DMCProfileServiceImpl implements DMCProfileService {
 
     @Override
     public DMCProfileResponse getProfileByUserId(String userId) {
-        DMCProfile profile = dmcProfileRepository.findByUserId(userId)
+        // Get effective user ID (if staff, use parent's ID)
+        String effectiveUserId = getEffectiveUserId(userId);
+        
+        DMCProfile profile = dmcProfileRepository.findByUserId(effectiveUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("DMC profile not found"));
         return convertToResponse(profile);
     }
 
     @Override
     public boolean isProfileApproved(String userId) {
-        return dmcProfileRepository.findByUserId(userId)
+        // Get effective user ID (if staff, use parent's ID)
+        String effectiveUserId = getEffectiveUserId(userId);
+        
+        return dmcProfileRepository.findByUserId(effectiveUserId)
                 .map(profile -> profile.getStatus() == DMCProfileStatus.APPROVED)
                 .orElse(false);
     }
 
+    /**
+     * Get effective user ID - if user is staff, return parent's ID, otherwise return own ID
+     */
+    private String getEffectiveUserId(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        // If staff, return parent user ID (super admin's ID)
+        if (user.getAccountType() == com.hotel_bidding.backend.constants.AccountType.STAFF && user.getParentUserId() != null) {
+            log.debug("Staff user {} accessing parent profile {}", userId, user.getParentUserId());
+            return user.getParentUserId();
+        }
+        
+        // For super admins, return their own ID
+        return userId;
+    }
+    
     private DMCProfileResponse convertToResponse(DMCProfile profile) {
         DMCProfileResponse response = new DMCProfileResponse();
         response.setId(profile.getId());
