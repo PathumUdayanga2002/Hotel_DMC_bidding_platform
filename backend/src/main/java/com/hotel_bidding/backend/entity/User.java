@@ -1,5 +1,6 @@
 package com.hotel_bidding.backend.entity;
 
+import com.hotel_bidding.backend.constants.AccountType;
 import com.hotel_bidding.backend.constants.UserRole;
 import com.hotel_bidding.backend.constants.UserStatus;
 import jakarta.validation.constraints.Email;
@@ -44,6 +45,28 @@ public class User {
     private UserStatus status = UserStatus.APPROVED; // Auto-approve for now
 
     private Boolean emailVerified = false;
+    
+    // Staff Management Fields
+    private AccountType accountType = AccountType.SUPER_ADMIN; // Default to SUPER_ADMIN
+    
+    private String parentUserId; // References the super admin user (for staff only)
+    
+    private Boolean isActive = true; // For staff activation/deactivation
+    
+    // Staff Profile Fields
+    private String fullName;
+    
+    private String phone;
+    
+    private String position; // Job title (e.g., "Bid Manager")
+    
+    private String profilePhotoUrl;
+    
+    private String createdBy; // User ID who created this account
+    
+    private LocalDateTime lastLoginAt;
+    
+    private Integer actionCount = 0; // Track number of actions performed
 
     @CreatedDate
     private LocalDateTime createdAt;

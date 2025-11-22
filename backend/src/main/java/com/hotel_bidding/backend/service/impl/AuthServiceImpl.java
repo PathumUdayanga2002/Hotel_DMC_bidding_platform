@@ -1,5 +1,7 @@
 package com.hotel_bidding.backend.service.impl;
 
+import com.hotel_bidding.backend.constants.AccountType;
+import com.hotel_bidding.backend.constants.ActivityType;
 import com.hotel_bidding.backend.constants.UserRole;
 import com.hotel_bidding.backend.constants.UserStatus;
 import com.hotel_bidding.backend.dto.request.LoginRequest;
@@ -9,6 +11,7 @@ import com.hotel_bidding.backend.entity.User;
 import com.hotel_bidding.backend.exception.BadRequestException;
 import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.security.JwtTokenProvider;
+import com.hotel_bidding.backend.service.ActivityLogService;
 import com.hotel_bidding.backend.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider tokenProvider;
     private final AuthenticationManager authenticationManager;
+    private final ActivityLogService activityLogService;
 
     @Override
     @Transactional
@@ -60,6 +64,8 @@ public class AuthServiceImpl implements AuthService {
         user.setRole(role);
         user.setStatus(UserStatus.APPROVED); // Auto-approve for now
         user.setEmailVerified(false);
+        user.setAccountType(AccountType.SUPER_ADMIN); // Default to super admin for new registrations
+        user.setIsActive(true);
 
         User savedUser = userRepository.save(user);
 
@@ -86,6 +92,8 @@ public class AuthServiceImpl implements AuthService {
                 .username(savedUser.getUsername())
                 .email(savedUser.getEmail())
                 .role(savedUser.getRole())
+                .accountType(savedUser.getAccountType())
+                .fullName(savedUser.getFullName())
                 .message("Registration successful")
                 .build();
     }
@@ -103,20 +111,41 @@ public class AuthServiceImpl implements AuthService {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
+        // Get user details
+        User user = userRepository.findByUsername(request.getEmailOrUsername())
+                .or(() -> userRepository.findByEmail(request.getEmailOrUsername()))
+                .orElseThrow(() -> new BadRequestException("Invalid credentials"));
+
+        // Check if staff account is active
+        if (user.getAccountType() == AccountType.STAFF && !user.getIsActive()) {
+            throw new BadRequestException("Your account has been deactivated. Please contact your administrator.");
+        }
+
         // Generate JWT token
         String token = tokenProvider.generateAccessToken(authentication);
 
         // Set token in HTTP-only cookie
         setAuthCookie(response, token);
 
-        // Get user details
-        User user = userRepository.findByUsername(request.getEmailOrUsername())
-                .or(() -> userRepository.findByEmail(request.getEmailOrUsername()))
-                .orElseThrow(() -> new BadRequestException("Invalid credentials"));
-
         // Update last login
         user.setLastLogin(LocalDateTime.now());
+        user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
+
+        // Log login activity
+        String companyName = user.getFullName() != null ? user.getFullName() : user.getUsername();
+        activityLogService.logActivity(
+                ActivityType.LOGIN,
+                user.getId(),
+                user.getFullName(),
+                companyName,
+                user.getId(),
+                null,
+                null,
+                "User logged in successfully",
+                null,
+                null
+        );
 
         log.info("User logged in successfully: {}", user.getUsername());
 
@@ -125,12 +154,17 @@ public class AuthServiceImpl implements AuthService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole())
+                .accountType(user.getAccountType())
+                .fullName(user.getFullName())
                 .message("Login successful")
                 .build();
     }
 
     @Override
-    public void logout(HttpServletResponse response) {
+    public void logout(String userId, HttpServletResponse response) {
+        // Get user for activity logging
+        User user = userRepository.findById(userId).orElse(null);
+        
         // Clear authentication cookie
         Cookie cookie = new Cookie("accessToken", null);
         cookie.setMaxAge(0);
@@ -140,6 +174,24 @@ public class AuthServiceImpl implements AuthService {
         response.addCookie(cookie);
 
         SecurityContextHolder.clearContext();
+        
+        // Log logout activity
+        if (user != null) {
+            String companyName = user.getFullName() != null ? user.getFullName() : user.getUsername();
+            activityLogService.logActivity(
+                    ActivityType.LOGOUT,
+                    user.getId(),
+                    user.getFullName(),
+                    companyName,
+                    user.getId(),
+                    null,
+                    null,
+                    "User logged out successfully",
+                    null,
+                    null
+            );
+        }
+        
         log.info("User logged out successfully");
     }
 

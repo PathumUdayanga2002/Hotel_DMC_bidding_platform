@@ -53,7 +53,6 @@ const HotelRegisterPage = () => {
 
   const password = watch('password', '');
 
-  // Password validation checks
   const passwordChecks = {
     length: password.length >= 8,
     uppercase: /[A-Z]/.test(password),
@@ -81,7 +80,6 @@ const HotelRegisterPage = () => {
   return (
     <div className="min-h-screen bg-linear-to-br from-cyan-50 via-blue-50 to-green-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo/Title */}
         <div className="text-center mb-8">
           <div className="bg-cyan-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
             <Building2 className="w-8 h-8 text-white" />
@@ -92,118 +90,43 @@ const HotelRegisterPage = () => {
 
         <Card>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <Input
-              label="Username"
-              placeholder="Choose a username"
-              register={register('username')}
-              error={errors.username?.message}
-            />
-
-            <Input
-              label="Email"
-              type="email"
-              placeholder="Enter your email"
-              register={register('email')}
-              error={errors.email?.message}
-            />
+            <Input label="Username" placeholder="Choose a username" register={register('username')} error={errors.username?.message} />
+            <Input label="Email" type="email" placeholder="Enter your email" register={register('email')} error={errors.email?.message} />
 
             <div>
-              <Input
-                label="Password"
-                type="password"
-                placeholder="Create a password"
-                register={register('password')}
-                error={errors.password?.message}
-              />
-              
-              {/* Password Strength Indicators */}
+              <Input label="Password" type="password" placeholder="Create a password" register={register('password')} error={errors.password?.message} />
               {password && (
                 <div className="mt-3 space-y-2 text-sm">
-                  <div className="flex items-center">
-                    {passwordChecks.length ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
-                    ) : (
-                      <XCircle className="w-4 h-4 text-red-600 mr-2" />
-                    )}
-                    <span className={passwordChecks.length ? 'text-green-600' : 'text-gray-600'}>
-                      At least 8 characters
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    {passwordChecks.uppercase ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
-                    ) : (
-                      <XCircle className="w-4 h-4 text-red-600 mr-2" />
-                    )}
-                    <span className={passwordChecks.uppercase ? 'text-green-600' : 'text-gray-600'}>
-                      One uppercase letter
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    {passwordChecks.lowercase ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
-                    ) : (
-                      <XCircle className="w-4 h-4 text-red-600 mr-2" />
-                    )}
-                    <span className={passwordChecks.lowercase ? 'text-green-600' : 'text-gray-600'}>
-                      One lowercase letter
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    {passwordChecks.number ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
-                    ) : (
-                      <XCircle className="w-4 h-4 text-red-600 mr-2" />
-                    )}
-                    <span className={passwordChecks.number ? 'text-green-600' : 'text-gray-600'}>
-                      One number
-                    </span>
-                  </div>
-                  <div className="flex items-center">
-                    {passwordChecks.special ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
-                    ) : (
-                      <XCircle className="w-4 h-4 text-red-600 mr-2" />
-                    )}
-                    <span className={passwordChecks.special ? 'text-green-600' : 'text-gray-600'}>
-                      One special character
-                    </span>
-                  </div>
+                  {Object.entries(passwordChecks).map(([key, valid]) => (
+                    <div key={key} className="flex items-center">
+                      {valid ? <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" /> : <XCircle className="w-4 h-4 text-red-600 mr-2" />}
+                      <span className={valid ? 'text-green-600' : 'text-gray-600'}>
+                        {{
+                          length: 'At least 8 characters',
+                          uppercase: 'One uppercase letter',
+                          lowercase: 'One lowercase letter',
+                          number: 'One number',
+                          special: 'One special character',
+                        }[key]}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
 
-            <Input
-              label="Confirm Password"
-              type="password"
-              placeholder="Confirm your password"
-              register={register('confirmPassword')}
-              error={errors.confirmPassword?.message}
-            />
+            <Input label="Confirm Password" type="password" placeholder="Confirm your password" register={register('confirmPassword')} error={errors.confirmPassword?.message} />
 
-            <Button
-              type="submit"
-              variant="primary"
-              className="w-full"
-              disabled={isLoading}
-            >
+            <Button type="submit" variant="primary" className="w-full" disabled={isLoading}>
               {isLoading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
 
-          {/* Divider */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-center text-gray-600 text-sm">
-              Already have an account?{' '}
-              <Link to="/login" className="text-cyan-600 hover:text-cyan-700 font-semibold">
-                Login here
-              </Link>
+          <div className="mt-6 pt-6 border-t border-gray-200 text-center text-gray-600 text-sm">
+            <p>
+              Already have an account? <Link to="/login" className="text-cyan-600 hover:text-cyan-700 font-semibold">Login here</Link>
             </p>
-            <p className="text-center text-gray-600 text-sm mt-2">
-              <Link to="/" className="text-cyan-600 hover:text-cyan-700 font-semibold">
-                ← Back to home
-              </Link>
-            </p>
+            <p className="mt-2"><Link to="/" className="text-cyan-600 hover:text-cyan-700 font-semibold">← Back to home</Link></p>
           </div>
         </Card>
       </div>

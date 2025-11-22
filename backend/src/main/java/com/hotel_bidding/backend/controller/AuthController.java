@@ -5,6 +5,7 @@ import com.hotel_bidding.backend.dto.request.LoginRequest;
 import com.hotel_bidding.backend.dto.request.RegisterRequest;
 import com.hotel_bidding.backend.dto.response.ApiResponse;
 import com.hotel_bidding.backend.dto.response.AuthResponse;
+import com.hotel_bidding.backend.security.UserDetailsImpl;
 import com.hotel_bidding.backend.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -78,8 +80,11 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse> logout(HttpServletResponse response) {
-        authService.logout(response);
+    public ResponseEntity<ApiResponse> logout(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            HttpServletResponse response) {
+        String userId = userDetails != null ? userDetails.getId() : null;
+        authService.logout(userId, response);
         return ResponseEntity.ok(ApiResponse.builder()
                 .success(true)
                 .message("Logout successful")
@@ -87,10 +92,39 @@ public class AuthController {
     }
 
     @GetMapping("/check")
-    public ResponseEntity<ApiResponse> checkAuth() {
+    public ResponseEntity<ApiResponse> checkAuth(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.builder()
+                            .success(false)
+                            .message("Not authenticated")
+                            .build());
+        }
+        
+        AuthResponse authResponse = new AuthResponse();
+        authResponse.setId(userDetails.getId());
+        authResponse.setUsername(userDetails.getUsername());
+        authResponse.setEmail(userDetails.getEmail());
+        authResponse.setRole(userDetails.getRole());
+        authResponse.setAccountType(userDetails.getAccountType());
+        authResponse.setFullName(userDetails.getFullName());
+        
         return ResponseEntity.ok(ApiResponse.builder()
                 .success(true)
                 .message("Authenticated")
+                .data(authResponse)
+                .build());
+    }
+
+    /**
+     * Health check endpoint for Docker and monitoring
+     * GET /auth/health
+     */
+    @GetMapping("/health")
+    public ResponseEntity<ApiResponse> healthCheck() {
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Application is running")
                 .build());
     }
 }

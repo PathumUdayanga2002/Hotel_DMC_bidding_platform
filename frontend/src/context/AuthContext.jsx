@@ -23,11 +23,25 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      // Try to get current user from backend
-      // Since we don't have a /auth/check endpoint yet, we'll skip this for now
-      // The backend uses HttpOnly cookies, so we can't check on client side
-      setLoading(false);
+      // Check if user is authenticated by calling backend
+      const response = await authService.checkAuth();
+      if (response.success && response.data) {
+        setUser(response.data);
+        setIsAuthenticated(true);
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
     } catch (error) {
+      // If check fails (e.g., 401 expired token), user is not authenticated
+      setUser(null);
+      setIsAuthenticated(false);
+      
+      // If the error is 401 and we're not already on the login page, redirect
+      if (error.response?.status === 401 && !window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -84,6 +98,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Helper functions for RBAC
+  const isSuperAdmin = () => {
+    // Treat null/undefined accountType as SUPER_ADMIN for backward compatibility
+    return user?.accountType === 'SUPER_ADMIN' || user?.accountType === null || user?.accountType === undefined;
+  };
+
+  const isStaff = () => {
+    return user?.accountType === 'STAFF';
+  };
+
   const value = {
     user,
     loading,
@@ -91,6 +115,8 @@ export const AuthProvider = ({ children }) => {
     register,
     login,
     logout,
+    isSuperAdmin,
+    isStaff,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
