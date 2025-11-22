@@ -22,6 +22,11 @@ import DMCProfileRegister from './pages/DMCProfileRegister';
 import DMCProfile from './pages/DMCProfile';
 import HotelProfileRegister from './pages/HotelProfileRegister';
 
+// RBAC Pages
+import DMCStaffManagement from './pages/DMCStaffManagement';
+import HotelStaffManagement from './pages/HotelStaffManagement';
+import ActivityLogs from './pages/ActivityLogs';
+
 // Bid Inquiry Pages
 import PostInquiryForm from './pages/PostInquiryForm';
 import DMCInquiriesPage from './pages/DMCInquiriesPage';
@@ -113,12 +118,32 @@ const App = () => {
             }
           />*/}
 
-          {/* DMC Messages */} 
+          {/* Hotel Messages */} 
             <Route
             path="/hotel/messages"
             element={
               <ProtectedRoute allowedRoles={['HOTEL_USER']}>
                 <HotelMessages />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Hotel Staff Management - Super Admin Only */}
+          <Route
+            path="/hotel/staff"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']} requireSuperAdmin={true}>
+                <HotelStaffManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Hotel Activity Logs */}
+          <Route
+            path="/hotel/activity-logs"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <ActivityLogs portalType="hotel" />
               </ProtectedRoute>
             }
           />
@@ -159,6 +184,26 @@ const App = () => {
             element={
               <ProtectedRoute allowedRoles={['DMC_USER']}>
                 <DMCMessages />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* DMC Staff Management - Super Admin Only */}
+          <Route
+            path="/dmc/staff"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']} requireSuperAdmin={true}>
+                <DMCStaffManagement />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* DMC Activity Logs */}
+          <Route
+            path="/dmc/activity-logs"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <ActivityLogs portalType="dmc" />
               </ProtectedRoute>
             }
           />

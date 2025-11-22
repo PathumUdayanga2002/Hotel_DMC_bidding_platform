@@ -18,30 +18,30 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * DMC Staff Management Controller
- * Only accessible by DMC Super Admins
+ * Hotel Staff Management Controller
+ * Only accessible by Hotel Super Admins
  */
 @RestController
-@RequestMapping("/dmc/staff")
+@RequestMapping("/hotel/staff")
 @RequiredArgsConstructor
 @Slf4j
 @CrossOrigin(origins = "${app.frontend.url:http://localhost:5173}", allowCredentials = "true")
-public class DMCStaffController {
+public class HotelStaffController {
     
     private final StaffService staffService;
     private final com.hotel_bidding.backend.service.StaffAuthorizationService staffAuthorizationService;
     
     /**
      * Create a new staff member
-     * POST /dmc/staff
+     * POST /hotel/staff
      */
     @PostMapping
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('HOTEL_USER')")
     public ResponseEntity<ApiResponse> createStaff(
             @Valid @RequestBody CreateStaffRequest request,
             Authentication authentication) {
         
-        log.info("DMC creating staff member: {}", request.getEmail());
+        log.info("Hotel creating staff member: {}", request.getEmail());
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
         
@@ -59,15 +59,15 @@ public class DMCStaffController {
     
     /**
      * Get all staff members
-     * GET /dmc/staff
+     * GET /hotel/staff
      */
     @GetMapping
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('HOTEL_USER')")
     public ResponseEntity<ApiResponse> getAllStaff(Authentication authentication) {
         
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
-        log.info("DMC fetching all staff - User ID: {}, Username: {}", superAdminId, userDetails.getUsername());
+        log.info("Hotel fetching all staff - User ID: {}, Username: {}", superAdminId, userDetails.getUsername());
         
         // Only super admins can view staff
         staffAuthorizationService.requireSuperAdmin(superAdminId);
@@ -83,15 +83,15 @@ public class DMCStaffController {
     
     /**
      * Get staff member by ID
-     * GET /dmc/staff/{staffId}
+     * GET /hotel/staff/{staffId}
      */
     @GetMapping("/{staffId}")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('HOTEL_USER')")
     public ResponseEntity<ApiResponse> getStaffById(
             @PathVariable String staffId,
             Authentication authentication) {
         
-        log.info("DMC fetching staff by ID: {}", staffId);
+        log.info("Hotel fetching staff by ID: {}", staffId);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
         
@@ -109,16 +109,16 @@ public class DMCStaffController {
     
     /**
      * Update staff member
-     * PUT /dmc/staff/{staffId}
+     * PUT /hotel/staff/{staffId}
      */
     @PutMapping("/{staffId}")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('HOTEL_USER')")
     public ResponseEntity<ApiResponse> updateStaff(
             @PathVariable String staffId,
             @Valid @RequestBody UpdateStaffRequest request,
             Authentication authentication) {
         
-        log.info("DMC updating staff: {}", staffId);
+        log.info("Hotel updating staff: {}", staffId);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
         
@@ -136,15 +136,15 @@ public class DMCStaffController {
     
     /**
      * Toggle staff status (activate/deactivate)
-     * PUT /dmc/staff/{staffId}/toggle-status
+     * PUT /hotel/staff/{staffId}/toggle-status
      */
     @PutMapping("/{staffId}/toggle-status")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('HOTEL_USER')")
     public ResponseEntity<ApiResponse> toggleStaffStatus(
             @PathVariable String staffId,
             Authentication authentication) {
         
-        log.info("DMC toggling staff status: {}", staffId);
+        log.info("Hotel toggling staff status: {}", staffId);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
         
@@ -163,15 +163,15 @@ public class DMCStaffController {
     
     /**
      * Reset staff password
-     * POST /dmc/staff/{staffId}/reset-password
+     * POST /hotel/staff/{staffId}/reset-password
      */
     @PostMapping("/{staffId}/reset-password")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('HOTEL_USER')")
     public ResponseEntity<ApiResponse> resetStaffPassword(
             @PathVariable String staffId,
             Authentication authentication) {
         
-        log.info("DMC resetting password for staff: {}", staffId);
+        log.info("Hotel resetting password for staff: {}", staffId);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
         
@@ -189,15 +189,15 @@ public class DMCStaffController {
     
     /**
      * Delete staff member
-     * DELETE /dmc/staff/{staffId}
+     * DELETE /hotel/staff/{staffId}
      */
     @DeleteMapping("/{staffId}")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('HOTEL_USER')")
     public ResponseEntity<ApiResponse> deleteStaff(
             @PathVariable String staffId,
             Authentication authentication) {
         
-        log.info("DMC deleting staff: {}", staffId);
+        log.info("Hotel deleting staff: {}", staffId);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
         
@@ -214,13 +214,13 @@ public class DMCStaffController {
     
     /**
      * Get staff count
-     * GET /dmc/staff/count
+     * GET /hotel/staff/count
      */
     @GetMapping("/count")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('HOTEL_USER')")
     public ResponseEntity<ApiResponse> getStaffCount(Authentication authentication) {
         
-        log.info("DMC fetching staff count");
+        log.info("Hotel fetching staff count");
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
         
