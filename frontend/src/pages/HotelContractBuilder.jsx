@@ -8,10 +8,12 @@ import ValueAddedForm from "./contract/ValueAddedForm";
 import TermsConditionsForm from "./contract/TermsConditionsForm";
 import Tabs from "./contract/Tabs";
 import api from "../services/api";
+import SendContractPanel from '../components/SendContractPanel';
 
 export default function ContractBuilder() {
   const [activeTab, setActiveTab] = useState(0);
   const [showPayloadPreview, setShowPayloadPreview] = useState(false);
+  const [savedContractId, setSavedContractId] = useState(null);
 
   const [general, setGeneral] = useState({
     contractName: "",
@@ -112,6 +114,11 @@ export default function ContractBuilder() {
       const response = await api.post("/hotel/contracts", finalContract);
       console.log("Contract saved:", response.data);
       alert("Contract saved successfully!");
+
+      // capture saved contract id so user can send it to DMCs
+      const payload = response?.data || {};
+      const id = payload?.id || payload?._id || null;
+      if (id) setSavedContractId(id);
     } catch (error) {
       console.error("Error saving contract:", error);
       alert("Failed to save contract. Check console for details.");
@@ -144,6 +151,10 @@ export default function ContractBuilder() {
               <pre className="text-xs max-h-64 overflow-auto bg-white p-2 rounded">{JSON.stringify({ general, rooms, meals, childPolicy, offers, valueAdded, terms }, null, 2)}</pre>
             </div>
           )}
+
+          <div className="mt-6">
+            <SendContractPanel contractId={savedContractId} onSent={(saved) => console.log('SentContract:', saved)} />
+          </div>
         </div>
       </div>
     </div>

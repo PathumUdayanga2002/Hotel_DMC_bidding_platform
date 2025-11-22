@@ -34,4 +34,11 @@ public interface DMCProfileService {
      * @return true if profile exists and is approved
      */
     boolean isProfileApproved(String userId);
+
+    /**
+     * Search approved DMCs by company name (partial match, case-insensitive)
+     * @param name partial company name
+     * @return list of DMC profile responses
+     */
+    java.util.List<com.hotel_bidding.backend.dto.DMCProfileResponse> searchApprovedDmcsByName(String name);
 }
