@@ -22,6 +22,18 @@ const formFields = [
     placeholder: "e.g., Summer 2028 International DMC"
   },
   {
+    label: "Contract Start Date",
+    field: "startDate",
+    type: "date",
+    placeholder: ""
+  },
+  {
+    label: "Contract End Date",
+    field: "endDate",
+    type: "date",
+    placeholder: ""
+  },
+  {
     label: "Hotel Name",
     field: "hotelName",
     type: "text",
@@ -50,18 +62,6 @@ const formFields = [
     field: "onlineMarkupPolicy", 
     type: "textarea", 
     placeholder: "Contracted rates must not be published online..." 
-  },
-  { 
-    label: "Peak: Christmas & New Year Start", 
-    field: "peakStart", 
-    type: "date", 
-    placeholder: "" 
-  },
-  { 
-    label: "Peak: Christmas & New Year End", 
-    field: "peakEnd", 
-    type: "date", 
-    placeholder: "" 
   },
   { 
     label: "Government Tax Note", 
@@ -98,6 +98,9 @@ const formFields = [
       {/* Content Section (Editable Table) - Conditionally Rendered */}
       {isOpen && (
         <div className="p-0">
+          <div className="px-6 py-4">
+            <p className="text-sm text-gray-600 mb-3">Provide the main contract metadata. Dates define the contract validity period.</p>
+          </div>
           <table className="min-w-full divide-y divide-gray-200">
             <tbody className="bg-white divide-y divide-gray-200">
               {formFields.map((item, index) => (

@@ -35,4 +35,7 @@ public interface DMCProfileRepository extends MongoRepository<DMCProfile, String
         DMCProfileStatus status1, String companyName, 
         DMCProfileStatus status2, String email, 
         Pageable pageable);
+    // Find approved DMCs by partial company name (case-insensitive)
+    List<DMCProfile> findByStatusAndCompanyNameContainingIgnoreCase(DMCProfileStatus status, String companyName);
+
 }

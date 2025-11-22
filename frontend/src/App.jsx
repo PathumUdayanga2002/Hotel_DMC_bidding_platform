@@ -13,6 +13,8 @@ import DMCRegisterPage from './pages/DMCRegisterPage';
 import AdminRegisterPage from './pages/AdminRegisterPage';
 import HotelDashboard from './pages/HotelDashboard';
 import DMCDashboard from './pages/DMCDashboard';
+import DMCReceivedContracts from './pages/DMCReceivedContracts';
+import DMCContractDetail from './pages/DMCContractDetail';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminDashboardNew from './pages/AdminDashboardNew';
 import AdminHome from './pages/AdminHome';
@@ -193,6 +195,24 @@ const App = () => {
             element={
               <ProtectedRoute allowedRoles={['DMC_USER']}>
                 <DMCProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dmc/received-contracts"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCReceivedContracts />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dmc/received-contracts/:contractId"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCContractDetail />
               </ProtectedRoute>
             }
           />
