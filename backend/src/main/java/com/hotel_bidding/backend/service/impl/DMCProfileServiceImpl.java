@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -128,6 +129,15 @@ public class DMCProfileServiceImpl implements DMCProfileService {
         }
 
         return convertToResponse(savedProfile);
+    }
+
+    @Override
+    public List<DMCProfileResponse> searchApprovedDmcsByName(String name) {
+        String query = name == null ? "" : name.trim();
+        List<com.hotel_bidding.backend.entity.DMCProfile> found = dmcProfileRepository
+                .findByStatusAndCompanyNameContainingIgnoreCase(DMCProfileStatus.APPROVED, query);
+
+        return found.stream().map(this::convertToResponse).collect(Collectors.toList());
     }
 
     @Override

@@ -116,6 +116,8 @@ const Sidebar = ({ profileStatus }) => {
     { name: 'Browse DMCs', icon: Compass, locked: !isApproved },
     { name: 'My Inquiries', icon: FileText, locked: !isApproved },
     { name: 'Received Proposals', icon: Send, locked: !isApproved },
+    { name: 'My Contracts', icon: FileText, path: '/hotel/mycontracts', locked: !isApproved },
+    { name: 'Send Contracts', icon: FileText, path: '/hotel/sendcontracts', locked: !isApproved },
     { name: 'Messages', icon: MessageSquare, locked: !isApproved },
   ];
 

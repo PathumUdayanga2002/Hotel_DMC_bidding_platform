@@ -16,27 +16,42 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class HotelProfileResponse {
+
     private String id;
     private String userId;
+
     private String name;
     private String description;
     private String address;
     private String city;
     private String country;
+
     private String contactEmail;
     private String contactNumber;
     private String website;
+
     private List<String> amenities;
     private List<String> galleryImages;
     private Integer totalRooms;
     private List<String> certifications;
+
     private String status;
+
+    // ====== NEW FIELDS ======
+    private String roomEnvironment;        // AC / Non-AC / Mixed
+    private Integer hotelStars;            // 1–5 rating
+    private List<String> termsAndConditions;
+    // =========================
+
     private String approvedBy;
     private String approvedByUsername;
     private LocalDateTime approvedAt;
+
     private String rejectionReason;
     private List<HotelRejectionHistory> rejectionHistory;
+
     private List<HotelAdminNote> adminNotes;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

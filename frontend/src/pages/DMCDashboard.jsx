@@ -144,6 +144,13 @@ const DMCDashboard = () => {
       locked: false
     },
     {
+      id: 'received-contracts',
+      name: 'Received Contracts',
+      icon: FileText,
+      path: '/dmc/received-contracts',
+      locked: false
+    },
+    {
       id: 'browse',
       name: 'Browse Inquiries',
       icon: Search,

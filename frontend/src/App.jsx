@@ -13,6 +13,8 @@ import DMCRegisterPage from './pages/DMCRegisterPage';
 import AdminRegisterPage from './pages/AdminRegisterPage';
 import HotelDashboard from './pages/HotelDashboard';
 import DMCDashboard from './pages/DMCDashboard';
+import DMCReceivedContracts from './pages/DMCReceivedContracts';
+import DMCContractDetail from './pages/DMCContractDetail';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminDashboardNew from './pages/AdminDashboardNew';
 import AdminHome from './pages/AdminHome';
@@ -30,6 +32,14 @@ import HotelInquiriesPage from './pages/HotelInquiriesPage';
 import SubmitBidForm from './pages/SubmitBidForm';
 import HotelBidsPage from './pages/HotelBidsPage';
 import HotelInquiryDetails from './pages/HotelInquiryDetails';
+
+//messages
+import DMCMessages from './pages/DMCMessages.jsx';
+import HotelMessages from './pages/HotelMessages.jsx';
+
+// Contracts
+import MyContracts from './pages/MyContracts.jsx';
+import HotelContractBuilder from './pages/HotelContractBuilder.jsx';
 
 const App = () => {
   return (
@@ -87,6 +97,34 @@ const App = () => {
             }
           />
 
+          <Route
+            path="/hotel/mycontracts"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <MyContracts />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/hotel/sendcontracts"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <HotelContractBuilder />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* DMC Messages */} 
+            <Route
+            path="/hotel/messages"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <HotelMessages />
+              </ProtectedRoute>
+            }
+          />
+
           <Route path="/hotel/inquiries/:inquiryId" element={<HotelInquiryDetails />} />
 
           
@@ -106,11 +144,41 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+
+          
           <Route
             path="/dmc/profile"
             element={
               <ProtectedRoute allowedRoles={['DMC_USER']}>
                 <DMCProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dmc/received-contracts"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCReceivedContracts />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/dmc/received-contracts/:contractId"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCContractDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* DMC Messages */} 
+            <Route
+            path="/dmc/messages"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCMessages />
               </ProtectedRoute>
             }
           />

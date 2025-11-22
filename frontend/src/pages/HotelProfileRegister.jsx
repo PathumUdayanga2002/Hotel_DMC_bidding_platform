@@ -1,3 +1,4 @@
+// ...imports remain the same
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -39,13 +40,13 @@ const HotelProfileRegister = () => {
     website: "",
     amenities: "",
     totalRooms: "",
+    roomEnvironment: "",      // AC / Non-AC / Mixed
+    hotelStars: 1,            // 1-5
+    termsAndConditions: "",   // comma separated
   });
 
-  // Certifications
   const [certificationFiles, setCertificationFiles] = useState([]);
   const [certificationPreviews, setCertificationPreviews] = useState([]);
-
-  // Gallery
   const [galleryFiles, setGalleryFiles] = useState([]);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
 
@@ -70,14 +71,17 @@ const HotelProfileRegister = () => {
         website: profile.website || "",
         amenities: profile.amenities?.join(", ") || "",
         totalRooms: profile.totalRooms || "",
+        roomEnvironment: profile.roomEnvironment || "",
+        hotelStars: profile.hotelStars || 1,
+        termsAndConditions: profile.termsAndConditions?.join(", ") || "",
       });
 
       if (profile.certifications?.length) {
-        setCertificationPreviews(profile.certifications.map((c) => c.url));
+        setCertificationPreviews(profile.certifications.map((c) => c));
       }
 
       if (profile.galleryImages?.length) {
-        setGalleryPreviews(profile.galleryImages.map((g) => g.url));
+        setGalleryPreviews(profile.galleryImages.map((g) => g));
       }
     } catch {
       console.log("No existing profile found");
@@ -86,10 +90,7 @@ const HotelProfileRegister = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleCertificationChange = (e) => {
@@ -128,28 +129,17 @@ const HotelProfileRegister = () => {
 
     try {
       const submitData = new FormData();
-
       const payload = {
         ...formData,
         amenities: formData.amenities.split(",").map((a) => a.trim()),
+        termsAndConditions: formData.termsAndConditions.split(",").map((t) => t.trim()),
       };
+      submitData.append("profile", new Blob([JSON.stringify(payload)], { type: "application/json" }));
 
-      const profileBlob = new Blob([JSON.stringify(payload)], {
-        type: "application/json",
-      });
-      submitData.append("profile", profileBlob);
+      certificationFiles.forEach((file) => submitData.append("certifications", file));
+      galleryFiles.forEach((file) => submitData.append("galleryImages", file));
 
-      certificationFiles.forEach((file) => {
-        submitData.append("certifications", file);
-      });
-
-      galleryFiles.forEach((file) => {
-        submitData.append("galleryImages", file);
-      });
-
-      await api.post("/hotel/profile", submitData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await api.post("/hotel/profile", submitData, { headers: { "Content-Type": "multipart/form-data" } });
 
       toast.success(
         existingProfile
@@ -171,7 +161,6 @@ const HotelProfileRegister = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-3xl">
-        {/* Header */}
         <div className="mb-6">
           <button
             onClick={() => navigate("/hotel/dashboard")}
@@ -181,9 +170,7 @@ const HotelProfileRegister = () => {
             Back to Dashboard
           </button>
           <h1 className="text-3xl font-bold text-gray-900">
-            {existingProfile
-              ? "Update Hotel Profile"
-              : "Complete Hotel Profile Registration"}
+            {existingProfile ? "Update Hotel Profile" : "Complete Hotel Profile Registration"}
           </h1>
           <p className="text-gray-600 mt-2">
             {isRejected
@@ -192,174 +179,112 @@ const HotelProfileRegister = () => {
           </p>
         </div>
 
-        {/* Rejection Notice */}
         {isRejected && (
           <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded mb-6">
-            <h3 className="text-sm font-semibold text-red-800 mb-2">
-              Profile Rejected
-            </h3>
+            <h3 className="text-sm font-semibold text-red-800 mb-2">Profile Rejected</h3>
             <p className="text-sm text-red-700">
-              <strong>Reason:</strong>{" "}
-              {existingProfile.currentRejectionReason || "Not specified"}
+              <strong>Reason:</strong> {existingProfile.currentRejectionReason || "Not specified"}
             </p>
           </div>
         )}
 
-        {/* Registration Form */}
         <div className="bg-white rounded-lg shadow-sm p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Hotel Name */}
+            {/* Basic Info */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Building2 className="w-4 h-4 inline mr-2" /> Hotel Name *
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                placeholder="Enter hotel name"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Hotel Name *</label>
+              <input type="text" name="name" value={formData.name} onChange={handleInputChange} required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
             </div>
 
-            {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <FileText className="w-4 h-4 inline mr-2" /> Description *
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                required
-                rows="3"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                placeholder="Briefly describe your hotel"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+              <textarea name="description" value={formData.description} onChange={handleInputChange} required rows="3"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
             </div>
 
-            {/* Address, City, Country */}
+            {/* Address */}
             <div className="grid md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <MapPin className="w-4 h-4 inline mr-2" /> Address *
-                </label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                  placeholder="Street address"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+                <input type="text" name="address" value={formData.address} onChange={handleInputChange} required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  City *
-                </label>
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                  placeholder="City"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">City *</label>
+                <input type="text" name="city" value={formData.city} onChange={handleInputChange} required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Country *
-                </label>
-                <input
-                  type="text"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                  placeholder="Country"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Country *</label>
+                <input type="text" name="country" value={formData.country} onChange={handleInputChange} required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
               </div>
             </div>
 
             {/* Contact Info */}
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Phone className="w-4 h-4 inline mr-2" /> Contact Number *
-                </label>
-                <input
-                  type="tel"
-                  name="contactNumber"
-                  value={formData.contactNumber}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                  placeholder="+94771234567"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Contact Number *</label>
+                <input type="tel" name="contactNumber" value={formData.contactNumber} onChange={handleInputChange} required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Mail className="w-4 h-4 inline mr-2" /> Contact Email *
-                </label>
-                <input
-                  type="email"
-                  name="contactEmail"
-                  value={formData.contactEmail}
-                  readOnly
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Contact Email *</label>
+                <input type="email" name="contactEmail" value={formData.contactEmail} readOnly
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50" />
               </div>
             </div>
 
             {/* Website */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Globe className="w-4 h-4 inline mr-2" /> Website (Optional)
-              </label>
-              <input
-                type="url"
-                name="website"
-                value={formData.website}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                placeholder="https://yourhotel.com"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
+              <input type="url" name="website" value={formData.website} onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
             </div>
 
             {/* Amenities */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <List className="w-4 h-4 inline mr-2" /> Amenities (comma separated)
-              </label>
-              <input
-                type="text"
-                name="amenities"
-                value={formData.amenities}
-                onChange={handleInputChange}
-                placeholder="Pool, Spa, Free Wi-Fi, Gym"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Amenities (comma separated)</label>
+              <input type="text" name="amenities" value={formData.amenities} onChange={handleInputChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
             </div>
 
             {/* Total Rooms */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Home className="w-4 h-4 inline mr-2" /> Total Rooms *
-              </label>
-              <input
-                type="number"
-                name="totalRooms"
-                value={formData.totalRooms}
-                onChange={handleInputChange}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-                placeholder="Enter total number of rooms"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-2">Total Rooms *</label>
+              <input type="number" name="totalRooms" value={formData.totalRooms} onChange={handleInputChange} required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
+            </div>
+
+            {/* Room Environment */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Room Environment *</label>
+              <select name="roomEnvironment" value={formData.roomEnvironment} onChange={handleInputChange} required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                <option value="">Select environment</option>
+                <option value="AC">AC</option>
+                <option value="Non-AC">Non-AC</option>
+                <option value="Mixed">Mixed</option>
+              </select>
+            </div>
+
+            {/* Hotel Stars */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Hotel Stars *</label>
+              <select name="hotelStars" value={formData.hotelStars} onChange={handleInputChange} required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                {[1,2,3,4,5].map((n) => (
+                  <option key={n} value={n}>{n} Star{n > 1 ? "s" : ""}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Terms & Conditions */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Terms & Conditions (comma separated)</label>
+              <textarea name="termsAndConditions" value={formData.termsAndConditions} onChange={handleInputChange} rows="3"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
             </div>
 
             {/* Certifications Upload */}
@@ -376,10 +301,7 @@ const HotelProfileRegister = () => {
                   accept=".pdf,.jpg,.jpeg,.png"
                   className="hidden"
                 />
-                <label
-                  htmlFor="certifications"
-                  className="cursor-pointer flex flex-col items-center"
-                >
+                <label htmlFor="certifications" className="cursor-pointer flex flex-col items-center">
                   <Upload className="w-12 h-12 text-gray-400 mb-2" />
                   <p className="text-sm font-medium text-gray-700">
                     Click to upload or drag and drop
@@ -394,11 +316,7 @@ const HotelProfileRegister = () => {
                   {certificationPreviews.map((file, i) => (
                     <li key={i} className="flex items-center">
                       <CheckCircle className="w-4 h-4 mr-2" /> {file}
-                      <button
-                        type="button"
-                        className="ml-2 text-red-500"
-                        onClick={() => removePreview("cert", i)}
-                      >
+                      <button type="button" className="ml-2 text-red-500" onClick={() => removePreview("cert", i)}>
                         <X className="w-4 h-4" />
                       </button>
                     </li>
@@ -421,10 +339,7 @@ const HotelProfileRegister = () => {
                   accept=".jpg,.jpeg,.png"
                   className="hidden"
                 />
-                <label
-                  htmlFor="galleryImages"
-                  className="cursor-pointer flex flex-col items-center"
-                >
+                <label htmlFor="galleryImages" className="cursor-pointer flex flex-col items-center">
                   <Upload className="w-12 h-12 text-gray-400 mb-2" />
                   <p className="text-sm font-medium text-gray-700">
                     Click to upload or drag and drop
@@ -438,16 +353,9 @@ const HotelProfileRegister = () => {
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {galleryPreviews.map((url, i) => (
                     <div key={i} className="relative">
-                      <img
-                        src={url}
-                        alt={`gallery-${i}`}
-                        className="w-full h-24 object-cover rounded-lg border"
-                      />
-                      <button
-                        type="button"
-                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
-                        onClick={() => removePreview("gallery", i)}
-                      >
+                      <img src={url} alt={`gallery-${i}`} className="w-full h-24 object-cover rounded-lg border" />
+                      <button type="button" className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                        onClick={() => removePreview("gallery", i)}>
                         <X className="w-3 h-3" />
                       </button>
                     </div>
@@ -458,47 +366,15 @@ const HotelProfileRegister = () => {
 
             {/* Submit Button */}
             <div className="flex items-center justify-between pt-6 border-t">
-              <button
-                type="button"
-                onClick={() => navigate("/hotel/dashboard")}
-                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 flex items-center"
-              >
-                {loading ? (
-                  <>
-                    <Loader className="w-5 h-5 mr-2 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-5 h-5 mr-2" />
-                    {existingProfile
-                      ? "Update & Resubmit"
-                      : "Submit for Approval"}
-                  </>
-                )}
+              <button type="button" onClick={() => navigate("/hotel/dashboard")}
+                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
+              <button type="submit" disabled={loading}
+                className="px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 flex items-center">
+                {loading ? <><Loader className="w-5 h-5 mr-2 animate-spin" />Submitting...</> :
+                <><CheckCircle className="w-5 h-5 mr-2" />{existingProfile ? "Update & Resubmit" : "Submit for Approval"}</>}
               </button>
             </div>
           </form>
-
-          {/* Info Box */}
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="text-sm font-semibold text-blue-900 mb-2">
-              What happens next?
-            </h4>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• Your profile will be reviewed by the admin</li>
-              <li>• You will get notified once approved or rejected</li>
-              <li>• Pending hotels can still access messages and notifications</li>
-              <li>• Full access is unlocked after approval</li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>
