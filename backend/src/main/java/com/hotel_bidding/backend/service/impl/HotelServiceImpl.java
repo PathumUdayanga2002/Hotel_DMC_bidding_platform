@@ -3,7 +3,9 @@ package com.hotel_bidding.backend.service.impl;
 import com.hotel_bidding.backend.dto.request.HotelProfileRequestDTO;
 import com.hotel_bidding.backend.dto.response.ApiResponse;
 import com.hotel_bidding.backend.entity.HotelProfile;
+import com.hotel_bidding.backend.entity.User;
 import com.hotel_bidding.backend.repository.HotelRepository;
+import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.security.UserDetailsImpl;
 import com.hotel_bidding.backend.service.CloudinaryService;
 import com.hotel_bidding.backend.service.HotelService;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 public class HotelServiceImpl implements HotelService {
 
     private final HotelRepository hotelRepository;
+    private final UserRepository userRepository;
     private final CloudinaryService cloudinaryService;
 
     @Override
@@ -99,8 +102,11 @@ public class HotelServiceImpl implements HotelService {
     @Override
     public ApiResponse getProfile(UserDetailsImpl userDetails) {
         String userId = userDetails.getId();
+        
+        // Get effective user ID (if staff, use parent's ID)
+        String effectiveUserId = getEffectiveUserId(userId);
 
-        Optional<HotelProfile> profileOpt = hotelRepository.findByUserId(userId);
+        Optional<HotelProfile> profileOpt = hotelRepository.findByUserId(effectiveUserId);
         if (profileOpt.isEmpty()) {
             return ApiResponse.builder()
                     .success(false)
@@ -115,6 +121,23 @@ public class HotelServiceImpl implements HotelService {
                 .build();
     }
 
+    /**
+     * Get effective user ID - if user is staff, return parent's ID, otherwise return own ID
+     */
+    private String getEffectiveUserId(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // If staff, return parent user ID (super admin's ID)
+        if (user.getAccountType() == com.hotel_bidding.backend.constants.AccountType.STAFF && user.getParentUserId() != null) {
+            log.debug("Staff user {} accessing parent hotel profile {}", userId, user.getParentUserId());
+            return user.getParentUserId();
+        }
+        
+        // For super admins, return their own ID
+        return userId;
+    }
+    
     @Override
     public Map<String, Object> getDashboardData(HotelProfile hotel) {
         Map<String, Object> dashboardData = new HashMap<>();

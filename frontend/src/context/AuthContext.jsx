@@ -98,6 +98,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Helper functions for RBAC
+  const isSuperAdmin = () => {
+    // Treat null/undefined accountType as SUPER_ADMIN for backward compatibility
+    return user?.accountType === 'SUPER_ADMIN' || user?.accountType === null || user?.accountType === undefined;
+  };
+
+  const isStaff = () => {
+    return user?.accountType === 'STAFF';
+  };
+
   const value = {
     user,
     loading,
@@ -105,6 +115,8 @@ export const AuthProvider = ({ children }) => {
     register,
     login,
     logout,
+    isSuperAdmin,
+    isStaff,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

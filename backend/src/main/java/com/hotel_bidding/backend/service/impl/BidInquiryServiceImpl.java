@@ -49,8 +49,11 @@ public class BidInquiryServiceImpl implements BidInquiryService {
         User dmcUser = userRepository.findByUsername(dmcUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("DMC user not found"));
 
+        // Get effective user ID (if staff, use parent's ID)
+        String effectiveUserId = getEffectiveUserId(dmcUser.getId());
+
         String dmcCompanyName = dmcUser.getUsername();
-        DMCProfile dmcProfile = dmcProfileRepository.findByUserId(dmcUser.getId()).orElse(null);
+        DMCProfile dmcProfile = dmcProfileRepository.findByUserId(effectiveUserId).orElse(null);
 
         if (dmcProfile != null) {
             if (dmcProfile.getStatus() != DMCProfileStatus.APPROVED) {
@@ -385,5 +388,22 @@ public class BidInquiryServiceImpl implements BidInquiryService {
                 .hoursUntilDeadline(hoursUntilDeadline)
                 .isEdited(inquiry.getEditHistory() != null && !inquiry.getEditHistory().isEmpty())
                 .build();
+    }
+    
+    /**
+     * Get effective user ID - if user is staff, return parent's ID, otherwise return own ID
+     */
+    private String getEffectiveUserId(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        // If staff, return parent user ID (super admin's ID)
+        if (user.getAccountType() == com.hotel_bidding.backend.constants.AccountType.STAFF && user.getParentUserId() != null) {
+            log.debug("Staff user {} accessing parent DMC profile {}", userId, user.getParentUserId());
+            return user.getParentUserId();
+        }
+        
+        // For super admins, return their own ID
+        return userId;
     }
 }
