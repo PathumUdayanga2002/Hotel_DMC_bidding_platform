@@ -23,6 +23,8 @@ import HotelApprovals from './pages/HotelApprovals';
 import DMCProfileRegister from './pages/DMCProfileRegister';
 import DMCProfile from './pages/DMCProfile';
 import HotelProfileRegister from './pages/HotelProfileRegister';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 // RBAC Pages
 import DMCStaffManagement from './pages/DMCStaffManagement';
@@ -66,6 +68,8 @@ const App = () => {
           <Route path="/register/hotel" element={<HotelRegisterPage />} />
           <Route path="/register/dmc" element={<DMCRegisterPage />} />
           <Route path="/register/admin" element={<AdminRegisterPage />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
           {/* Protected Routes */}
           <Route
