@@ -63,54 +63,73 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-cyan-50 via-blue-50 to-green-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div 
+      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+      style={{
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=2070&auto=format&fit=crop')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* Luxury Glass Card */}
+      <div className="w-full max-w-md bg-white/5 backdrop-blur-lg rounded-2xl p-10 shadow-2xl border border-white/10 mt-12">
         {/* Logo/Title */}
         <div className="text-center mb-8">
-          <div className="bg-cyan-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <LogIn className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-lg shadow-amber-900/30">
+            <LogIn className="w-8 h-8 text-black" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Login to access your dashboard</p>
+          <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
+            Welcome Back
+          </h1>
+          <div className="h-1 w-20 mx-auto bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full mb-3 shadow-lg shadow-amber-500/50"></div>
+          <p className="text-gray-400 text-sm">Login to access your exclusive dashboard</p>
         </div>
 
-        <Card>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <Input
-              label="Email or Username"
-              placeholder="Enter your email or username"
-              register={register('emailOrUsername')}
-              error={errors.emailOrUsername?.message}
-            />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Email or Username</label>
+              <input
+                {...register('emailOrUsername')}
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all duration-300"
+                placeholder="Enter your email or username"
+              />
+              {errors.emailOrUsername && (
+                <p className="mt-2 text-sm text-red-400">{errors.emailOrUsername.message}</p>
+              )}
+            </div>
 
-            <Input
-              label="Password"
-              type="password"
-              placeholder="Enter your password"
-              register={register('password')}
-              error={errors.password?.message}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+              <input
+                type="password"
+                {...register('password')}
+                className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-all duration-300"
+                placeholder="Enter your password"
+              />
+              {errors.password && (
+                <p className="mt-2 text-sm text-red-400">{errors.password.message}</p>
+              )}
+            </div>
 
-            <Button
+            <button
               type="submit"
-              variant="primary"
-              className="w-full"
               disabled={isLoading}
+              className="w-full bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-semibold rounded-xl py-3 hover:from-amber-500 hover:to-yellow-600 hover:shadow-xl hover:shadow-amber-500/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Logging in...' : 'Login'}
-            </Button>
+            </button>
           </form>
 
           {/* Divider */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-center text-gray-600 text-sm">
+          <div className="mt-8 pt-6 border-t border-white/10">
+            <p className="text-center text-gray-400 text-sm">
               Don't have an account?{' '}
-              <Link to="/" className="text-cyan-600 hover:text-cyan-700 font-semibold">
+              <Link to="/" className="text-amber-400 hover:text-amber-300 font-semibold transition-colors duration-200">
                 Register here
               </Link>
             </p>
           </div>
-        </Card>
       </div>
     </div>
   );
