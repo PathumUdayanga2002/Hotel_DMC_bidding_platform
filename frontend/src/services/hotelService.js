@@ -65,6 +65,17 @@ export const hotelService = {
       throw error;
     }
   },
+
+  // Reject a direct inquiry
+  rejectDirectInquiry: async (inquiryId) => {
+    try {
+      const response = await api.post(`/hotel/direct-inquiries/${inquiryId}/reject`);
+      return response;
+    } catch (error) {
+      console.error('Error rejecting direct inquiry:', error);
+      throw error;
+    }
+  },
 };
 
 export default hotelService;

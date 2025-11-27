@@ -112,4 +112,13 @@ public class HotelController {
         log.info("Hotel {} confirming direct inquiry: {}", userDetails.getUsername(), inquiryId);
         return ResponseEntity.ok(directInquiryService.confirmInquiry(inquiryId, userDetails.getId()));
     }
+
+    @PostMapping("/direct-inquiries/{inquiryId}/reject")
+    @PreAuthorize("hasRole('HOTEL_USER')")
+    public ResponseEntity<ApiResponse> rejectDirectInquiry(
+            @PathVariable String inquiryId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        log.info("Hotel {} rejecting direct inquiry: {}", userDetails.getUsername(), inquiryId);
+        return ResponseEntity.ok(directInquiryService.rejectInquiry(inquiryId, userDetails.getId()));
+    }
 }

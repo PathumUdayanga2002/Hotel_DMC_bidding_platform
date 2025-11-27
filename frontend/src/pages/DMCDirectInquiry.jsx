@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { X, Plus, Calendar, DollarSign, Users, Home, Utensils, ArrowLeft, ArrowRight } from 'lucide-react';
+import { X, Plus, Calendar, DollarSign, Users, Home, Utensils, ArrowLeft, ArrowRight, History } from 'lucide-react';
 import {
   SRI_LANKAN_CITIES,
   ROOM_TYPES,
@@ -142,13 +142,22 @@ const DMCDirectInquiry = () => {
               <h1 className="text-3xl font-bold text-gray-900">Direct Inquiry</h1>
               <p className="text-gray-600 mt-2">Create a direct inquiry and send it to specific hotels</p>
             </div>
-            <button
-              onClick={() => navigate('/dmc/dashboard')}
-              className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span>Back to Dashboard</span>
-            </button>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => navigate('/dmc/direct-inquiries/history')}
+                className="flex items-center space-x-2 px-4 py-2 text-cyan-600 hover:text-cyan-700 border border-cyan-300 rounded-lg hover:bg-cyan-50 font-medium"
+              >
+                <History className="w-5 h-5" />
+                <span>View History</span>
+              </button>
+              <button
+                onClick={() => navigate('/dmc/dashboard')}
+                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>Back to Dashboard</span>
+              </button>
+            </div>
           </div>
         </div>
 

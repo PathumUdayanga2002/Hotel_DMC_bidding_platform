@@ -26,6 +26,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api'; // your axios instance
 import NotificationBell from '../components/NotificationBell';
+import { hotelService } from '../services/hotelService';
 
 // --- UI Components ---
 const Card = ({ className = '', children }) => (
@@ -109,7 +110,7 @@ const StatCards = ({ dashboardData }) => {
 };
 
 // --- Sidebar ---
-const Sidebar = ({ profileStatus, isSuperAdmin, isStaff }) => {
+const Sidebar = ({ profileStatus, isSuperAdmin, isStaff, pendingInquiriesCount }) => {
   const navigate = useNavigate();
   const isApproved = profileStatus === 'APPROVED';
   const navItems = [
@@ -168,6 +169,11 @@ const Sidebar = ({ profileStatus, isSuperAdmin, isStaff }) => {
               >
                 <Icon className="w-5 h-5" />
                 <span className="font-medium">{item.name}</span>
+                {item.name === 'Direct Inquiries' && pendingInquiriesCount > 0 && !locked && (
+                  <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    {pendingInquiriesCount}
+                  </span>
+                )}
                 {locked && (
                   <svg
                     className="w-4 h-4 ml-auto"
@@ -267,12 +273,14 @@ const HotelDashboard = () => {
   const [profileStatus, setProfileStatus] = useState('LOADING');
   const [dashboardData, setDashboardData] = useState(null);
   const [error, setError] = useState(null);
+  const [pendingInquiriesCount, setPendingInquiriesCount] = useState(0);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setProfileStatus('LOADING');
       setError(null);
       setDashboardData(null);
+      setPendingInquiriesCount(0);
 
       try {
         const response = await api.get('/hotel/dashboard', {
@@ -283,6 +291,19 @@ const HotelDashboard = () => {
         if (apiResponse.success) {
           setDashboardData(apiResponse.data);
           setProfileStatus('APPROVED');
+          
+          // Fetch direct inquiries to count pending ones
+          try {
+            const inquiriesResponse = await hotelService.getDirectInquiries();
+            if (inquiriesResponse.data && inquiriesResponse.data.success) {
+              const inquiries = inquiriesResponse.data.data || [];
+              const pendingCount = inquiries.filter(inq => inq.status === 'SENT').length;
+              setPendingInquiriesCount(pendingCount);
+            }
+          } catch (inquiryErr) {
+            console.error('Error fetching direct inquiries count:', inquiryErr);
+            // Don't fail the whole dashboard if inquiries fail to load
+          }
         } else {
           setError(apiResponse.message);
           if (apiResponse.message.includes('not found')) setProfileStatus('NOT_REGISTERED');
@@ -322,7 +343,12 @@ const HotelDashboard = () => {
 
   return (
     <div className="flex h-screen bg-slate-50 font-inter">
-      <Sidebar profileStatus={profileStatus} isSuperAdmin={isSuperAdmin()} isStaff={isStaff()} />
+      <Sidebar 
+        profileStatus={profileStatus} 
+        isSuperAdmin={isSuperAdmin()} 
+        isStaff={isStaff()} 
+        pendingInquiriesCount={pendingInquiriesCount}
+      />
       <div className="flex-1 flex flex-col overflow-hidden">
         <DashboardHeader user={user} handleLogout={handleLogout} profileStatus={profileStatus} />
         <main className="flex-1 overflow-y-auto p-6 md:p-8">

@@ -29,8 +29,10 @@ const HotelDirectInquiriesPage = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, pending, accepted, rejected
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedInquiry, setSelectedInquiry] = useState(null);
   const [confirming, setConfirming] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
 
   useEffect(() => {
     fetchDirectInquiries();
@@ -39,15 +41,25 @@ const HotelDirectInquiriesPage = () => {
   const fetchDirectInquiries = async () => {
     setLoading(true);
     try {
+      console.log('Fetching direct inquiries...');
       const response = await hotelService.getDirectInquiries();
+      console.log('Direct inquiries response:', response);
       if (response.data && response.data.success) {
-        setInquiries(response.data.data || []);
+        const inquiriesData = response.data.data || [];
+        console.log('Direct inquiries data:', inquiriesData);
+        setInquiries(inquiriesData);
+        if (inquiriesData.length === 0) {
+          console.log('No direct inquiries found');
+        }
       } else {
+        console.error('Failed response:', response);
         toast.error('Failed to load direct inquiries');
       }
     } catch (error) {
       console.error('Error fetching direct inquiries:', error);
-      toast.error('Failed to load direct inquiries');
+      console.error('Error details:', error.response?.data);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to load direct inquiries';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -83,6 +95,34 @@ const HotelDirectInquiriesPage = () => {
       toast.error(error.response?.data?.message || 'Failed to confirm inquiry');
     } finally {
       setConfirming(false);
+    }
+  };
+
+  const handleRejectClick = (inquiry) => {
+    setSelectedInquiry(inquiry);
+    setShowRejectModal(true);
+  };
+
+  const handleRejectInquiry = async () => {
+    if (!selectedInquiry) return;
+
+    setRejecting(true);
+    try {
+      const response = await hotelService.rejectDirectInquiry(selectedInquiry.id);
+      if (response.data && response.data.success) {
+        toast.success('Inquiry rejected successfully');
+        setShowRejectModal(false);
+        setSelectedInquiry(null);
+        // Refresh the inquiries list
+        fetchDirectInquiries();
+      } else {
+        toast.error('Failed to reject inquiry');
+      }
+    } catch (error) {
+      console.error('Error rejecting inquiry:', error);
+      toast.error(error.response?.data?.message || 'Failed to reject inquiry');
+    } finally {
+      setRejecting(false);
     }
   };
 
@@ -138,6 +178,16 @@ const HotelDirectInquiriesPage = () => {
             >
               Reviewed ({inquiries.filter(i => i.status === 'REVIEWED').length})
             </button>
+            <button
+              onClick={() => setFilter('rejected')}
+              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                filter === 'rejected'
+                  ? 'bg-cyan-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Rejected ({inquiries.filter(i => i.status === 'REJECTED').length})
+            </button>
           </div>
         </div>
 
@@ -165,6 +215,7 @@ const HotelDirectInquiriesPage = () => {
                 key={inquiry.id} 
                 inquiry={inquiry} 
                 onConfirmClick={handleConfirmClick}
+                onRejectClick={handleRejectClick}
               />
             ))}
           </div>
@@ -246,13 +297,90 @@ const HotelDirectInquiriesPage = () => {
             </div>
           </div>
         )}
+
+        {/* Reject Modal */}
+        {showRejectModal && selectedInquiry && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-2xl max-w-md w-full">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-gray-900">Reject Inquiry</h3>
+                  <button
+                    onClick={() => setShowRejectModal(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    disabled={rejecting}
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+
+                <div className="mb-6">
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                    <h4 className="font-semibold text-gray-900 mb-2">{selectedInquiry.title}</h4>
+                    <p className="text-sm text-gray-600">{selectedInquiry.description}</p>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center text-gray-700">
+                      <Calendar className="w-4 h-4 mr-2 text-red-600" />
+                      <span>{formatDate(selectedInquiry.checkInDate)} - {formatDate(selectedInquiry.checkOutDate)}</span>
+                    </div>
+                    <div className="flex items-center text-gray-700">
+                      <Users className="w-4 h-4 mr-2 text-red-600" />
+                      <span>{selectedInquiry.numberOfRooms} Room(s) • {selectedInquiry.numberOfAdults} Adult(s)</span>
+                    </div>
+                    {selectedInquiry.budgetMin && selectedInquiry.budgetMax && (
+                      <div className="flex items-center text-gray-700">
+                        <DollarSign className="w-4 h-4 mr-2 text-red-600" />
+                        <span>{formatPrice(selectedInquiry.budgetMin, selectedInquiry.currency)} - {formatPrice(selectedInquiry.budgetMax, selectedInquiry.currency)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-800">
+                      <strong>Warning:</strong> By rejecting this inquiry, you are declining to provide services for this request. The DMC will be notified.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowRejectModal(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                    disabled={rejecting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleRejectInquiry}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center justify-center"
+                    disabled={rejecting}
+                  >
+                    {rejecting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Rejecting...
+                      </>
+                    ) : (
+                      <>
+                        <X className="w-4 h-4 mr-2" />
+                        Reject Inquiry
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 // Direct Inquiry Card Component
-const DirectInquiryCard = ({ inquiry, onConfirmClick }) => {
+const DirectInquiryCard = ({ inquiry, onConfirmClick, onRejectClick }) => {
   const getStatusColor = (status) => {
     switch (status?.toUpperCase()) {
       case 'SENT':
@@ -448,18 +576,29 @@ const DirectInquiryCard = ({ inquiry, onConfirmClick }) => {
               <CheckCircle className="w-5 h-5 mr-2" />
               Inquiry Confirmed
             </div>
+          ) : inquiry.status?.toUpperCase() === 'REJECTED' ? (
+            <div className="flex-1 px-6 py-3 bg-red-100 text-red-800 rounded-lg font-semibold flex items-center justify-center">
+              <X className="w-5 h-5 mr-2" />
+              Inquiry Rejected
+            </div>
           ) : (
-            <button 
-              onClick={() => onConfirmClick(inquiry)}
-              className="flex-1 px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-semibold flex items-center justify-center"
-            >
-              <CheckCircle className="w-5 h-5 mr-2" />
-              Confirm Inquiry
-            </button>
+            <>
+              <button 
+                onClick={() => onConfirmClick(inquiry)}
+                className="flex-1 px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-semibold flex items-center justify-center"
+              >
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Confirm Inquiry
+              </button>
+              <button 
+                onClick={() => onRejectClick(inquiry)}
+                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center justify-center"
+              >
+                <X className="w-5 h-5 mr-2" />
+                Reject
+              </button>
+            </>
           )}
-          <button className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold">
-            View Details
-          </button>
         </div>
       </div>
     </div>

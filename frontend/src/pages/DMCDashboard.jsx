@@ -171,7 +171,7 @@ const DMCDashboard = () => {
       id: 'direct',
       name: 'Direct Inquiries',
       icon: TrendingUp,
-      path: '/dmc/direct-inquiries',
+      path: '/dmc/direct-inquiries/history',
       locked: false
     },
     {

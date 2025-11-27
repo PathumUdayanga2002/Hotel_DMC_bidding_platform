@@ -59,6 +59,7 @@ import HotelContractBuilder from './pages/HotelContractBuilder.jsx';
 // Direct Inquiry
 import DMCDirectInquiry from './pages/DMCDirectInquiry.jsx';
 import DMCHotelSelection from './pages/DMCHotelSelection.jsx';
+import DMCDirectInquiryHistory from './pages/DMCDirectInquiryHistory.jsx';
 
 const App = () => {
   return (
@@ -292,6 +293,14 @@ const App = () => {
             element={
               <ProtectedRoute allowedRoles={['DMC_USER']}>
                 <DMCDirectInquiry />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dmc/direct-inquiries/history"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCDirectInquiryHistory />
               </ProtectedRoute>
             }
           />

@@ -16,4 +16,6 @@ public interface DirectInquiryService {
     ApiResponse getInquiriesForHotel(String hotelId);
 
     ApiResponse confirmInquiry(String inquiryId, String hotelId);
+
+    ApiResponse rejectInquiry(String inquiryId, String hotelId);
 }

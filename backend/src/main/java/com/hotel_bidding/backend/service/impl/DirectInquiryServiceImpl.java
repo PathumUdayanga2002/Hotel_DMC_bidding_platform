@@ -146,4 +146,30 @@ public class DirectInquiryServiceImpl implements DirectInquiryService {
                 .data(updated)
                 .build();
     }
+
+    @Override
+    public ApiResponse rejectInquiry(String inquiryId, String hotelId) {
+        log.info("Rejecting direct inquiry {} for hotel: {}", inquiryId, hotelId);
+
+        DirectInquiry inquiry = directInquiryRepository.findById(inquiryId)
+                .orElseThrow(() -> new RuntimeException("Direct inquiry not found"));
+
+        // Verify that the inquiry was sent to this hotel
+        if (!inquiry.getHotelIds().contains(hotelId)) {
+            throw new RuntimeException("This inquiry was not sent to your hotel");
+        }
+
+        // Update inquiry status
+        inquiry.setStatus("REJECTED");
+        inquiry.setUpdatedAt(java.time.LocalDateTime.now());
+        DirectInquiry updated = directInquiryRepository.save(inquiry);
+
+        log.info("Direct inquiry {} rejected successfully", inquiryId);
+
+        return ApiResponse.builder()
+                .success(true)
+                .message("Inquiry rejected successfully")
+                .data(updated)
+                .build();
+    }
 }
