@@ -2,9 +2,11 @@ package com.hotel_bidding.backend.controller;
 
 import com.hotel_bidding.backend.dto.DMCProfileRequest;
 import com.hotel_bidding.backend.dto.DMCProfileResponse;
+import com.hotel_bidding.backend.dto.request.DirectInquiryRequestDTO;
 import com.hotel_bidding.backend.dto.response.ApiResponse;
 import com.hotel_bidding.backend.security.UserDetailsImpl;
 import com.hotel_bidding.backend.service.DMCProfileService;
+import com.hotel_bidding.backend.service.DirectInquiryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ import java.util.Map;
 public class DMCController {
 
     private final DMCProfileService dmcProfileService;
+    private final DirectInquiryService directInquiryService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse> getDashboard(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -110,5 +113,42 @@ public class DMCController {
                     .build());
         }
     }
-}
 
+    // -------------------- Direct Inquiry Endpoints --------------------
+    
+    @PostMapping("/direct-inquiry")
+    public ResponseEntity<ApiResponse> createDirectInquiry(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @Valid @RequestBody DirectInquiryRequestDTO request
+    ) {
+        log.info("Creating direct inquiry from DMC: {}", userDetails.getUsername());
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(directInquiryService.createDirectInquiry(request, userDetails.getId()));
+    }
+
+    @GetMapping("/direct-inquiries")
+    public ResponseEntity<ApiResponse> getMyDirectInquiries(
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        log.info("Fetching direct inquiries for DMC: {}", userDetails.getUsername());
+        return ResponseEntity.ok(directInquiryService.getInquiriesByDmcId(userDetails.getId()));
+    }
+
+    @GetMapping("/direct-inquiry/{inquiryId}")
+    public ResponseEntity<ApiResponse> getDirectInquiryById(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable String inquiryId
+    ) {
+        log.info("Fetching direct inquiry {} for DMC: {}", inquiryId, userDetails.getUsername());
+        return ResponseEntity.ok(directInquiryService.getInquiryById(inquiryId, userDetails.getId()));
+    }
+
+    @DeleteMapping("/direct-inquiry/{inquiryId}")
+    public ResponseEntity<ApiResponse> deleteDirectInquiry(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @PathVariable String inquiryId
+    ) {
+        log.info("Deleting direct inquiry {} for DMC: {}", inquiryId, userDetails.getUsername());
+        return ResponseEntity.ok(directInquiryService.deleteInquiry(inquiryId, userDetails.getId()));
+    }
+}

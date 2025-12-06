@@ -37,6 +37,7 @@ import HotelInquiriesPage from './pages/HotelInquiriesPage';
 import SubmitBidForm from './pages/SubmitBidForm';
 import HotelBidsPage from './pages/HotelBidsPage';
 import HotelInquiryDetails from './pages/HotelInquiryDetails';
+import HotelDirectInquiriesPage from './pages/HotelDirectInquiriesPage';
 
 // Payment Pages
 import PaymentInitiation from './pages/PaymentInitiation';
@@ -46,6 +47,9 @@ import DMCPaymentHistory from './pages/DMCPaymentHistory';
 import HotelPaymentHistory from './pages/HotelPaymentHistory';
 import AdminPaymentDashboard from './pages/AdminPaymentDashboard';
 import AdminPayoutManagement from './pages/AdminPayoutManagement';
+import AdminUserManagement from './pages/AdminUserManagement';
+import AdminSettings from './pages/AdminSettings';
+import PlatformAnalytics from './pages/PlatformAnalytics';
 
 //messages
 import DMCMessages from './pages/DMCMessages.jsx';
@@ -54,6 +58,11 @@ import HotelMessages from './pages/HotelMessages.jsx';
 // Contracts
 import MyContracts from './pages/MyContracts.jsx';
 import HotelContractBuilder from './pages/HotelContractBuilder.jsx';
+
+// Direct Inquiry
+import DMCDirectInquiry from './pages/DMCDirectInquiry.jsx';
+import DMCHotelSelection from './pages/DMCHotelSelection.jsx';
+import DMCDirectInquiryHistory from './pages/DMCDirectInquiryHistory.jsx';
 
 const App = () => {
   return (
@@ -91,6 +100,14 @@ const App = () => {
             element={
               <ProtectedRoute allowedRoles={['HOTEL_USER']}>
                 <HotelInquiriesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hotel/direct-inquiries"
+            element={
+              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+                <HotelDirectInquiriesPage />
               </ProtectedRoute>
             }
           />
@@ -272,6 +289,32 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+
+          {/* DMC Direct Inquiry Routes */}
+          <Route
+            path="/dmc/direct-inquiries"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCDirectInquiry />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dmc/direct-inquiries/history"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCDirectInquiryHistory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dmc/direct-inquiries/select-hotels"
+            element={
+              <ProtectedRoute allowedRoles={['DMC_USER']}>
+                <DMCHotelSelection />
+              </ProtectedRoute>
+            }
+          />
           
           {/* DMC Payment Routes */}
           <Route
@@ -328,6 +371,9 @@ const App = () => {
             <Route path="dashboard" element={<AdminHome />} />
             <Route path="dmc-approvals" element={<DMCApprovals />} />
             <Route path="hotel-approvals" element={<HotelApprovals />} />
+            <Route path="user-management" element={<AdminUserManagement />} />
+            <Route path="analytics" element={<PlatformAnalytics />} />
+            <Route path="settings" element={<AdminSettings />} />
             <Route path="payments" element={<AdminPaymentDashboard />} />
             <Route path="payouts" element={<AdminPayoutManagement />} />
           </Route>

@@ -5,6 +5,7 @@ import com.hotel_bidding.backend.dto.response.ApiResponse;
 import com.hotel_bidding.backend.entity.HotelProfile;
 import com.hotel_bidding.backend.security.UserDetailsImpl;
 import com.hotel_bidding.backend.service.HotelService;
+import com.hotel_bidding.backend.service.DirectInquiryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ import java.util.List;
 public class HotelController {
 
     private final HotelService hotelService;
+    private final DirectInquiryService directInquiryService;
 
     // -------------------- Create or Update Hotel Profile --------------------
     @PostMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -83,5 +85,40 @@ public class HotelController {
                 .message("Hotel Dashboard")
                 .data(dashboardData)
                 .build());
+    }
+
+    // -------------------- Get All Approved Hotels --------------------
+    @GetMapping("/approved-profiles")
+    @PreAuthorize("hasRole('DMC_USER')")
+    public ResponseEntity<ApiResponse> getApprovedHotels() {
+        log.info("Fetching all approved hotel profiles");
+        return ResponseEntity.ok(hotelService.getApprovedHotels());
+    }
+
+    // -------------------- Get Direct Inquiries for Hotel --------------------
+    @GetMapping("/direct-inquiries")
+    @PreAuthorize("hasRole('HOTEL_USER')")
+    public ResponseEntity<ApiResponse> getDirectInquiries(
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        log.info("Fetching direct inquiries for hotel: {}", userDetails.getUsername());
+        return ResponseEntity.ok(directInquiryService.getInquiriesForHotel(userDetails.getId()));
+    }
+
+    @PostMapping("/direct-inquiries/{inquiryId}/confirm")
+    @PreAuthorize("hasRole('HOTEL_USER')")
+    public ResponseEntity<ApiResponse> confirmDirectInquiry(
+            @PathVariable String inquiryId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        log.info("Hotel {} confirming direct inquiry: {}", userDetails.getUsername(), inquiryId);
+        return ResponseEntity.ok(directInquiryService.confirmInquiry(inquiryId, userDetails.getId()));
+    }
+
+    @PostMapping("/direct-inquiries/{inquiryId}/reject")
+    @PreAuthorize("hasRole('HOTEL_USER')")
+    public ResponseEntity<ApiResponse> rejectDirectInquiry(
+            @PathVariable String inquiryId,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        log.info("Hotel {} rejecting direct inquiry: {}", userDetails.getUsername(), inquiryId);
+        return ResponseEntity.ok(directInquiryService.rejectInquiry(inquiryId, userDetails.getId()));
     }
 }

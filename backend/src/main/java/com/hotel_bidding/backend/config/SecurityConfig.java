@@ -60,6 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/webhooks/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         // Protected endpoints
+                        .requestMatchers("/hotel/approved-profiles").hasRole("DMC_USER") // DMC users can view approved hotels
                         .requestMatchers("/hotel/**").hasRole("HOTEL_USER")
                         .requestMatchers("/dmc/**").hasRole("DMC_USER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")

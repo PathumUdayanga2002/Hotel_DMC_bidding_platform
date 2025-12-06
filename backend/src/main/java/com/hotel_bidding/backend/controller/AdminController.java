@@ -5,8 +5,14 @@ import com.hotel_bidding.backend.constants.HotelProfileStatus;
 import com.hotel_bidding.backend.dto.*;
 import com.hotel_bidding.backend.dto.response.ApiResponse;
 import com.hotel_bidding.backend.security.UserDetailsImpl;
+import com.hotel_bidding.backend.dto.analytics.PlatformAnalyticsDTO;
+import com.hotel_bidding.backend.dto.analytics.RevenueAnalyticsDTO;
+import com.hotel_bidding.backend.dto.analytics.PlatformPerformanceDTO;
+import com.hotel_bidding.backend.dto.analytics.TopHotelMarketDTO;
 import com.hotel_bidding.backend.service.AdminDMCService;
 import com.hotel_bidding.backend.service.AdminHotelService;
+import com.hotel_bidding.backend.service.PlatformSettingsService;
+import com.hotel_bidding.backend.service.PlatformAnalyticsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -29,6 +36,8 @@ public class AdminController {
 
     private final AdminDMCService adminDMCService;
     private final AdminHotelService adminHotelService;
+    private final PlatformSettingsService platformSettingsService;
+    private final PlatformAnalyticsService platformAnalyticsService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse> getDashboard(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -316,6 +325,190 @@ public class AdminController {
                 .success(true)
                 .message("Hotel profile statistics retrieved successfully")
                 .data(stats)
+                .build());
+    }
+
+    // ==================== User Management Dashboard ====================
+
+    @GetMapping("/user-management/stats")
+    public ResponseEntity<ApiResponse> getUserManagementStats() {
+        Map<String, Object> stats = new HashMap<>();
+        
+        // Get DMC stats
+        DMCProfileStats dmcStats = adminDMCService.getStats();
+        stats.put("totalDMCs", dmcStats.getTotal());
+        stats.put("approvedDMCs", dmcStats.getApproved());
+        stats.put("pendingDMCs", dmcStats.getPending());
+        stats.put("rejectedDMCs", dmcStats.getRejected());
+        
+        // Get Hotel stats
+        HotelProfileStats hotelStats = adminHotelService.getStats();
+        stats.put("totalHotels", hotelStats.getTotal());
+        stats.put("approvedHotels", hotelStats.getApproved());
+        stats.put("pendingHotels", hotelStats.getPending());
+        stats.put("rejectedHotels", hotelStats.getRejected());
+        
+        // Calculate total pending approvals
+        long totalPendingApprovals = dmcStats.getPending() + hotelStats.getPending();
+        stats.put("totalPendingApprovals", totalPendingApprovals);
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("User management statistics retrieved successfully")
+                .data(stats)
+                .build());
+    }
+
+    @GetMapping("/user-management/hotels")
+    public ResponseEntity<ApiResponse> getAllHotels(
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<HotelProfileSummary> profiles = adminHotelService.getAllHotelProfiles(null, search, pageable);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("hotels", profiles.getContent());
+        response.put("currentPage", profiles.getNumber());
+        response.put("totalPages", profiles.getTotalPages());
+        response.put("totalElements", profiles.getTotalElements());
+        response.put("hasNext", profiles.hasNext());
+        response.put("hasPrevious", profiles.hasPrevious());
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Hotels retrieved successfully")
+                .data(response)
+                .build());
+    }
+
+    @GetMapping("/user-management/dmcs")
+    public ResponseEntity<ApiResponse> getAllDMCs(
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "submittedAt");
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<DMCProfileSummary> profiles = adminDMCService.getAllDMCProfiles(null, search, pageable);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("dmcs", profiles.getContent());
+        response.put("currentPage", profiles.getNumber());
+        response.put("totalPages", profiles.getTotalPages());
+        response.put("totalElements", profiles.getTotalElements());
+        response.put("hasNext", profiles.hasNext());
+        response.put("hasPrevious", profiles.hasPrevious());
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("DMCs retrieved successfully")
+                .data(response)
+                .build());
+    }
+
+    // ==================== Platform Settings Management ====================
+
+    @GetMapping("/settings")
+    public ResponseEntity<ApiResponse> getPlatformSettings() {
+        PlatformSettingsResponse settings = platformSettingsService.getSettings();
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Platform settings retrieved successfully")
+                .data(settings)
+                .build());
+    }
+
+    @PutMapping("/settings/commission")
+    public ResponseEntity<ApiResponse> updateCommissionSettings(
+            @Valid @RequestBody UpdateCommissionSettingsRequest request,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        PlatformSettingsResponse settings = platformSettingsService.updateCommissionSettings(
+                request,
+                userDetails.getId(),
+                userDetails.getUsername()
+        );
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Commission settings updated successfully")
+                .data(settings)
+                .build());
+    }
+
+    @PutMapping("/settings/system")
+    public ResponseEntity<ApiResponse> updateSystemSettings(
+            @Valid @RequestBody UpdateSystemSettingsRequest request,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
+    ) {
+        PlatformSettingsResponse settings = platformSettingsService.updateSystemSettings(
+                request,
+                userDetails.getId(),
+                userDetails.getUsername()
+        );
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("System settings updated successfully")
+                .data(settings)
+                .build());
+    }
+
+    // ==================== Platform Analytics ====================
+
+    @GetMapping("/analytics")
+    public ResponseEntity<ApiResponse> getPlatformAnalytics() {
+        log.info("Fetching complete platform analytics");
+        PlatformAnalyticsDTO analytics = platformAnalyticsService.getPlatformAnalytics();
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Platform analytics retrieved successfully")
+                .data(analytics)
+                .build());
+    }
+
+    @GetMapping("/analytics/revenue")
+    public ResponseEntity<ApiResponse> getRevenueAnalytics() {
+        log.info("Fetching revenue analytics");
+        RevenueAnalyticsDTO revenue = platformAnalyticsService.getRevenueAnalytics();
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Revenue analytics retrieved successfully")
+                .data(revenue)
+                .build());
+    }
+
+    @GetMapping("/analytics/performance")
+    public ResponseEntity<ApiResponse> getPlatformPerformance() {
+        log.info("Fetching platform performance metrics");
+        PlatformPerformanceDTO performance = platformAnalyticsService.getPlatformPerformance();
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Platform performance metrics retrieved successfully")
+                .data(performance)
+                .build());
+    }
+
+    @GetMapping("/analytics/top-hotels")
+    public ResponseEntity<ApiResponse> getTopHotelMarkets(
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        log.info("Fetching top {} hotel markets", limit);
+        List<TopHotelMarketDTO> topHotels = platformAnalyticsService.getTopHotelMarkets(limit);
+
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Top hotel markets retrieved successfully")
+                .data(topHotels)
                 .build());
     }
 }

@@ -34,12 +34,13 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       // If check fails (e.g., 401 expired token), user is not authenticated
+      // This is expected behavior when user is not logged in, so we silently handle it
       setUser(null);
       setIsAuthenticated(false);
       
-      // If the error is 401 and we're not already on the login page, redirect
-      if (error.response?.status === 401 && !window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
+      // Only log non-401 errors (401 is expected when not authenticated)
+      if (error.response?.status !== 401) {
+        console.error('Auth check error:', error);
       }
     } finally {
       setLoading(false);

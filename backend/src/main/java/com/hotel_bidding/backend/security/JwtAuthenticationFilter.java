@@ -29,16 +29,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             String jwt = getJwtFromCookie(request);
+            log.debug("JWT from cookie: {}", jwt != null ? "Found" : "Not found");
 
             if (jwt != null && tokenProvider.validateToken(jwt)) {
                 String userId = tokenProvider.getUserIdFromToken(jwt);
                 UserDetails userDetails = userDetailsService.loadUserById(userId);
+                log.debug("User authenticated: {}, Authorities: {}", userId, userDetails.getAuthorities());
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else {
+                log.debug("No valid JWT token found in cookie");
             }
         } catch (Exception ex) {
             log.error("Could not set user authentication in security context", ex);
