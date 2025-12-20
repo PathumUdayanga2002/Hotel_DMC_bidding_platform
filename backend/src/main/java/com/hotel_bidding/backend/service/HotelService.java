@@ -23,4 +23,6 @@ public interface HotelService {
     ApiResponse getProfile(UserDetailsImpl userDetails);
 
     Map<String, Object> getDashboardData(HotelProfile hotel);
+
+    ApiResponse getApprovedHotels();
 }

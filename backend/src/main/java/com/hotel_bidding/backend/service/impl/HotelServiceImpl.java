@@ -9,8 +9,8 @@ import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.security.UserDetailsImpl;
 import com.hotel_bidding.backend.service.CloudinaryService;
 import com.hotel_bidding.backend.service.HotelService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,13 +22,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class HotelServiceImpl implements HotelService {
 
     private final HotelRepository hotelRepository;
     private final UserRepository userRepository;
-    private final CloudinaryService cloudinaryService;
+    @Autowired(required = false)
+    private CloudinaryService cloudinaryService;
+
+    public HotelServiceImpl(HotelRepository hotelRepository, UserRepository userRepository) {
+        this.hotelRepository = hotelRepository;
+        this.userRepository = userRepository;
+    }
 
     @Override
     public ApiResponse createProfile(
@@ -62,7 +67,7 @@ public class HotelServiceImpl implements HotelService {
         // ===================================================
 
         // Upload certifications
-        if (certifications != null && !certifications.isEmpty()) {
+        if (certifications != null && !certifications.isEmpty() && cloudinaryService != null) {
             List<String> uploadedCerts = certifications.stream().map(file -> {
                 try {
                     Map<String, String> result = cloudinaryService.uploadFile(file, "hotel_certifications");
@@ -75,7 +80,7 @@ public class HotelServiceImpl implements HotelService {
         }
 
         // Upload gallery images
-        if (galleryImages != null && !galleryImages.isEmpty()) {
+        if (galleryImages != null && !galleryImages.isEmpty() && cloudinaryService != null) {
             List<String> uploadedGallery = galleryImages.stream().map(file -> {
                 try {
                     Map<String, String> result = cloudinaryService.uploadFile(file, "hotel_gallery");
@@ -155,5 +160,34 @@ public class HotelServiceImpl implements HotelService {
         ));
 
         return dashboardData;
+    }
+
+    @Override
+    public ApiResponse getApprovedHotels() {
+        log.info("Fetching all approved hotel profiles");
+        List<HotelProfile> approvedHotels = hotelRepository.findByStatus("APPROVED");
+        
+        // Transform to include user details
+        List<Map<String, Object>> hotelData = approvedHotels.stream().map(hotel -> {
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", hotel.getUserId());
+            data.put("profile", hotel);
+            
+            // Optionally fetch user details
+            userRepository.findById(hotel.getUserId()).ifPresent(user -> {
+                Map<String, String> userInfo = new HashMap<>();
+                userInfo.put("username", user.getUsername());
+                userInfo.put("email", user.getEmail());
+                data.put("user", userInfo);
+            });
+            
+            return data;
+        }).collect(Collectors.toList());
+
+        return ApiResponse.builder()
+                .success(true)
+                .message("Approved hotels fetched successfully")
+                .data(hotelData)
+                .build();
     }
 }

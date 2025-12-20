@@ -14,6 +14,8 @@ public interface HotelRepository extends MongoRepository<HotelProfile, String> {
     // Admin queries for approval management
     Page<HotelProfile> findByStatus(String status, Pageable pageable);
     
+    List<HotelProfile> findByStatus(String status);
+    
     Page<HotelProfile> findByNameContainingIgnoreCaseOrContactEmailContainingIgnoreCase(
             String name, String email, Pageable pageable);
     
