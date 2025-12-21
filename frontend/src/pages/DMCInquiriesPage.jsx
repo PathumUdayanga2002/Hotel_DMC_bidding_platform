@@ -134,36 +134,36 @@ const DMCInquiriesPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#0f0f0f]">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="bg-black/20 backdrop-blur-sm border-b border-white/10 sticky top-0 z-10">
+        <div className="px-6 lg:px-12 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-white">My Bid Inquiries</h1>
+              <p className="text-sm text-gray-400 mt-1">Manage your hotel booking inquiries and review bids</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/dmc/inquiries/post')}
+                className="flex items-center px-4 py-2 bg-amber-500 text-black rounded-lg hover:brightness-110 transition-all font-medium"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Post New Inquiry
+              </button>
               <button
                 onClick={() => navigate('/dmc/dashboard')}
-                className="flex items-center text-gray-600 hover:text-blue-600 mr-4"
+                className="flex items-center px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors text-gray-300"
               >
-                <ArrowLeft className="w-5 h-5 mr-1" />
-                Back to Dashboard
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
               </button>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">My Bid Inquiries</h1>
-                <p className="text-gray-600 mt-1">Manage your hotel booking inquiries and review bids</p>
-              </div>
             </div>
-            <button
-              onClick={() => navigate('/dmc/inquiries/post')}
-              className="flex items-center px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-all shadow-lg hover:shadow-xl"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Post New Inquiry
-            </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="px-6 lg:px-12 py-10">
         {/* Statistics Cards */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -171,31 +171,27 @@ const DMCInquiriesPage = () => {
               title="Total Inquiries"
               value={stats.totalInquiries}
               icon={Filter}
-              color="blue"
             />
             <StatCard
               title="Open Inquiries"
               value={stats.openInquiries}
               icon={Clock}
-              color="green"
             />
             <StatCard
               title="Awarded"
               value={stats.awardedInquiries}
               icon={CheckCircle}
-              color="purple"
             />
             <StatCard
               title="Total Bids Received"
               value={stats.totalBidsReceived}
               icon={DollarSign}
-              color="yellow"
             />
           </div>
         )}
 
         {/* Search Bar */}
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-5 mb-8">
           <div className="flex items-center space-x-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -205,12 +201,12 @@ const DMCInquiriesPage = () => {
                 onChange={(e) => setSearchKeyword(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="Search inquiries by title or description..."
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white placeholder-gray-500"
               />
             </div>
             <button
               onClick={handleSearch}
-              className="px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+              className="px-4 py-2 bg-amber-500 text-black rounded-lg hover:brightness-110 transition-all font-medium"
             >
               Search
             </button>
@@ -220,7 +216,7 @@ const DMCInquiriesPage = () => {
                   setSearchKeyword('');
                   fetchInquiries();
                 }}
-                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 bg-white/5 border border-white/10 text-gray-300 rounded-lg hover:bg-white/10 transition-colors"
               >
                 Clear
               </button>
@@ -229,8 +225,8 @@ const DMCInquiriesPage = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-md mb-6">
-          <div className="flex border-b border-gray-200 overflow-x-auto">
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 mb-8">
+          <div className="flex border-b border-white/10 overflow-x-auto">
             {tabs.map(tab => {
               const Icon = getTabIcon(tab.key);
               return (
@@ -239,16 +235,16 @@ const DMCInquiriesPage = () => {
                   onClick={() => handleTabChange(tab.key)}
                   className={`flex items-center px-6 py-4 font-medium transition-all border-b-2 whitespace-nowrap ${
                     activeTab === tab.key
-                      ? 'border-cyan-600 text-cyan-600 bg-cyan-50'
-                      : 'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'border-amber-500 text-white bg-white/5'
+                      : 'border-transparent text-gray-400 hover:text-gray-300 hover:bg-white/5'
                   }`}
                 >
                   <Icon className="w-5 h-5 mr-2" />
                   {tab.label}
                   <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
                     activeTab === tab.key
-                      ? 'bg-cyan-600 text-white'
-                      : 'bg-gray-200 text-gray-700'
+                      ? 'bg-amber-500 text-black'
+                      : 'bg-white/10 text-gray-400'
                   }`}>
                     {tab.count}
                   </span>
@@ -261,13 +257,13 @@ const DMCInquiriesPage = () => {
         {/* Inquiry List */}
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <Loader2 className="w-12 h-12 text-cyan-600 animate-spin" />
+            <Loader2 className="w-12 h-12 text-amber-500 animate-spin" />
           </div>
         ) : inquiries.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-md p-12 text-center">
-            <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No inquiries found</h3>
-            <p className="text-gray-600 mb-6">
+          <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-12 text-center">
+            <AlertCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-white mb-2">No inquiries found</h3>
+            <p className="text-sm text-gray-400 mb-6">
               {searchKeyword
                 ? 'Try adjusting your search terms'
                 : 'Start by posting your first bid inquiry'}
@@ -275,9 +271,9 @@ const DMCInquiriesPage = () => {
             {!searchKeyword && (
               <button
                 onClick={() => navigate('/dmc/inquiries/post')}
-                className="inline-flex items-center px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-amber-500 text-black rounded-lg hover:brightness-110 transition-all font-medium"
               >
-                <Plus className="w-5 h-5 mr-2" />
+                <Plus className="w-4 h-4 mr-2" />
                 Post New Inquiry
               </button>
             )}
@@ -292,8 +288,8 @@ const DMCInquiriesPage = () => {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="mt-8 flex items-center justify-between bg-white rounded-lg shadow-md p-4">
-                <div className="text-sm text-gray-700">
+              <div className="mt-8 flex items-center justify-between bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-5">
+                <div className="text-sm text-gray-400">
                   Showing {pagination.page * pagination.size + 1} to{' '}
                   {Math.min((pagination.page + 1) * pagination.size, pagination.totalElements)} of{' '}
                   {pagination.totalElements} results
@@ -302,7 +298,7 @@ const DMCInquiriesPage = () => {
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page === 0}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 py-2 bg-white/5 border border-white/10 text-gray-300 rounded-lg hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Previous
                   </button>
@@ -312,8 +308,8 @@ const DMCInquiriesPage = () => {
                       onClick={() => handlePageChange(index)}
                       className={`px-4 py-2 rounded-lg transition-colors ${
                         pagination.page === index
-                          ? 'bg-cyan-600 text-white'
-                          : 'border border-gray-300 hover:bg-gray-50'
+                          ? 'bg-amber-500 text-black font-medium'
+                          : 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10'
                       }`}
                     >
                       {index + 1}
@@ -322,7 +318,7 @@ const DMCInquiriesPage = () => {
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page >= pagination.totalPages - 1}
-                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 py-2 bg-white/5 border border-white/10 text-gray-300 rounded-lg hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Next
                   </button>
@@ -337,23 +333,16 @@ const DMCInquiriesPage = () => {
 };
 
 // Statistics Card Component
-const StatCard = ({ title, value, icon: Icon, color }) => {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    purple: 'bg-purple-50 text-purple-600',
-    yellow: 'bg-yellow-50 text-yellow-600'
-  };
-
+const StatCard = ({ title, value, icon: Icon }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-5">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+          <p className="text-sm text-gray-400">{title}</p>
+          <p className="text-2xl font-semibold text-white mt-2">{value}</p>
         </div>
-        <div className={`p-3 rounded-full ${colorClasses[color]}`}>
-          <Icon className="w-6 h-6" />
+        <div className="p-3 rounded-lg bg-amber-500/10">
+          <Icon className="w-5 h-5 text-amber-500" />
         </div>
       </div>
     </div>
@@ -366,7 +355,7 @@ const InquiryCard = ({ inquiry, navigate }) => {
   const isExpiringSoon = isDeadlineApproaching(inquiry.deadline);
 
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all p-6 border-l-4 border-cyan-600">
+    <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all p-6">
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center space-x-3 mb-2">
@@ -376,12 +365,12 @@ const InquiryCard = ({ inquiry, navigate }) => {
                 const fullId = String(inquiry.id);
                 const short = fullId.length > 8 ? fullId.slice(0, 8).toUpperCase() : fullId.toUpperCase();
                 const pillClasses = inquiry.status === BID_INQUIRY_STATUS.OPEN
-                  ? 'bg-green-50 text-green-700'
+                  ? 'bg-green-500/10 text-green-400 border border-green-500/20'
                   : inquiry.status === BID_INQUIRY_STATUS.AWARDED
-                  ? 'bg-yellow-50 text-yellow-700'
+                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                   : inquiry.status === BID_INQUIRY_STATUS.CANCELLED
-                  ? 'bg-red-50 text-red-700'
-                  : 'bg-gray-100 text-gray-600';
+                  ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                  : 'bg-white/10 text-gray-400 border border-white/10';
                 return (
                   <button
                     type="button"
@@ -400,54 +389,54 @@ const InquiryCard = ({ inquiry, navigate }) => {
               })()
             )}
 
-            <h3 className="text-xl font-bold text-gray-900">{inquiry.title}</h3>
+            <h3 className="text-lg font-semibold text-white">{inquiry.title}</h3>
             <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(inquiry.status)}`}>
               {getStatusLabel(inquiry.status)}
             </span>
           </div>
-          <p className="text-gray-600 text-sm">{truncateText(inquiry.description, 150)}</p>
+          <p className="text-sm text-gray-400">{truncateText(inquiry.description, 150)}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        <div className="flex items-center text-sm text-gray-600">
-          <MapPin className="w-4 h-4 mr-2 text-cyan-600" />
+        <div className="flex items-center text-sm text-gray-300">
+          <MapPin className="w-4 h-4 mr-2 text-amber-500" />
           <span className="font-medium">{inquiry.destinationCities?.join(', ') || 'N/A'}</span>
         </div>
-        <div className="flex items-center text-sm text-gray-600">
-          <Calendar className="w-4 h-4 mr-2 text-cyan-600" />
+        <div className="flex items-center text-sm text-gray-300">
+          <Calendar className="w-4 h-4 mr-2 text-amber-500" />
           <span>{formatDate(inquiry.checkInDate)} - {formatDate(inquiry.checkOutDate)}</span>
         </div>
-        <div className="flex items-center text-sm text-gray-600">
-          <DollarSign className="w-4 h-4 mr-2 text-cyan-600" />
+        <div className="flex items-center text-sm text-gray-300">
+          <DollarSign className="w-4 h-4 mr-2 text-amber-500" />
           <span>
             {inquiry.budgetMin && inquiry.budgetMax
               ? `${formatPrice(inquiry.budgetMin, inquiry.currency)} - ${formatPrice(inquiry.budgetMax, inquiry.currency)}`
               : 'Budget flexible'}
           </span>
         </div>
-        <div className="flex items-center text-sm text-gray-600">
-          <Clock className="w-4 h-4 mr-2 text-cyan-600" />
-          <span className={isExpiringSoon ? 'text-red-600 font-semibold' : ''}>
+        <div className="flex items-center text-sm text-gray-300">
+          <Clock className="w-4 h-4 mr-2 text-amber-500" />
+          <span className={isExpiringSoon ? 'text-red-400 font-semibold' : ''}>
             {timeRemaining}
           </span>
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+      <div className="flex items-center justify-between pt-4 border-t border-white/10">
         <div className="flex items-center space-x-4 text-sm">
-          <span className="text-gray-600">
-            <span className="font-semibold text-gray-900">{inquiry.bidCount || 0}</span> {getBidCountLabel(inquiry.bidCount)}
+          <span className="text-gray-400">
+            <span className="font-semibold text-white">{inquiry.bidCount || 0}</span> {getBidCountLabel(inquiry.bidCount)}
           </span>
-          <span className="text-gray-600">
-            <span className="font-semibold text-gray-900">{inquiry.viewCount || 0}</span> views
+          <span className="text-gray-400">
+            <span className="font-semibold text-white">{inquiry.viewCount || 0}</span> views
           </span>
           <span className="text-gray-500">Posted {formatDate(inquiry.postedAt)}</span>
         </div>
 
         <button
           onClick={() => navigate(`/dmc/inquiries/${inquiry.id}`)}
-          className="flex items-center px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+          className="flex items-center px-4 py-2 bg-amber-500 text-black rounded-lg hover:brightness-110 transition-all font-medium"
         >
           <Eye className="w-4 h-4 mr-2" />
           View Details
@@ -455,9 +444,9 @@ const InquiryCard = ({ inquiry, navigate }) => {
       </div>
 
       {isExpiringSoon && inquiry.status === BID_INQUIRY_STATUS.OPEN && (
-        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center">
-          <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
-          <span className="text-sm text-red-700 font-medium">
+        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center">
+          <AlertCircle className="w-5 h-5 text-red-400 mr-2" />
+          <span className="text-sm text-red-400 font-medium">
             Deadline approaching! Close inquiry or award a bid soon.
           </span>
         </div>

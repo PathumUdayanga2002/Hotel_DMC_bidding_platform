@@ -158,21 +158,21 @@ const DMCStaffManagement = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-[#0f0f0f] px-6 lg:px-12 py-10">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                <Users className="w-8 h-8 text-blue-600 mr-3" />
+              <h1 className="text-2xl font-bold text-white flex items-center">
+                <Users className="w-6 h-6 text-amber-500 mr-3" />
                 Staff Management
               </h1>
-              <p className="text-gray-600 mt-2">Manage your DMC staff members and their access</p>
+              <p className="text-sm text-gray-400 mt-2">Manage your DMC staff members and their access</p>
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors"
+              className="bg-amber-500 hover:brightness-110 text-black px-4 py-2 rounded-lg flex items-center space-x-2 transition-all font-medium"
             >
               <Plus className="w-5 h-5" />
               <span>Add Staff Member</span>
@@ -181,7 +181,7 @@ const DMCStaffManagement = () => {
         </div>
 
         {/* Search Bar */}
-        <div className="mb-6 bg-white rounded-lg shadow-sm p-4">
+        <div className="mb-8 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-5">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -189,55 +189,55 @@ const DMCStaffManagement = () => {
               placeholder="Search by name, email, or position..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
             />
           </div>
         </div>
 
         {/* Staff List */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
             </div>
           ) : filteredStaff.length === 0 ? (
             <div className="text-center py-12">
-              <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No staff members found</p>
+              <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-400 text-lg">No staff members found</p>
               <button
                 onClick={() => setShowAddModal(true)}
-                className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
+                className="mt-4 text-amber-500 hover:text-amber-400 font-medium"
               >
                 Add your first staff member
               </button>
             </div>
           ) : (
             <table className="w-full">
-              <thead className="bg-blue-50 border-b border-blue-100">
+              <thead className="bg-white/5 border-b border-white/10">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Staff Member
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Position
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Contact
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Last Login
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-blue-900 uppercase tracking-wider">
+                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-white/10">
                 {filteredStaff.map((staffMember) => (
-                  <tr key={staffMember.id} className="hover:bg-gray-50">
+                  <tr key={staffMember.id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="h-10 w-10 flex-shrink-0">
@@ -248,37 +248,37 @@ const DMCStaffManagement = () => {
                               alt={staffMember.fullName}
                             />
                           ) : (
-                            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                              <span className="text-blue-600 font-semibold text-lg">
+                            <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                              <span className="text-amber-500 font-semibold text-lg">
                                 {staffMember.fullName?.charAt(0)?.toUpperCase()}
                               </span>
                             </div>
                           )}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{staffMember.fullName}</div>
-                          <div className="text-sm text-gray-500">{staffMember.email}</div>
+                          <div className="text-sm font-medium text-white">{staffMember.fullName}</div>
+                          <div className="text-sm text-gray-400">{staffMember.email}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-6 py-4 text-sm text-white">
                       {staffMember.position || '-'}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-6 py-4 text-sm text-white">
                       {staffMember.phone || '-'}
                     </td>
                     <td className="px-6 py-4">
                       <span
                         className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                           staffMember.isActive
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
+                            ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                            : 'bg-red-500/10 text-red-400 border border-red-500/20'
                         }`}
                       >
                         {staffMember.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-400">
                       {staffMember.lastLoginAt
                         ? new Date(staffMember.lastLoginAt).toLocaleDateString()
                         : 'Never'}
@@ -287,7 +287,7 @@ const DMCStaffManagement = () => {
                       <div className="flex justify-end space-x-2">
                         <button
                           onClick={() => openEditModal(staffMember)}
-                          className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded"
+                          className="text-amber-500 hover:text-amber-400 p-2 hover:bg-white/5 rounded"
                           title="Edit"
                         >
                           <Edit className="w-4 h-4" />
@@ -296,8 +296,8 @@ const DMCStaffManagement = () => {
                           onClick={() => handleToggleStatus(staffMember.id, staffMember.isActive)}
                           className={`p-2 rounded ${
                             staffMember.isActive
-                              ? 'text-yellow-600 hover:text-yellow-900 hover:bg-yellow-50'
-                              : 'text-green-600 hover:text-green-900 hover:bg-green-50'
+                              ? 'text-yellow-500 hover:text-yellow-400 hover:bg-white/5'
+                              : 'text-green-500 hover:text-green-400 hover:bg-white/5'
                           }`}
                           title={staffMember.isActive ? 'Deactivate' : 'Activate'}
                         >
@@ -305,14 +305,14 @@ const DMCStaffManagement = () => {
                         </button>
                         <button
                           onClick={() => handleResetPassword(staffMember.id)}
-                          className="text-purple-600 hover:text-purple-900 p-2 hover:bg-purple-50 rounded"
+                          className="text-purple-500 hover:text-purple-400 p-2 hover:bg-white/5 rounded"
                           title="Reset Password"
                         >
                           <Key className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteStaff(staffMember.id, staffMember.fullName)}
-                          className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded"
+                          className="text-red-500 hover:text-red-400 p-2 hover:bg-white/5 rounded"
                           title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -327,23 +327,23 @@ const DMCStaffManagement = () => {
         </div>
 
         {/* Staff Count */}
-        <div className="mt-4 text-sm text-gray-600">
+        <div className="mt-4 text-sm text-gray-400">
           Showing {filteredStaff.length} of {staff.length} staff member{staff.length !== 1 ? 's' : ''}
         </div>
       </div>
 
       {/* Add Staff Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900">Add New Staff Member</h2>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0f0f0f] border border-white/10 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-white/10">
+              <h2 className="text-lg font-semibold text-white">Add New Staff Member</h2>
               <button
                 onClick={() => {
                   setShowAddModal(false);
                   resetForm();
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-white"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -351,7 +351,7 @@ const DMCStaffManagement = () => {
             <form onSubmit={handleAddStaff} className="p-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Full Name *
                   </label>
                   <input
@@ -359,12 +359,12 @@ const DMCStaffManagement = () => {
                     required
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="John Doe"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Email *
                   </label>
                   <input
@@ -372,43 +372,43 @@ const DMCStaffManagement = () => {
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="john@example.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Phone
                   </label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="+1234567890"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Position
                   </label>
                   <input
                     type="text"
                     value={formData.position}
                     onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="Sales Manager"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Profile Photo URL
                   </label>
                   <input
                     type="url"
                     value={formData.profilePhotoUrl}
                     onChange={(e) => setFormData({ ...formData, profilePhotoUrl: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     placeholder="https://example.com/photo.jpg"
                   />
                 </div>
@@ -420,13 +420,13 @@ const DMCStaffManagement = () => {
                     setShowAddModal(false);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-gray-300 hover:bg-white/10"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                  className="px-4 py-2 bg-amber-500 hover:brightness-110 text-black rounded-lg font-medium"
                 >
                   Create Staff Member
                 </button>
@@ -438,16 +438,16 @@ const DMCStaffManagement = () => {
 
       {/* Edit Staff Modal */}
       {showEditModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-900">Edit Staff Member</h2>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0f0f0f] border border-white/10 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-white/10">
+              <h2 className="text-lg font-semibold text-white">Edit Staff Member</h2>
               <button
                 onClick={() => {
                   setShowEditModal(false);
                   resetForm();
                 }}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-white"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -455,47 +455,47 @@ const DMCStaffManagement = () => {
             <form onSubmit={handleUpdateStaff} className="p-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Full Name
                   </label>
                   <input
                     type="text"
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Phone
                   </label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Position
                   </label>
                   <input
                     type="text"
                     value={formData.position}
                     onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
                     Profile Photo URL
                   </label>
                   <input
                     type="url"
                     value={formData.profilePhotoUrl}
                     onChange={(e) => setFormData({ ...formData, profilePhotoUrl: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -506,13 +506,13 @@ const DMCStaffManagement = () => {
                     setShowEditModal(false);
                     resetForm();
                   }}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-gray-300 hover:bg-white/10"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                  className="px-4 py-2 bg-amber-500 hover:brightness-110 text-black rounded-lg font-medium"
                 >
                   Update Staff Member
                 </button>
@@ -524,26 +524,26 @@ const DMCStaffManagement = () => {
 
       {/* Password Modal */}
       {showPasswordModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#0f0f0f] border border-white/10 rounded-xl max-w-md w-full">
             <div className="p-6">
-              <div className="flex items-center justify-center w-12 h-12 mx-auto bg-blue-100 rounded-full mb-4">
-                <Key className="w-6 h-6 text-blue-600" />
+              <div className="flex items-center justify-center w-12 h-12 mx-auto bg-amber-500/10 rounded-full mb-4">
+                <Key className="w-6 h-6 text-amber-500" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">
+              <h2 className="text-lg font-semibold text-white text-center mb-2">
                 Generated Password
               </h2>
-              <p className="text-gray-600 text-center mb-6">
+              <p className="text-sm text-gray-400 text-center mb-6">
                 Please save this password. It won't be shown again.
               </p>
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-6">
                 <div className="flex items-center justify-between">
-                  <code className="text-lg font-mono font-semibold text-gray-900">
+                  <code className="text-lg font-mono font-semibold text-white">
                     {generatedPassword}
                   </code>
                   <button
                     onClick={copyToClipboard}
-                    className="ml-4 p-2 text-blue-600 hover:bg-blue-50 rounded"
+                    className="ml-4 p-2 text-amber-500 hover:bg-white/5 rounded"
                     title="Copy to clipboard"
                   >
                     {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
@@ -556,7 +556,7 @@ const DMCStaffManagement = () => {
                   setGeneratedPassword('');
                   setCopied(false);
                 }}
-                className="w-full px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                className="w-full px-4 py-2 bg-amber-500 hover:brightness-110 text-black rounded-lg font-medium"
               >
                 Got it
               </button>

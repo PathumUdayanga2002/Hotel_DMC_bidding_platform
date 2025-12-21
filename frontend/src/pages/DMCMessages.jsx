@@ -106,11 +106,11 @@ const DMCMessages = () => {
   }, {});
 
   return (
-    <div className="flex h-[calc(100vh-80px)] bg-gradient-to-br from-green-50 via-white to-green-100">
+    <div className="flex h-[calc(100vh-80px)] bg-[#0f0f0f]">
       {/* Sidebar */}
-      <aside className="w-1/4 border-r backdrop-blur-xl bg-white/70 p-5 shadow-md overflow-y-auto">
-        <h2 className="text-xl font-semibold text-gray-700 mb-5 flex items-center gap-2">
-          <MessageCircle className="text-green-600" size={22} />
+      <aside className="w-1/4 border-r border-white/10 backdrop-blur-sm bg-white/5 p-5 overflow-y-auto">
+        <h2 className="text-lg font-semibold text-white mb-5 flex items-center gap-2">
+          <MessageCircle className="text-amber-500" size={22} />
           Messages
         </h2>
 
@@ -120,12 +120,12 @@ const DMCMessages = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search..."
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-green-400 outline-none"
+            className="w-full pl-10 pr-3 py-2 bg-white/10 border border-white/20 rounded-lg text-sm text-white placeholder-gray-500 focus:ring-2 focus:ring-amber-500 outline-none"
           />
         </div>
 
         {Object.keys(threads).length === 0 ? (
-          <p className="text-gray-500 text-sm text-center mt-10">No chats yet</p>
+          <p className="text-gray-400 text-sm text-center mt-10">No chats yet</p>
         ) : (
           Object.entries(threads).map(([id, msgs]) => {
             const last = msgs[msgs.length - 1];
@@ -133,14 +133,14 @@ const DMCMessages = () => {
               <div
                 key={id}
                 onClick={() => setSelectedThread(id)}
-                className={`p-3 mb-2 rounded-xl cursor-pointer transition-all ${
+                className={`p-3 mb-2 rounded-lg cursor-pointer transition-all ${
                   selectedThread === id
-                    ? 'bg-green-100 ring-1 ring-green-400'
-                    : 'hover:bg-gray-100'
+                    ? 'bg-amber-500/10 border border-amber-500/20'
+                    : 'bg-white/5 hover:bg-white/10'
                 }`}
               >
-                <p className="font-semibold text-gray-800">{id}</p>
-                <p className="text-sm text-gray-500 truncate">{last.content}</p>
+                <p className="font-semibold text-white">{id}</p>
+                <p className="text-sm text-gray-400 truncate">{last.content}</p>
               </div>
             );
           })
@@ -151,7 +151,7 @@ const DMCMessages = () => {
       <div className="flex-1 flex flex-col p-6">
         {selectedThread ? (
           <>
-            <div className="flex-1 overflow-y-auto bg-white/80 backdrop-blur-lg rounded-3xl shadow-inner p-6">
+            <div className="flex-1 overflow-y-auto bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-6">
               <AnimatePresence>
                 {threads[selectedThread]?.map((msg, i) => (
                   <motion.div
@@ -164,10 +164,10 @@ const DMCMessages = () => {
                     }`}
                   >
                     <div
-                      className={`px-4 py-3 max-w-xs md:max-w-sm rounded-2xl shadow-md ${
+                      className={`px-4 py-3 max-w-xs md:max-w-sm rounded-lg ${
                         msg.senderId === user.id
-                          ? 'bg-green-600 text-white rounded-br-none'
-                          : 'bg-gray-200 text-gray-900 rounded-bl-none'
+                          ? 'bg-amber-500 text-black rounded-br-none'
+                          : 'bg-white/10 text-white rounded-bl-none border border-white/20'
                       }`}
                     >
                       <p className="text-sm leading-relaxed">{msg.content}</p>
@@ -185,18 +185,18 @@ const DMCMessages = () => {
             </div>
 
             {/* Input */}
-            <div className="mt-4 flex items-center bg-white/80 rounded-full border border-gray-200 px-4 py-2 shadow-sm backdrop-blur-md">
+            <div className="mt-4 flex items-center bg-white/5 rounded-lg border border-white/10 px-4 py-2 backdrop-blur-sm">
               <input
                 type="text"
                 placeholder="Type your message..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                className="flex-1 px-3 py-2 text-sm bg-transparent outline-none"
+                className="flex-1 px-3 py-2 text-sm bg-transparent text-white placeholder-gray-500 outline-none"
               />
               <button
                 onClick={handleSend}
-                className="p-2 rounded-full bg-green-600 text-white hover:bg-green-700 transition"
+                className="p-2 rounded-lg bg-amber-500 text-black hover:brightness-110 transition"
               >
                 <Send size={18} />
               </button>
@@ -204,7 +204,7 @@ const DMCMessages = () => {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
-            <MessageCircle size={50} className="mb-4 text-green-400" />
+            <MessageCircle size={50} className="mb-4 text-amber-500" />
             <p className="text-lg font-medium">Select a chat to start messaging</p>
           </div>
         )}
