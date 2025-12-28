@@ -24,6 +24,11 @@ import DMCProfileRegister from './pages/DMCProfileRegister';
 import DMCProfile from './pages/DMCProfile';
 import HotelProfileRegister from './pages/HotelProfileRegister';
 
+// Legal & Info Pages
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
+import FAQ from './pages/FAQ';
+
 // RBAC Pages
 import DMCStaffManagement from './pages/DMCStaffManagement';
 import HotelStaffManagement from './pages/HotelStaffManagement';
@@ -75,6 +80,11 @@ const App = () => {
           <Route path="/register/hotel" element={<HotelRegisterPage />} />
           <Route path="/register/dmc" element={<DMCRegisterPage />} />
           <Route path="/register/admin" element={<AdminRegisterPage />} />
+
+          {/* Legal & Info Routes */}
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsAndConditions />} />
+          <Route path="/faq" element={<FAQ />} />
 
           {/* Protected Routes */}
           <Route
