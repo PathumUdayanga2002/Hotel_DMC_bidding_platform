@@ -34,7 +34,7 @@ public class PaymentController {
      * POST /api/payments/initiate
      */
     @PostMapping("/initiate")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasAnyRole('DMC_USER', 'DMC_SUPER_ADMIN', 'DMC_STAFF_ADMIN')")
     public ResponseEntity<PayHereInitiationResponse> initiatePayment(
             @Valid @RequestBody InitiatePaymentRequest request,
             Authentication authentication) {
@@ -53,7 +53,7 @@ public class PaymentController {
      * GET /api/payments/{paymentId}
      */
     @GetMapping("/{paymentId}")
-    @PreAuthorize("hasAnyRole('DMC_USER', 'HOTEL_USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('DMC_USER', 'DMC_SUPER_ADMIN', 'DMC_STAFF_ADMIN', 'HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN', 'ADMIN')")
     public ResponseEntity<PaymentResponse> getPaymentById(
             @PathVariable String paymentId,
             Authentication authentication) {
@@ -79,7 +79,7 @@ public class PaymentController {
      * GET /api/payments/order/{orderId}
      */
     @GetMapping("/order/{orderId}")
-    @PreAuthorize("hasAnyRole('DMC_USER', 'HOTEL_USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('DMC_USER', 'DMC_SUPER_ADMIN', 'DMC_STAFF_ADMIN', 'HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN', 'ADMIN')")
     public ResponseEntity<PaymentResponse> getPaymentByOrderId(
             @PathVariable String orderId,
             Authentication authentication) {
@@ -105,7 +105,7 @@ public class PaymentController {
      * GET /api/payments/dmc/my-payments
      */
     @GetMapping("/dmc/my-payments")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasAnyRole('DMC_USER', 'DMC_SUPER_ADMIN', 'DMC_STAFF_ADMIN')")
     public ResponseEntity<Page<PaymentResponse>> getMyDmcPayments(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -125,7 +125,7 @@ public class PaymentController {
      * GET /api/payments/hotel/my-payments
      */
     @GetMapping("/hotel/my-payments")
-    @PreAuthorize("hasRole('HOTEL_USER')")
+    @PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
     public ResponseEntity<Page<PaymentResponse>> getMyHotelPayments(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -145,7 +145,7 @@ public class PaymentController {
      * POST /api/payments/hotel/bank-details
      */
     @PostMapping("/hotel/bank-details")
-    @PreAuthorize("hasRole('HOTEL_USER')")
+    @PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
     public ResponseEntity<HotelBankDetails> saveHotelBankDetails(
             @Valid @RequestBody HotelBankDetailsRequest request,
             Authentication authentication) {
@@ -163,7 +163,7 @@ public class PaymentController {
      * GET /api/payments/hotel/bank-details
      */
     @GetMapping("/hotel/bank-details")
-    @PreAuthorize("hasRole('HOTEL_USER')")
+    @PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
     public ResponseEntity<HotelBankDetails> getHotelBankDetails(Authentication authentication) {
         
         String hotelUserId = authentication.getName();

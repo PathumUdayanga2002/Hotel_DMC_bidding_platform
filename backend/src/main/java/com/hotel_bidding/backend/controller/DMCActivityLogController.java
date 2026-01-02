@@ -35,7 +35,7 @@ public class DMCActivityLogController {
      * GET /dmc/activity-logs
      */
     @GetMapping
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasAnyRole('DMC_USER', 'DMC_SUPER_ADMIN', 'DMC_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> getActivityLogs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -59,7 +59,7 @@ public class DMCActivityLogController {
      * GET /dmc/activity-logs/range
      */
     @GetMapping("/range")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasAnyRole('DMC_USER', 'DMC_SUPER_ADMIN', 'DMC_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> getActivityLogsByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
@@ -86,7 +86,7 @@ public class DMCActivityLogController {
      * GET /dmc/activity-logs/recent
      */
     @GetMapping("/recent")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasAnyRole('DMC_USER', 'DMC_SUPER_ADMIN', 'DMC_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> getRecentActivities(Authentication authentication) {
         
         log.info("DMC fetching recent activities");

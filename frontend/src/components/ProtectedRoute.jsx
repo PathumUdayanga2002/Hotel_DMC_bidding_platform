@@ -58,6 +58,16 @@ const ProtectedRoute = ({
   if (allowedRoles && !allowedRoles.includes(user?.role)) {
     // Redirect to appropriate dashboard based on user's role
     switch (user?.role) {
+      // New role system
+      case 'HOTEL_SUPER_ADMIN':
+      case 'HOTEL_STAFF_ADMIN':
+        return <Navigate to="/hotel/dashboard" replace />;
+      case 'DMC_SUPER_ADMIN':
+      case 'DMC_STAFF_ADMIN':
+        return <Navigate to="/dmc/dashboard" replace />;
+      case 'PLATFORM_SUPER_ADMIN':
+        return <Navigate to="/admin/dashboard" replace />;
+      // Legacy role system (for backward compatibility during migration)
       case 'HOTEL_USER':
         return <Navigate to="/hotel/dashboard" replace />;
       case 'DMC_USER':

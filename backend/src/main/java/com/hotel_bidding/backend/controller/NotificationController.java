@@ -24,7 +24,7 @@ import java.util.Map;
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
 @Slf4j
-@PreAuthorize("hasAnyRole('DMC_USER', 'HOTEL_USER')")
+@PreAuthorize("hasAnyRole('DMC_USER', 'DMC_SUPER_ADMIN', 'DMC_STAFF_ADMIN', 'HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
 public class NotificationController {
 
     private final NotificationService notificationService;

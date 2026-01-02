@@ -1,13 +1,16 @@
 package com.hotel_bidding.backend.service.impl;
 
 import com.hotel_bidding.backend.constants.HotelProfileStatus;
+import com.hotel_bidding.backend.constants.UserRole;
 import com.hotel_bidding.backend.dto.*;
 import com.hotel_bidding.backend.entity.HotelAdminNote;
 import com.hotel_bidding.backend.entity.HotelProfile;
 import com.hotel_bidding.backend.entity.HotelRejectionHistory;
+import com.hotel_bidding.backend.entity.User;
 import com.hotel_bidding.backend.exception.BadRequestException;
 import com.hotel_bidding.backend.exception.ResourceNotFoundException;
 import com.hotel_bidding.backend.repository.HotelRepository;
+import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.AdminHotelService;
 import com.hotel_bidding.backend.service.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ import java.util.UUID;
 public class AdminHotelServiceImpl implements AdminHotelService {
 
     private final HotelRepository hotelRepository;
+    private final UserRepository userRepository;
     private final EmailService emailService;
 
     @Override
@@ -74,6 +78,13 @@ public class AdminHotelServiceImpl implements AdminHotelService {
         profile.setRejectionReason(null); // Clear rejection reason
 
         HotelProfile saved = hotelRepository.save(profile);
+
+        // Update user role to HOTEL_SUPER_ADMIN
+        User hotelUser = userRepository.findById(profile.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + profile.getUserId()));
+        hotelUser.setRole(UserRole.HOTEL_SUPER_ADMIN);
+        userRepository.save(hotelUser);
+        log.info("User {} role updated to HOTEL_SUPER_ADMIN", hotelUser.getId());
 
         // Send approval email
         emailService.sendHotelApprovalEmail(profile.getContactEmail(), profile.getName());

@@ -35,7 +35,7 @@ public class HotelActivityLogController {
      * GET /hotel/activity-logs
      */
     @GetMapping
-    @PreAuthorize("hasRole('HOTEL_USER')")
+    @PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> getActivityLogs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -59,7 +59,7 @@ public class HotelActivityLogController {
      * GET /hotel/activity-logs/range
      */
     @GetMapping("/range")
-    @PreAuthorize("hasRole('HOTEL_USER')")
+    @PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> getActivityLogsByDateRange(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
@@ -86,7 +86,7 @@ public class HotelActivityLogController {
      * GET /hotel/activity-logs/recent
      */
     @GetMapping("/recent")
-    @PreAuthorize("hasRole('HOTEL_USER')")
+    @PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> getRecentActivities(Authentication authentication) {
         
         log.info("Hotel fetching recent activities");

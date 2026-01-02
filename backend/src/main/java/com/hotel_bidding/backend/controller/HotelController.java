@@ -24,6 +24,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/hotel")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
 public class HotelController {
 
     private final HotelService hotelService;
@@ -31,7 +32,7 @@ public class HotelController {
 
     // -------------------- Create or Update Hotel Profile --------------------
     @PostMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('HOTEL_USER')")
+    @PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> createOrUpdateProfile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestPart("profile") HotelProfileRequestDTO request,
@@ -46,7 +47,7 @@ public class HotelController {
 
     // -------------------- Get Hotel Profile --------------------
     @GetMapping("/profile")
-    @PreAuthorize("hasRole('HOTEL_USER')")
+    @PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> getHotelProfile(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
@@ -55,7 +56,7 @@ public class HotelController {
 
     // -------------------- Hotel Dashboard --------------------
     @GetMapping("/dashboard")
-    @PreAuthorize("hasRole('HOTEL_USER')")
+    @PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> getDashboard(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         ApiResponse profileResponse = hotelService.getProfile(userDetails);
@@ -89,7 +90,7 @@ public class HotelController {
 
     // -------------------- Get All Approved Hotels --------------------
     @GetMapping("/approved-profiles")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasAnyRole('DMC_USER', 'DMC_SUPER_ADMIN', 'DMC_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> getApprovedHotels() {
         log.info("Fetching all approved hotel profiles");
         return ResponseEntity.ok(hotelService.getApprovedHotels());
@@ -97,7 +98,7 @@ public class HotelController {
 
     // -------------------- Get Direct Inquiries for Hotel --------------------
     @GetMapping("/direct-inquiries")
-    @PreAuthorize("hasRole('HOTEL_USER')")
+    @PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> getDirectInquiries(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         log.info("Fetching direct inquiries for hotel: {}", userDetails.getUsername());
@@ -105,7 +106,7 @@ public class HotelController {
     }
 
     @PostMapping("/direct-inquiries/{inquiryId}/confirm")
-    @PreAuthorize("hasRole('HOTEL_USER')")
+    @PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> confirmDirectInquiry(
             @PathVariable String inquiryId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -114,7 +115,7 @@ public class HotelController {
     }
 
     @PostMapping("/direct-inquiries/{inquiryId}/reject")
-    @PreAuthorize("hasRole('HOTEL_USER')")
+    @PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
     public ResponseEntity<ApiResponse> rejectDirectInquiry(
             @PathVariable String inquiryId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
