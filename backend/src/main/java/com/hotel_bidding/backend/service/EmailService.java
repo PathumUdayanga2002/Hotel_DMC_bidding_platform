@@ -72,4 +72,12 @@ public interface EmailService {
      */
     void sendBidRejectionNotificationToHotel(String hotelEmail, String hotelName, String inquiryTitle,
                                             String dmcCompanyName, String rejectionReason);
+
+    /**
+     * Send password reset email with secure link
+     * @param userEmail User email address
+     * @param recipientName Name to personalize the email
+     * @param resetLink One-time password reset link
+     */
+    void sendPasswordResetEmail(String userEmail, String recipientName, String resetLink);
 }

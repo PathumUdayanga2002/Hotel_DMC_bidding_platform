@@ -330,4 +330,30 @@ public class EmailServiceImpl implements EmailService {
             log.error("Failed to send bid rejection notification: {}", e.getMessage());
         }
     }
+
+    @Async
+    @Override
+    public void sendPasswordResetEmail(String userEmail, String recipientName, String resetLink) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(userEmail);
+            message.setSubject("Password Reset Request");
+            message.setText(
+                "Hi " + (recipientName != null ? recipientName : "there") + ",\n\n" +
+                "We received a request to reset your password for the Hotel Bidding Platform.\n" +
+                "If you made this request, click the link below to set a new password:\n\n" +
+                resetLink + "\n\n" +
+                "This link will expire soon. If you did not request a password reset, you can safely ignore this email.\n\n" +
+                "Thank you,\n" +
+                "Hotel Bidding Platform Team"
+            );
+
+            mailSender.send(message);
+            log.info("Password reset email sent to: {}", userEmail);
+
+        } catch (Exception e) {
+            log.error("Failed to send password reset email: {}", e.getMessage());
+        }
+    }
 }

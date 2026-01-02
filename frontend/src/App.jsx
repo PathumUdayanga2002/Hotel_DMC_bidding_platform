@@ -8,6 +8,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Pages
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import HotelRegisterPage from './pages/HotelRegisterPage';
 import DMCRegisterPage from './pages/DMCRegisterPage';
 import AdminRegisterPage from './pages/AdminRegisterPage';
@@ -82,6 +84,8 @@ const App = () => {
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/register/hotel" element={<HotelRegisterPage />} />
           <Route path="/register/dmc" element={<DMCRegisterPage />} />
           <Route path="/register/admin" element={<AdminRegisterPage />} />
