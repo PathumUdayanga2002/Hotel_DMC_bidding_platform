@@ -30,13 +30,14 @@ public class DMCStaffController {
     
     private final StaffService staffService;
     private final com.hotel_bidding.backend.service.StaffAuthorizationService staffAuthorizationService;
+    private final com.hotel_bidding.backend.service.AuthorizationService authorizationService;
     
     /**
      * Create a new staff member
      * POST /dmc/staff
      */
     @PostMapping
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('DMC_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse> createStaff(
             @Valid @RequestBody CreateStaffRequest request,
             Authentication authentication) {
@@ -44,9 +45,6 @@ public class DMCStaffController {
         log.info("DMC creating staff member: {}", request.getEmail());
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
-        
-        // Only super admins can create staff
-        staffAuthorizationService.requireSuperAdmin(superAdminId);
         
         CreateStaffResponse response = staffService.createStaff(request, superAdminId);
         
@@ -62,15 +60,12 @@ public class DMCStaffController {
      * GET /dmc/staff
      */
     @GetMapping
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('DMC_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse> getAllStaff(Authentication authentication) {
         
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
         log.info("DMC fetching all staff - User ID: {}, Username: {}", superAdminId, userDetails.getUsername());
-        
-        // Only super admins can view staff
-        staffAuthorizationService.requireSuperAdmin(superAdminId);
         
         List<StaffResponse> staffList = staffService.getAllStaff(superAdminId);
         
@@ -86,7 +81,7 @@ public class DMCStaffController {
      * GET /dmc/staff/{staffId}
      */
     @GetMapping("/{staffId}")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('DMC_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse> getStaffById(
             @PathVariable String staffId,
             Authentication authentication) {
@@ -94,9 +89,6 @@ public class DMCStaffController {
         log.info("DMC fetching staff by ID: {}", staffId);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
-        
-        // Only super admins can view staff
-        staffAuthorizationService.requireSuperAdmin(superAdminId);
         
         StaffResponse staff = staffService.getStaffById(staffId, superAdminId);
         
@@ -112,7 +104,7 @@ public class DMCStaffController {
      * PUT /dmc/staff/{staffId}
      */
     @PutMapping("/{staffId}")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('DMC_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse> updateStaff(
             @PathVariable String staffId,
             @Valid @RequestBody UpdateStaffRequest request,
@@ -121,9 +113,6 @@ public class DMCStaffController {
         log.info("DMC updating staff: {}", staffId);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
-        
-        // Only super admins can update staff
-        staffAuthorizationService.requireSuperAdmin(superAdminId);
         
         StaffResponse staff = staffService.updateStaff(staffId, request, superAdminId);
         
@@ -139,7 +128,7 @@ public class DMCStaffController {
      * PUT /dmc/staff/{staffId}/toggle-status
      */
     @PutMapping("/{staffId}/toggle-status")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('DMC_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse> toggleStaffStatus(
             @PathVariable String staffId,
             Authentication authentication) {
@@ -147,9 +136,6 @@ public class DMCStaffController {
         log.info("DMC toggling staff status: {}", staffId);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
-        
-        // Only super admins can toggle staff status
-        staffAuthorizationService.requireSuperAdmin(superAdminId);
         
         StaffResponse staff = staffService.toggleStaffStatus(staffId, superAdminId);
         
@@ -166,7 +152,7 @@ public class DMCStaffController {
      * POST /dmc/staff/{staffId}/reset-password
      */
     @PostMapping("/{staffId}/reset-password")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('DMC_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse> resetStaffPassword(
             @PathVariable String staffId,
             Authentication authentication) {
@@ -174,9 +160,6 @@ public class DMCStaffController {
         log.info("DMC resetting password for staff: {}", staffId);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
-        
-        // Only super admins can reset passwords
-        staffAuthorizationService.requireSuperAdmin(superAdminId);
         
         String newPassword = staffService.resetStaffPassword(staffId, superAdminId);
         
@@ -192,7 +175,7 @@ public class DMCStaffController {
      * DELETE /dmc/staff/{staffId}
      */
     @DeleteMapping("/{staffId}")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('DMC_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse> deleteStaff(
             @PathVariable String staffId,
             Authentication authentication) {
@@ -200,9 +183,6 @@ public class DMCStaffController {
         log.info("DMC deleting staff: {}", staffId);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
-        
-        // Only super admins can delete staff
-        staffAuthorizationService.requireSuperAdmin(superAdminId);
         
         staffService.deleteStaff(staffId, superAdminId);
         
@@ -217,15 +197,12 @@ public class DMCStaffController {
      * GET /dmc/staff/count
      */
     @GetMapping("/count")
-    @PreAuthorize("hasRole('DMC_USER')")
+    @PreAuthorize("hasRole('DMC_SUPER_ADMIN')")
     public ResponseEntity<ApiResponse> getStaffCount(Authentication authentication) {
         
         log.info("DMC fetching staff count");
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String superAdminId = userDetails.getId();
-        
-        // Only super admins can view staff count
-        staffAuthorizationService.requireSuperAdmin(superAdminId);
         
         Long count = staffService.getStaffCount(superAdminId);
         

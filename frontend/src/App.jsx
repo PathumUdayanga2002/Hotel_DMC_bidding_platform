@@ -24,6 +24,11 @@ import DMCProfileRegister from './pages/DMCProfileRegister';
 import DMCProfile from './pages/DMCProfile';
 import HotelProfileRegister from './pages/HotelProfileRegister';
 
+// Legal & Info Pages
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
+import FAQ from './pages/FAQ';
+
 // RBAC Pages
 import DMCStaffManagement from './pages/DMCStaffManagement';
 import HotelStaffManagement from './pages/HotelStaffManagement';
@@ -37,6 +42,7 @@ import HotelInquiriesPage from './pages/HotelInquiriesPage';
 import SubmitBidForm from './pages/SubmitBidForm';
 import HotelBidsPage from './pages/HotelBidsPage';
 import HotelInquiryDetails from './pages/HotelInquiryDetails';
+import HotelDirectInquiriesPage from './pages/HotelDirectInquiriesPage';
 
 // Payment Pages
 import PaymentInitiation from './pages/PaymentInitiation';
@@ -46,6 +52,9 @@ import DMCPaymentHistory from './pages/DMCPaymentHistory';
 import HotelPaymentHistory from './pages/HotelPaymentHistory';
 import AdminPaymentDashboard from './pages/AdminPaymentDashboard';
 import AdminPayoutManagement from './pages/AdminPayoutManagement';
+import AdminUserManagement from './pages/AdminUserManagement';
+import AdminSettings from './pages/AdminSettings';
+import PlatformAnalytics from './pages/PlatformAnalytics';
 
 //messages
 import DMCMessages from './pages/DMCMessages.jsx';
@@ -55,7 +64,17 @@ import HotelMessages from './pages/HotelMessages.jsx';
 import MyContracts from './pages/MyContracts.jsx';
 import HotelContractBuilder from './pages/HotelContractBuilder.jsx';
 
+// Direct Inquiry
+import DMCDirectInquiry from './pages/DMCDirectInquiry.jsx';
+import DMCHotelSelection from './pages/DMCHotelSelection.jsx';
+import DMCDirectInquiryHistory from './pages/DMCDirectInquiryHistory.jsx';
+
 const App = () => {
+  // Role constants for easier management
+  const HOTEL_ROLES = ['HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN'];
+  const DMC_ROLES = ['DMC_USER', 'DMC_SUPER_ADMIN', 'DMC_STAFF_ADMIN'];
+  const ADMIN_ROLES = ['ADMIN', 'PLATFORM_SUPER_ADMIN'];
+  
   return (
     <Router>
       <AuthProvider>
@@ -67,11 +86,16 @@ const App = () => {
           <Route path="/register/dmc" element={<DMCRegisterPage />} />
           <Route path="/register/admin" element={<AdminRegisterPage />} />
 
+          {/* Legal & Info Routes */}
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsAndConditions />} />
+          <Route path="/faq" element={<FAQ />} />
+
           {/* Protected Routes */}
           <Route
             path="/hotel/dashboard"
             element={
-              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
                 <HotelDashboard />
               </ProtectedRoute>
             }
@@ -79,7 +103,7 @@ const App = () => {
           <Route
             path="/hotel/profile/register"
             element={
-              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
                 <HotelProfileRegister />
               </ProtectedRoute>
             }
@@ -89,15 +113,23 @@ const App = () => {
           <Route
             path="/hotel/inquiries"
             element={
-              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
                 <HotelInquiriesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/hotel/direct-inquiries"
+            element={
+              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
+                <HotelDirectInquiriesPage />
               </ProtectedRoute>
             }
           />
           <Route
             path="/hotel/inquiries/:inquiryId/bid"
             element={
-              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
                 <SubmitBidForm />
               </ProtectedRoute>
             }
@@ -105,7 +137,7 @@ const App = () => {
           <Route
             path="/hotel/bids"
             element={
-              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
                 <HotelBidsPage />
               </ProtectedRoute>
             }
@@ -114,7 +146,7 @@ const App = () => {
           <Route
             path="/hotel/mycontracts"
             element={
-              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
                 <MyContracts />
               </ProtectedRoute>
             }
@@ -123,7 +155,7 @@ const App = () => {
           <Route
             path="/hotel/sendcontracts"
             element={
-              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
                 <HotelContractBuilder />
               </ProtectedRoute>
             }
@@ -133,7 +165,7 @@ const App = () => {
             <Route
             path="/hotel/messages"
             element={
-              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
                 <HotelMessages />
               </ProtectedRoute>
             }
@@ -143,7 +175,7 @@ const App = () => {
           <Route
             path="/hotel/staff"
             element={
-              <ProtectedRoute allowedRoles={['HOTEL_USER']} requireSuperAdmin={true}>
+              <ProtectedRoute allowedRoles={HOTEL_ROLES} requireSuperAdmin={true}>
                 <HotelStaffManagement />
               </ProtectedRoute>
             }
@@ -153,7 +185,7 @@ const App = () => {
           <Route
             path="/hotel/activity-logs"
             element={
-              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
                 <ActivityLogs portalType="hotel" />
               </ProtectedRoute>
             }
@@ -165,7 +197,7 @@ const App = () => {
           <Route
             path="/hotel/payments"
             element={
-              <ProtectedRoute allowedRoles={['HOTEL_USER']}>
+              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
                 <HotelPaymentHistory />
               </ProtectedRoute>
             }
@@ -175,7 +207,7 @@ const App = () => {
           <Route
             path="/dmc/dashboard"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <DMCDashboard />
               </ProtectedRoute>
             }
@@ -183,7 +215,7 @@ const App = () => {
           <Route
             path="/dmc/profile/register"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <DMCProfileRegister />
               </ProtectedRoute>
             }
@@ -193,7 +225,7 @@ const App = () => {
           <Route
             path="/dmc/profile"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <DMCProfile />
               </ProtectedRoute>
             }
@@ -202,7 +234,7 @@ const App = () => {
           <Route
             path="/dmc/received-contracts"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <DMCReceivedContracts />
               </ProtectedRoute>
             }
@@ -211,7 +243,7 @@ const App = () => {
           <Route
             path="/dmc/received-contracts/:contractId"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <DMCContractDetail />
               </ProtectedRoute>
             }
@@ -221,7 +253,7 @@ const App = () => {
             <Route
             path="/dmc/messages"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <DMCMessages />
               </ProtectedRoute>
             }
@@ -231,7 +263,7 @@ const App = () => {
           <Route
             path="/dmc/staff"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']} requireSuperAdmin={true}>
+              <ProtectedRoute allowedRoles={DMC_ROLES} requireSuperAdmin={true}>
                 <DMCStaffManagement />
               </ProtectedRoute>
             }
@@ -241,7 +273,7 @@ const App = () => {
           <Route
             path="/dmc/activity-logs"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <ActivityLogs portalType="dmc" />
               </ProtectedRoute>
             }
@@ -251,7 +283,7 @@ const App = () => {
           <Route
             path="/dmc/inquiries"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <DMCInquiriesPage />
               </ProtectedRoute>
             }
@@ -259,7 +291,7 @@ const App = () => {
           <Route
             path="/dmc/inquiries/post"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <PostInquiryForm />
               </ProtectedRoute>
             }
@@ -267,8 +299,34 @@ const App = () => {
           <Route
             path="/dmc/inquiries/:inquiryId"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <InquiryDetailsPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* DMC Direct Inquiry Routes */}
+          <Route
+            path="/dmc/direct-inquiries"
+            element={
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
+                <DMCDirectInquiry />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dmc/direct-inquiries/history"
+            element={
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
+                <DMCDirectInquiryHistory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dmc/direct-inquiries/select-hotels"
+            element={
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
+                <DMCHotelSelection />
               </ProtectedRoute>
             }
           />
@@ -277,7 +335,7 @@ const App = () => {
           <Route
             path="/dmc/payments"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <DMCPaymentHistory />
               </ProtectedRoute>
             }
@@ -285,7 +343,7 @@ const App = () => {
           <Route
             path="/payment/initiate"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <PaymentInitiation />
               </ProtectedRoute>
             }
@@ -293,7 +351,7 @@ const App = () => {
           <Route
             path="/payment/return"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <PaymentReturn />
               </ProtectedRoute>
             }
@@ -301,7 +359,7 @@ const App = () => {
           <Route
             path="/payment/cancel"
             element={
-              <ProtectedRoute allowedRoles={['DMC_USER']}>
+              <ProtectedRoute allowedRoles={DMC_ROLES}>
                 <PaymentCancel />
               </ProtectedRoute>
             }
@@ -310,7 +368,7 @@ const App = () => {
           <Route
             path="/admin/dashboard"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
+              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
                 {/* <AdminDashboard /> */}
                 <AdminDashboardNew />
               </ProtectedRoute>
@@ -319,7 +377,7 @@ const App = () => {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute allowedRoles={['ADMIN']}>
+              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
                 <AdminDashboardNew />
               </ProtectedRoute>
             }
@@ -328,6 +386,9 @@ const App = () => {
             <Route path="dashboard" element={<AdminHome />} />
             <Route path="dmc-approvals" element={<DMCApprovals />} />
             <Route path="hotel-approvals" element={<HotelApprovals />} />
+            <Route path="user-management" element={<AdminUserManagement />} />
+            <Route path="analytics" element={<PlatformAnalytics />} />
+            <Route path="settings" element={<AdminSettings />} />
             <Route path="payments" element={<AdminPaymentDashboard />} />
             <Route path="payouts" element={<AdminPayoutManagement />} />
           </Route>

@@ -14,8 +14,8 @@ import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.CloudinaryService;
 import com.hotel_bidding.backend.service.DMCProfileService;
 import com.hotel_bidding.backend.service.EmailService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,14 +27,22 @@ import java.util.stream.Collectors;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class DMCProfileServiceImpl implements DMCProfileService {
 
     private final DMCProfileRepository dmcProfileRepository;
     private final UserRepository userRepository;
-    private final CloudinaryService cloudinaryService;
+    @Autowired(required = false)
+    private CloudinaryService cloudinaryService;
     private final EmailService emailService;
+
+    public DMCProfileServiceImpl(DMCProfileRepository dmcProfileRepository, 
+                                 UserRepository userRepository,
+                                 EmailService emailService) {
+        this.dmcProfileRepository = dmcProfileRepository;
+        this.userRepository = userRepository;
+        this.emailService = emailService;
+    }
 
     @Override
     @Transactional
@@ -92,24 +100,32 @@ public class DMCProfileServiceImpl implements DMCProfileService {
 
         // Handle file upload
         if (sltdaCertification != null && !sltdaCertification.isEmpty()) {
-            // Delete old file if exists
-            if (profile.getSltdaCertificationPublicId() != null) {
-                try {
-                    cloudinaryService.deleteFile(profile.getSltdaCertificationPublicId());
-                } catch (Exception e) {
-                    log.warn("Failed to delete old certification file: {}", e.getMessage());
+            if (cloudinaryService != null) {
+                // Delete old file if exists
+                if (profile.getSltdaCertificationPublicId() != null) {
+                    try {
+                        cloudinaryService.deleteFile(profile.getSltdaCertificationPublicId());
+                    } catch (Exception e) {
+                        log.warn("Failed to delete old certification file: {}", e.getMessage());
+                    }
                 }
+
+                // Upload new file
+                Map<String, String> uploadResult = cloudinaryService.uploadFile(
+                        sltdaCertification,
+                        "dmc_certifications"
+                );
+
+                profile.setSltdaCertificationUrl(uploadResult.get("url"));
+                profile.setSltdaCertificationPublicId(uploadResult.get("publicId"));
+                profile.setSltdaCertificationFileName(uploadResult.get("fileName"));
+            } else {
+                // Cloudinary not configured - store filename only
+                log.warn("Cloudinary service not configured. File upload skipped.");
+                profile.setSltdaCertificationFileName(sltdaCertification.getOriginalFilename());
+                profile.setSltdaCertificationUrl(null);
+                profile.setSltdaCertificationPublicId(null);
             }
-
-            // Upload new file
-            Map<String, String> uploadResult = cloudinaryService.uploadFile(
-                    sltdaCertification,
-                    "dmc_certifications"
-            );
-
-            profile.setSltdaCertificationUrl(uploadResult.get("url"));
-            profile.setSltdaCertificationPublicId(uploadResult.get("publicId"));
-            profile.setSltdaCertificationFileName(uploadResult.get("fileName"));
         }
 
         // Save profile

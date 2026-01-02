@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/hotel")
 @RequiredArgsConstructor
 @Slf4j
-@PreAuthorize("hasRole('HOTEL_USER')")
+@PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
 public class HotelBidController {
 
     private final BidInquiryService bidInquiryService;

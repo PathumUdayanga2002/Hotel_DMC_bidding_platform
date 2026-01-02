@@ -1,13 +1,16 @@
 package com.hotel_bidding.backend.service.impl;
 
 import com.hotel_bidding.backend.constants.DMCProfileStatus;
+import com.hotel_bidding.backend.constants.UserRole;
 import com.hotel_bidding.backend.dto.*;
 import com.hotel_bidding.backend.entity.AdminNote;
 import com.hotel_bidding.backend.entity.DMCProfile;
 import com.hotel_bidding.backend.entity.RejectionHistory;
+import com.hotel_bidding.backend.entity.User;
 import com.hotel_bidding.backend.exception.BadRequestException;
 import com.hotel_bidding.backend.exception.ResourceNotFoundException;
 import com.hotel_bidding.backend.repository.DMCProfileRepository;
+import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.AdminDMCService;
 import com.hotel_bidding.backend.service.EmailService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 public class AdminDMCServiceImpl implements AdminDMCService {
 
     private final DMCProfileRepository dmcProfileRepository;
+    private final UserRepository userRepository;
     private final EmailService emailService;
 
     @Override
@@ -75,6 +79,13 @@ public class AdminDMCServiceImpl implements AdminDMCService {
         profile.setCurrentRejectionReason(null); // Clear rejection reason
 
         DMCProfile savedProfile = dmcProfileRepository.save(profile);
+
+        // Update user role to DMC_SUPER_ADMIN
+        User dmcUser = userRepository.findById(profile.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + profile.getUserId()));
+        dmcUser.setRole(UserRole.DMC_SUPER_ADMIN);
+        userRepository.save(dmcUser);
+        log.info("User {} role updated to DMC_SUPER_ADMIN", dmcUser.getId());
 
         // Send approval email
         emailService.sendDMCApprovalEmail(profile.getEmail(), profile.getCompanyName());

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/hotel/contracts")
 @RequiredArgsConstructor
 @Slf4j
-@PreAuthorize("hasRole('HOTEL_USER')")
+@PreAuthorize("hasAnyRole('HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN')")
 public class HotelContractController {
 
     private final HotelContractService contractService;
