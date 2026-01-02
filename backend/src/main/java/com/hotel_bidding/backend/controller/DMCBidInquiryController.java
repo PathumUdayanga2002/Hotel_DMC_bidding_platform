@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/dmc/inquiries")
 @RequiredArgsConstructor
 @Slf4j
-@PreAuthorize("hasRole('DMC_USER')")
+@PreAuthorize("hasAnyRole('DMC_USER', 'DMC_SUPER_ADMIN', 'DMC_STAFF_ADMIN')")
 public class DMCBidInquiryController {
 
     private final BidInquiryService bidInquiryService;

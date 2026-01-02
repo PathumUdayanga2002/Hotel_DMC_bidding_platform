@@ -42,6 +42,19 @@ const LoginPage = () => {
       // Redirect based on role
       const role = response.data.role;
       switch (role) {
+        // New role system
+        case 'HOTEL_SUPER_ADMIN':
+        case 'HOTEL_STAFF_ADMIN':
+          navigate('/hotel/dashboard');
+          break;
+        case 'DMC_SUPER_ADMIN':
+        case 'DMC_STAFF_ADMIN':
+          navigate('/dmc/dashboard');
+          break;
+        case 'PLATFORM_SUPER_ADMIN':
+          navigate('/admin/dashboard');
+          break;
+        // Legacy role system (for backward compatibility during migration)
         case 'HOTEL_USER':
           navigate('/hotel/dashboard');
           break;

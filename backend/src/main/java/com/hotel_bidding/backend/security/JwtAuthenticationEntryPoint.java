@@ -21,7 +21,16 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
-        log.error("Unauthorized error: {}", authException.getMessage());
+        // Enhanced logging for better debugging
+        String requestUri = request.getRequestURI();
+        String method = request.getMethod();
+        String remoteAddr = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+        
+        log.error("Unauthorized error on {} {} from {}: {}", 
+                method, requestUri, remoteAddr, authException.getMessage());
+        log.debug("User-Agent: {}", userAgent);
+        log.debug("Auth exception type: {}", authException.getClass().getSimpleName());
 
         response.setContentType("application/json");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -32,6 +41,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         body.put("error", "Unauthorized");
         body.put("message", authException.getMessage());
         body.put("path", request.getServletPath());
+        body.put("requestUri", requestUri);
+        body.put("method", method);
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(response.getOutputStream(), body);

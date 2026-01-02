@@ -43,9 +43,11 @@ const DMCDashboard = () => {
       const response = await api.get('/dmc/profile/status');
       setProfileStatus(response.data.data);
       
-      // Show modal if profile doesn't exist
-      if (!response.data.data.profileExists) {
+      // Show modal only if profile doesn't exist AND is not approved
+      if (!response.data.data.profileExists && !response.data.data.isApproved) {
         setShowRegistrationModal(true);
+      } else {
+        setShowRegistrationModal(false);
       }
     } catch (error) {
       console.error('Error fetching profile status:', error);
@@ -129,7 +131,7 @@ const DMCDashboard = () => {
       name: 'Complete Profile',
       icon: FileText,
       path: '/dmc/profile/register',
-      locked: false,
+      locked: false, // Always accessible, even before profile approval
       hideForStaff: true // Hide for staff members
     },
     {
@@ -137,49 +139,49 @@ const DMCDashboard = () => {
       name: 'Post Bid Inquiry',
       icon: PlusCircle,
       path: '/dmc/inquiries/post',
-      locked: false
+      requiresApproval: true // Requires profile approval
     },
     {
       id: 'my-inquiries',
       name: 'My Inquiries',
       icon: Inbox,
       path: '/dmc/inquiries',
-      locked: false
+      requiresApproval: true // Requires profile approval
     },
     {
       id: 'received-contracts',
       name: 'Received Contracts',
       icon: FileText,
       path: '/dmc/received-contracts',
-      locked: false
+      requiresApproval: true // Requires profile approval
     },
     {
       id: 'browse',
       name: 'Browse Inquiries',
       icon: Search,
       path: '/dmc/browse-inquiries',
-      locked: true
+      requiresApproval: true // Requires profile approval
     },
     {
       id: 'bids',
       name: 'My Bids',
       icon: Gavel,
       path: '/dmc/my-bids',
-      locked: true
+      requiresApproval: true // Requires profile approval
     },
     {
       id: 'direct',
       name: 'Direct Inquiries',
       icon: TrendingUp,
       path: '/dmc/direct-inquiries/history',
-      locked: false
+      requiresApproval: true // Requires profile approval
     },
     {
       id: 'staff',
       name: 'Staff Management',
       icon: Users,
       path: '/dmc/staff',
-      locked: false,
+      requiresApproval: true, // Requires profile approval AND super admin role
       showForSuperAdminOnly: true // Only show to super admin
     },
     {
@@ -187,14 +189,14 @@ const DMCDashboard = () => {
       name: 'Activity Logs',
       icon: Activity,
       path: '/dmc/activity-logs',
-      locked: false
+      requiresApproval: true // Requires profile approval
     },
     {
       id: 'myprofile',
       name: 'Profile',
       icon: User,
       path: '/dmc/profile',
-      locked: false,
+      requiresApproval: true, // Requires profile approval to view
       hideForStaff: true // Hide for staff members
     }
   ];
@@ -275,7 +277,8 @@ const DMCDashboard = () => {
               })
               .map((item) => {
                 const Icon = item.icon;
-                const locked = item.locked && isFeatureLocked();
+                // Determine if item is locked based on approval status
+                const locked = item.requiresApproval ? isFeatureLocked() : (item.locked ?? false);
 
                 return (
                   <button
@@ -415,8 +418,8 @@ const DMCDashboard = () => {
         </main>
       </div>
 
-      {/* Registration Modal - shown for new users */}
-      {showRegistrationModal && !profileStatus?.profileExists && (
+      {/* Registration Modal - shown only for users without approved profiles */}
+      {showRegistrationModal && !profileStatus?.profileExists && !profileStatus?.isApproved && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <div className="text-center">
