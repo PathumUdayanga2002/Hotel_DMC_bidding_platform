@@ -69,6 +69,11 @@ import DMCDirectInquiry from './pages/DMCDirectInquiry.jsx';
 import DMCHotelSelection from './pages/DMCHotelSelection.jsx';
 import DMCDirectInquiryHistory from './pages/DMCDirectInquiryHistory.jsx';
 
+// Subscription
+import SubscriptionPlanIntro from './pages/SubscriptionPlanIntro.jsx';
+import SubscriptionPurchase from './pages/SubscriptionPurchase.jsx';
+import AdminSubscriptionManagement from './pages/AdminSubscriptionManagement.jsx';
+
 const App = () => {
   // Role constants for easier management
   const HOTEL_ROLES = ['HOTEL_USER', 'HOTEL_SUPER_ADMIN', 'HOTEL_STAFF_ADMIN'];
@@ -81,6 +86,7 @@ const App = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/get-started" element={<SubscriptionPlanIntro />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register/hotel" element={<HotelRegisterPage />} />
           <Route path="/register/dmc" element={<DMCRegisterPage />} />
@@ -90,6 +96,16 @@ const App = () => {
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsAndConditions />} />
           <Route path="/faq" element={<FAQ />} />
+
+          {/* Subscription Routes (for both Hotel and DMC users) */}
+          <Route
+            path="/subscription/purchase"
+            element={
+              <ProtectedRoute allowedRoles={[...HOTEL_ROLES, ...DMC_ROLES]}>
+                <SubscriptionPurchase />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Protected Routes */}
           <Route
@@ -391,6 +407,7 @@ const App = () => {
             <Route path="settings" element={<AdminSettings />} />
             <Route path="payments" element={<AdminPaymentDashboard />} />
             <Route path="payouts" element={<AdminPayoutManagement />} />
+            <Route path="subscriptions" element={<AdminSubscriptionManagement />} />
           </Route>
 
           {/* 404 Redirect */}
