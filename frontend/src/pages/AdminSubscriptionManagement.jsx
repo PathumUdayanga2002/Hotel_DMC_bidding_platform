@@ -52,9 +52,11 @@ const AdminSubscriptionManagement = () => {
   const fetchAllSubscriptions = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/admin/subscriptions');
+      const response = await api.get('/admin/subscriptions?size=1000');
       if (response.data.success) {
-        const subs = response.data.data || [];
+        // Backend returns Page object with 'content' array
+        const pageData = response.data.data || {};
+        const subs = pageData.content || [];
         setSubscriptions(subs);
         calculateStats(subs);
       }
