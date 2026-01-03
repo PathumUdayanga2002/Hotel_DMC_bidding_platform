@@ -5,18 +5,24 @@ import com.hotel_bidding.backend.constants.ActivityType;
 import com.hotel_bidding.backend.constants.UserRole;
 import com.hotel_bidding.backend.constants.UserStatus;
 import com.hotel_bidding.backend.dto.request.LoginRequest;
+import com.hotel_bidding.backend.dto.request.PasswordResetConfirmRequest;
+import com.hotel_bidding.backend.dto.request.PasswordResetRequest;
 import com.hotel_bidding.backend.dto.request.RegisterRequest;
 import com.hotel_bidding.backend.dto.response.AuthResponse;
+import com.hotel_bidding.backend.entity.PasswordResetToken;
 import com.hotel_bidding.backend.entity.User;
 import com.hotel_bidding.backend.exception.BadRequestException;
+import com.hotel_bidding.backend.repository.PasswordResetTokenRepository;
 import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.security.JwtTokenProvider;
 import com.hotel_bidding.backend.service.ActivityLogService;
 import com.hotel_bidding.backend.service.AuthService;
+import com.hotel_bidding.backend.service.EmailService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -26,6 +32,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.Objects;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 
 @Slf4j
 @Service
@@ -37,6 +49,16 @@ public class AuthServiceImpl implements AuthService {
     private final JwtTokenProvider tokenProvider;
     private final AuthenticationManager authenticationManager;
     private final ActivityLogService activityLogService;
+    private final EmailService emailService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Value("${password.reset.token.expiration.minutes:30}")
+    private int passwordResetTokenExpirationMinutes;
+
+    @Value("${app.frontend.url:http://localhost:5173}")
+    private String frontendBaseUrl;
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Override
     @Transactional
@@ -195,6 +217,72 @@ public class AuthServiceImpl implements AuthService {
         log.info("User logged out successfully");
     }
 
+    @Override
+    @Transactional
+    public void requestPasswordReset(PasswordResetRequest request) {
+        String email = request.getEmail().trim();
+
+        userRepository.findByEmail(email).ifPresentOrElse(user -> {
+            passwordResetTokenRepository.deleteByUserId(user.getId());
+
+            String rawToken = generateResetToken();
+            String tokenHash = hashToken(rawToken);
+            LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(passwordResetTokenExpirationMinutes);
+
+            PasswordResetToken resetToken = PasswordResetToken.builder()
+                    .userId(user.getId())
+                    .tokenHash(tokenHash)
+                    .expiresAt(expiresAt)
+                    .used(false)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            passwordResetTokenRepository.save(resetToken);
+
+            String resetLink = buildResetLink(rawToken);
+            String recipientName = user.getFullName() != null ? user.getFullName() : user.getUsername();
+            emailService.sendPasswordResetEmail(user.getEmail(), recipientName, resetLink);
+
+            log.info("Password reset token created for user: {}", user.getUsername());
+        }, () -> log.warn("Password reset requested for non-existing email: {}", email));
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(PasswordResetConfirmRequest request) {
+        if (!Objects.equals(request.getNewPassword(), request.getConfirmPassword())) {
+            throw new BadRequestException("Passwords do not match");
+        }
+
+        validatePasswordStrength(request.getNewPassword());
+
+        String tokenHash = hashToken(request.getToken());
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByTokenHash(tokenHash)
+                .orElseThrow(() -> new BadRequestException("Invalid or expired reset token"));
+
+        if (resetToken.isUsed()) {
+            throw new BadRequestException("Reset token has already been used");
+        }
+
+        if (resetToken.getExpiresAt() != null && resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            passwordResetTokenRepository.deleteById(resetToken.getId());
+            throw new BadRequestException("Reset token has expired");
+        }
+
+        User user = userRepository.findById(resetToken.getUserId())
+                .orElseThrow(() -> new BadRequestException("Invalid reset token"));
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+        resetToken.setUsedAt(LocalDateTime.now());
+        passwordResetTokenRepository.save(resetToken);
+        passwordResetTokenRepository.deleteByUserId(user.getId());
+
+        log.info("Password reset completed for user: {}", user.getUsername());
+    }
+
     private void setAuthCookie(HttpServletResponse response, String token) {
         Cookie cookie = new Cookie("accessToken", token);
         cookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
@@ -202,5 +290,34 @@ public class AuthServiceImpl implements AuthService {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         response.addCookie(cookie);
+    }
+
+    private void validatePasswordStrength(String password) {
+        if (password == null || password.length() < 8) {
+            throw new BadRequestException("Password must be at least 8 characters long");
+        }
+    }
+
+    private String generateResetToken() {
+        byte[] randomBytes = new byte[32];
+        SECURE_RANDOM.nextBytes(randomBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+    }
+
+    private String hashToken(String token) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashed = digest.digest(token.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hashed);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Failed to hash reset token", e);
+        }
+    }
+
+    private String buildResetLink(String rawToken) {
+        String sanitizedBaseUrl = frontendBaseUrl != null && frontendBaseUrl.endsWith("/")
+                ? frontendBaseUrl.substring(0, frontendBaseUrl.length() - 1)
+                : frontendBaseUrl;
+        return sanitizedBaseUrl + "/reset-password?token=" + rawToken;
     }
 }
