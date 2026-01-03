@@ -12,7 +12,11 @@ import {
   Upload,
   ArrowLeft,
   CheckCircle,
-  Loader
+  Loader,
+  CreditCard,
+  Clock,
+  Calendar,
+  Shield
 } from 'lucide-react';
 
 const DMCProfileRegister = () => {
@@ -20,6 +24,7 @@ const DMCProfileRegister = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [existingProfile, setExistingProfile] = useState(null);
+  const [subscription, setSubscription] = useState(null);
   const [formData, setFormData] = useState({
     companyName: '',
     address: '',
@@ -32,7 +37,19 @@ const DMCProfileRegister = () => {
 
   useEffect(() => {
     fetchExistingProfile();
+    fetchSubscriptionStatus();
   }, []);
+
+  const fetchSubscriptionStatus = async () => {
+    try {
+      const response = await api.get("/subscription/status");
+      if (response.data.success) {
+        setSubscription(response.data.data);
+      }
+    } catch (error) {
+      console.log("No subscription found");
+    }
+  };
 
   const fetchExistingProfile = async () => {
     try {
@@ -166,6 +183,88 @@ const DMCProfileRegister = () => {
                 <div className="mt-2 text-sm text-red-700">
                   <p><strong>Reason:</strong> {existingProfile.currentRejectionReason || 'Not specified'}</p>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Subscription Status Card */}
+        {subscription && !subscription.isPendingApproval && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg shadow-sm p-6 mb-6 border border-green-200">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900 flex items-center">
+                <CreditCard className="w-5 h-5 mr-2 text-green-600" />
+                Subscription Status
+              </h2>
+              <button
+                type="button"
+                onClick={() => navigate('/subscription/purchase')}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+              >
+                Upgrade Plan
+              </button>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-lg p-4">
+                <div className="flex items-center text-gray-600 mb-2">
+                  <Shield className="w-4 h-4 mr-2" />
+                  <span className="text-sm font-medium">Current Plan</span>
+                </div>
+                <p className="text-xl font-bold text-gray-900">{subscription.plan}</p>
+                {subscription.isTrial && (
+                  <span className="inline-block mt-1 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">
+                    FREE TRIAL
+                  </span>
+                )}
+              </div>
+              
+              <div className="bg-white rounded-lg p-4">
+                <div className="flex items-center text-gray-600 mb-2">
+                  <Clock className="w-4 h-4 mr-2" />
+                  <span className="text-sm font-medium">Days Remaining</span>
+                </div>
+                <p className={`text-xl font-bold ${subscription.daysRemaining <= 7 ? 'text-red-600' : 'text-gray-900'}`}>
+                  {subscription.daysRemaining} days
+                </p>
+                <span className={`text-xs ${subscription.daysRemaining <= 7 ? 'text-red-600' : 'text-gray-500'}`}>
+                  {subscription.isExpired ? 'Expired' : subscription.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              
+              <div className="bg-white rounded-lg p-4">
+                <div className="flex items-center text-gray-600 mb-2">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  <span className="text-sm font-medium">Expires On</span>
+                </div>
+                <p className="text-sm font-bold text-gray-900">
+                  {new Date(subscription.endDate).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                </p>
+                <span className="text-xs text-gray-500">
+                  Started: {new Date(subscription.startDate).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pending Approval Message */}
+        {subscription?.isPendingApproval && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <div className="flex items-center">
+              <Clock className="w-6 h-6 text-blue-600 mr-3" />
+              <div>
+                <h3 className="text-lg font-semibold text-blue-900">Profile Pending Approval</h3>
+                <p className="text-sm text-blue-700 mt-1">
+                  Complete your profile below and submit for review. Your 30-day free trial will begin once your profile is approved by our admin team.
+                </p>
               </div>
             </div>
           </div>
