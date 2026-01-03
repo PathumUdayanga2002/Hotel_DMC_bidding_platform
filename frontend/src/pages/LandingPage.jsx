@@ -343,7 +343,7 @@ const LandingPage = () => {
               <Button variant="outline" onClick={() => navigate('/login')} className="text-white border-white hover:bg-white hover:text-slate-900 magnetic-button">
                 Login
               </Button>
-              <Button variant="primary" onClick={() => setRoleModalOpen(true)} className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 shimmer-effect pulse-glow magnetic-button">
+              <Button variant="primary" onClick={() => navigate('/get-started')} className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 shimmer-effect pulse-glow magnetic-button">
                 Get Started
               </Button>
             </div>
@@ -373,7 +373,7 @@ const LandingPage = () => {
             <button onClick={() => scrollToSection('contact')} className="text-4xl font-bold text-white hover:text-sky-300 transition">Contact</button>
             <div className="flex flex-col gap-4 pt-8 w-64">
               <Button variant="outline" onClick={() => navigate('/login')} className="w-full text-white border-white py-3 text-lg">Login</Button>
-              <Button variant="primary" onClick={() => { setMobileMenuOpen(false); setRoleModalOpen(true); }} className="w-full bg-gradient-to-r from-sky-500 to-blue-600 py-3 text-lg shimmer-effect">Get Started</Button>
+              <Button variant="primary" onClick={() => { setMobileMenuOpen(false); navigate('/get-started'); }} className="w-full bg-gradient-to-r from-sky-500 to-blue-600 py-3 text-lg shimmer-effect">Get Started</Button>
             </div>
           </nav>
         </div>
@@ -398,7 +398,7 @@ const LandingPage = () => {
                 Respitch is a premium B2B bidding platform that enables hotels and destination management companies (DMCs) to discover, compare, and finalize partnerships effortlessly.
               </p>
               <div className="flex flex-col sm:flex-row gap-6 pt-6 animate-fadeInUp" style={{animationDelay: '0.8s'}}>
-                <Button variant="primary" onClick={() => setRoleModalOpen(true)} className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 px-10 py-4 text-lg font-bold shadow-2xl magnetic-button shimmer-effect">
+                <Button variant="primary" onClick={() => navigate('/get-started')} className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 px-10 py-4 text-lg font-bold shadow-2xl magnetic-button shimmer-effect">
                   Get Started
                 </Button>
                 <Button variant="secondary" onClick={() => scrollToSection('features')} className="glass-morphism text-white border-2 border-white hover:bg-white hover:text-slate-900 px-10 py-4 text-lg font-bold magnetic-button">
@@ -855,7 +855,7 @@ const LandingPage = () => {
                     type="submit"
                     className="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 font-bold py-4 text-lg shimmer-effect magnetic-button"
                   >
-                    Get Started
+                    Send Message
                   </Button>
                 </form>
               )}

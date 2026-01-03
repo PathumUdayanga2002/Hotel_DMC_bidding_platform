@@ -48,9 +48,25 @@ public class PayHereServiceImpl implements PayHereService {
         // Format amount to 2 decimal places
         String formattedAmount = String.format("%.2f", amount);
         
-        // Generate hash
-        String hashString = merchantId + orderId + formattedAmount + currency.toUpperCase();
-        String hash = generateMd5Hash(hashString + merchantSecret);
+        // Generate hash according to PayHere specification
+        // Step 1: Decode Base64 merchant secret
+        String decodedSecret;
+        try {
+            byte[] decodedBytes = java.util.Base64.getDecoder().decode(merchantSecret);
+            decodedSecret = new String(decodedBytes);
+        } catch (Exception e) {
+            log.error("Failed to decode merchant secret", e);
+            decodedSecret = merchantSecret;
+        }
+        
+        // Step 2: Generate MD5 of decoded secret
+        String merchantSecretMd5 = generateMd5Hash(decodedSecret).toUpperCase();
+        
+        // Step 3: Generate final hash: MD5(merchant_id + order_id + amount + currency + MD5(secret))
+        String hashString = merchantId + orderId + formattedAmount + currency.toUpperCase() + merchantSecretMd5;
+        String hash = generateMd5Hash(hashString).toUpperCase();
+        
+        log.debug("PayHere hash generated for old payment system - Order: {}", orderId);
         
         // Build checkout URL with parameters
         StringBuilder url = new StringBuilder(checkoutUrl);

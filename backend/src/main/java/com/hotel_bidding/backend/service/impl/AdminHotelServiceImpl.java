@@ -13,6 +13,7 @@ import com.hotel_bidding.backend.repository.HotelRepository;
 import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.AdminHotelService;
 import com.hotel_bidding.backend.service.EmailService;
+import com.hotel_bidding.backend.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,7 @@ public class AdminHotelServiceImpl implements AdminHotelService {
     private final HotelRepository hotelRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final SubscriptionService subscriptionService;
 
     @Override
     public Page<HotelProfileSummary> getAllHotelProfiles(HotelProfileStatus status, String search, Pageable pageable) {
@@ -85,6 +87,15 @@ public class AdminHotelServiceImpl implements AdminHotelService {
         hotelUser.setRole(UserRole.HOTEL_SUPER_ADMIN);
         userRepository.save(hotelUser);
         log.info("User {} role updated to HOTEL_SUPER_ADMIN", hotelUser.getId());
+
+        // Create 30-day free trial subscription
+        try {
+            subscriptionService.createTrialSubscription(profile.getUserId());
+            log.info("30-day trial subscription created for user: {}", profile.getUserId());
+        } catch (Exception e) {
+            log.error("Failed to create trial subscription for user: {}", profile.getUserId(), e);
+            // Continue with approval even if subscription creation fails
+        }
 
         // Send approval email
         emailService.sendHotelApprovalEmail(profile.getContactEmail(), profile.getName());

@@ -46,6 +46,40 @@ public interface EmailService {
      */
     void sendHotelRejectionEmail(String hotelEmail, String hotelName, String reason);
     
+    // ============ SUBSCRIPTION NOTIFICATION EMAILS ============
+    
+    /**
+     * Send email when trial is expiring soon (7 days before)
+     * @param email User email
+     * @param name User/Company name
+     * @param daysRemaining Days remaining in trial
+     */
+    void sendTrialExpiringEmail(String email, String name, long daysRemaining);
+    
+    /**
+     * Send email when trial has expired
+     * @param email User email
+     * @param name User/Company name
+     */
+    void sendTrialExpiredEmail(String email, String name);
+    
+    /**
+     * Send email when subscription has expired
+     * @param email User email
+     * @param name User/Company name
+     */
+    void sendSubscriptionExpiredEmail(String email, String name);
+    
+    /**
+     * Send email when payment is successful
+     * @param email User email
+     * @param name User/Company name
+     * @param plan Subscription plan (MONTHLY/YEARLY)
+     * @param amount Payment amount
+     * @param orderId Order ID
+     */
+    void sendPaymentSuccessEmail(String email, String name, String plan, double amount, String orderId);
+    
     // ============ BID INQUIRY NOTIFICATION EMAILS ============
     
     /**

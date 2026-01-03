@@ -17,7 +17,8 @@ import {
   BarChart3,
   Settings,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  CreditCard
 } from 'lucide-react';
 
 const AdminDashboardNew = () => {
@@ -87,6 +88,13 @@ const AdminDashboardNew = () => {
       name: 'Platform Analytics',
       icon: BarChart3,
       path: '/admin/analytics',
+      disabled: false
+    },
+    {
+      id: 'subscriptions',
+      name: 'Subscriptions',
+      icon: CreditCard,
+      path: '/admin/subscriptions',
       disabled: false
     },
     {

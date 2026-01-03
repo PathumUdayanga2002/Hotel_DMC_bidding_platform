@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import NotificationBell from '../components/NotificationBell';
+import SubscriptionBanner from '../components/SubscriptionBanner';
 import {
   Plane,
   LogOut,
@@ -23,7 +24,8 @@ import {
   Inbox,
   TrendingUp,
   Users,
-  Activity
+  Activity,
+  CreditCard
 } from 'lucide-react';
 
 const DMCDashboard = () => {
@@ -230,6 +232,15 @@ const DMCDashboard = () => {
           </div>
 
           <div className="flex items-center space-x-4">
+            {/* Upgrade Button */}
+            <button
+              onClick={() => navigate('/subscription/purchase')}
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transition-all duration-200 shadow-md font-medium"
+            >
+              <CreditCard className="w-4 h-4" />
+              <span>Upgrade Plan</span>
+            </button>
+            
             {/* Status Badge */}
             {getStatusBadge()}
 
@@ -320,6 +331,9 @@ const DMCDashboard = () => {
 
         {/* Main Content */}
         <main className="flex-1 p-6">
+          {/* Subscription Status Banner */}
+          <SubscriptionBanner />
+          
           {/* Registration Status Banner */}
           {profileStatus && profileStatus.status && profileStatus.status !== 'APPROVED' && (
             <div className="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
