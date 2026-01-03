@@ -460,4 +460,4 @@ public class EmailServiceImpl implements EmailService {
         } catch (Exception e) {
             log.error("Failed to send payment success email: {}", e.getMessage());
         }
-    }
+    }}
