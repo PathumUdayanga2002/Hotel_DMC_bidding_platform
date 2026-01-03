@@ -330,7 +330,8 @@ public class EmailServiceImpl implements EmailService {
             log.error("Failed to send bid rejection notification: {}", e.getMessage());
         }
     }
-
+    // ============ PASSWORD RESET EMAIL ============
+    
     @Async
     @Override
     public void sendPasswordResetEmail(String userEmail, String recipientName, String resetLink) {
@@ -341,7 +342,7 @@ public class EmailServiceImpl implements EmailService {
             message.setSubject("Password Reset Request");
             message.setText(
                 "Hi " + (recipientName != null ? recipientName : "there") + ",\n\n" +
-                "We received a request to reset your password for the Hotel Bidding Platform.\n" +
+                "We received a request to reset your password for the Hotel Bidding Platform.\n\n" +
                 "If you made this request, click the link below to set a new password:\n\n" +
                 resetLink + "\n\n" +
                 "This link will expire soon. If you did not request a password reset, you can safely ignore this email.\n\n" +
@@ -356,4 +357,107 @@ public class EmailServiceImpl implements EmailService {
             log.error("Failed to send password reset email: {}", e.getMessage());
         }
     }
-}
+
+    // ============ SUBSCRIPTION NOTIFICATION EMAILS ============
+
+    @Async
+    @Override
+    public void sendTrialExpiringEmail(String email, String name, long daysRemaining) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(email);
+            message.setSubject("Your Free Trial is Expiring Soon - " + daysRemaining + " Days Left!");
+            message.setText(
+                "Dear " + name + ",\n\n" +
+                "Your 30-day free trial on the Hotel Bidding Platform is expiring soon!\n\n" +
+                "Days Remaining: " + daysRemaining + "\n\n" +
+                "📦 MONTHLY PLAN: $200/month\n" +
+                "🎯 YEARLY PLAN: $2000/year (Save $400!)\n\n" +
+                "Login to your dashboard and subscribe to continue.\n\n" +
+                "Best regards,\n" +
+                "Hotel Bidding Platform Team"
+            );
+
+            mailSender.send(message);
+            log.info("Trial expiring email sent to: {}", email);
+
+        } catch (Exception e) {
+            log.error("Failed to send trial expiring email: {}", e.getMessage());
+        }
+    }
+
+    @Async
+    @Override
+    public void sendTrialExpiredEmail(String email, String name) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(email);
+            message.setSubject("Your Free Trial Has Expired - Subscribe to Continue");
+            message.setText(
+                "Dear " + name + ",\n\n" +
+                "Your free trial has expired.\n\n" +
+                "Subscribe now to regain full access.\n\n" +
+                "Best regards,\n" +
+                "Hotel Bidding Platform Team"
+            );
+
+            mailSender.send(message);
+            log.info("Trial expired email sent to: {}", email);
+
+        } catch (Exception e) {
+            log.error("Failed to send trial expired email: {}", e.getMessage());
+        }
+    }
+
+    @Async
+    @Override
+    public void sendSubscriptionExpiredEmail(String email, String name) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(email);
+            message.setSubject("Your Subscription Has Expired - Renew Now");
+            message.setText(
+                "Dear " + name + ",\n\n" +
+                "Your subscription has expired.\n\n" +
+                "Renew now to continue using the platform.\n\n" +
+                "Best regards,\n" +
+                "Hotel Bidding Platform Team"
+            );
+
+            mailSender.send(message);
+            log.info("Subscription expired email sent to: {}", email);
+
+        } catch (Exception e) {
+            log.error("Failed to send subscription expired email: {}", e.getMessage());
+        }
+    }
+
+    @Async
+    @Override
+    public void sendPaymentSuccessEmail(String email, String name, String plan, double amount, String orderId) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(email);
+            message.setSubject("Payment Successful - Subscription Activated!");
+            message.setText(
+                "Dear " + name + ",\n\n" +
+                "Payment successful!\n\n" +
+                "Plan: " + plan + "\n" +
+                "Amount: $" + String.format("%.2f", amount) + "\n" +
+                "Order ID: " + orderId + "\n\n" +
+                "Your subscription is now active.\n\n" +
+                "Best regards,\n" +
+                "Hotel Bidding Platform Team"
+            );
+
+            mailSender.send(message);
+            log.info("Payment success email sent to: {}", email);
+
+        } catch (Exception e) {
+            log.error("Failed to send payment success email: {}", e.getMessage());
+        }
+    }

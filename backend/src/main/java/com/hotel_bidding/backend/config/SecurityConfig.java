@@ -1,5 +1,6 @@
 package com.hotel_bidding.backend.config;
 
+import com.hotel_bidding.backend.filter.SubscriptionFilter;
 import com.hotel_bidding.backend.security.CustomAccessDeniedHandler;
 import com.hotel_bidding.backend.security.JwtAuthenticationEntryPoint;
 import com.hotel_bidding.backend.security.JwtAuthenticationFilter;
@@ -28,6 +29,7 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final SubscriptionFilter subscriptionFilter;
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CorsConfig corsConfig;
 
@@ -78,6 +80,7 @@ public class SecurityConfig {
 
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(subscriptionFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }

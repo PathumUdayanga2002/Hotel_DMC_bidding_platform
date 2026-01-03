@@ -13,6 +13,7 @@ import com.hotel_bidding.backend.repository.DMCProfileRepository;
 import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.AdminDMCService;
 import com.hotel_bidding.backend.service.EmailService;
+import com.hotel_bidding.backend.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,7 @@ public class AdminDMCServiceImpl implements AdminDMCService {
     private final DMCProfileRepository dmcProfileRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final SubscriptionService subscriptionService;
 
     @Override
     public Page<DMCProfileSummary> getAllDMCProfiles(DMCProfileStatus status, String search, Pageable pageable) {
@@ -86,6 +88,15 @@ public class AdminDMCServiceImpl implements AdminDMCService {
         dmcUser.setRole(UserRole.DMC_SUPER_ADMIN);
         userRepository.save(dmcUser);
         log.info("User {} role updated to DMC_SUPER_ADMIN", dmcUser.getId());
+
+        // Create 30-day free trial subscription
+        try {
+            subscriptionService.createTrialSubscription(profile.getUserId());
+            log.info("30-day trial subscription created for user: {}", profile.getUserId());
+        } catch (Exception e) {
+            log.error("Failed to create trial subscription for user: {}", profile.getUserId(), e);
+            // Continue with approval even if subscription creation fails
+        }
 
         // Send approval email
         emailService.sendDMCApprovalEmail(profile.getEmail(), profile.getCompanyName());

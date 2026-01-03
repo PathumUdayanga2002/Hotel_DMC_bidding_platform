@@ -19,7 +19,8 @@ import {
   TrendingUp,
   Users,
   Activity,
-  Mail
+  Mail,
+  CreditCard
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
@@ -27,6 +28,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api'; // your axios instance
 import NotificationBell from '../components/NotificationBell';
 import { hotelService } from '../services/hotelService';
+import SubscriptionBanner from '../components/SubscriptionBanner';
 
 // --- UI Components ---
 const Card = ({ className = '', children }) => (
@@ -200,7 +202,7 @@ const Sidebar = ({ profileStatus, isSuperAdmin, isStaff, pendingInquiriesCount }
 };
 
 // --- Dashboard Header ---
-const DashboardHeader = ({ user, handleLogout, profileStatus }) => {
+const DashboardHeader = ({ user, handleLogout, profileStatus, navigate }) => {
   const renderProfileStatus = () => {
     switch (profileStatus) {
       case 'LOADING':
@@ -246,6 +248,15 @@ const DashboardHeader = ({ user, handleLogout, profileStatus }) => {
       <div>{renderProfileStatus()}</div>
 
       <div className="flex items-center space-x-4">
+        <Button 
+          variant="default" 
+          onClick={() => navigate('/subscription/purchase')}
+          className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
+        >
+          <CreditCard className="w-4 h-4 mr-2" />
+          Upgrade Plan
+        </Button>
+        
         <NotificationBell />
 
         <div className="flex items-center space-x-3">
@@ -350,8 +361,11 @@ const HotelDashboard = () => {
         pendingInquiriesCount={pendingInquiriesCount}
       />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader user={user} handleLogout={handleLogout} profileStatus={profileStatus} />
+        <DashboardHeader user={user} handleLogout={handleLogout} profileStatus={profileStatus} navigate={navigate} />
         <main className="flex-1 overflow-y-auto p-6 md:p-8">
+          {/* Subscription Status Banner */}
+          <SubscriptionBanner />
+          
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             Welcome back, {user?.username || 'Hotel Manager'}!
           </h2>
