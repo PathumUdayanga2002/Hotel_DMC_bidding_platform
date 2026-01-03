@@ -31,6 +31,18 @@ export const authService = {
     return response.data;
   },
 
+  // Request password reset
+  requestPasswordReset: async (data) => {
+    const response = await api.post('/auth/forgot-password', data);
+    return response.data;
+  },
+
+  // Reset password
+  resetPassword: async (data) => {
+    const response = await api.post('/auth/reset-password', data);
+    return response.data;
+  },
+
   // Check authentication
   checkAuth: async () => {
     const response = await api.get('/auth/check');
