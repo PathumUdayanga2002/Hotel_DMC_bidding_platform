@@ -2,6 +2,8 @@ package com.hotel_bidding.backend.controller;
 
 import com.hotel_bidding.backend.constants.UserRole;
 import com.hotel_bidding.backend.dto.request.LoginRequest;
+import com.hotel_bidding.backend.dto.request.PasswordResetConfirmRequest;
+import com.hotel_bidding.backend.dto.request.PasswordResetRequest;
 import com.hotel_bidding.backend.dto.request.RegisterRequest;
 import com.hotel_bidding.backend.dto.response.ApiResponse;
 import com.hotel_bidding.backend.dto.response.AuthResponse;
@@ -78,6 +80,24 @@ public class AuthController {
                 .data(authResponse)
                 .build());
     }
+
+        @PostMapping("/forgot-password")
+        public ResponseEntity<ApiResponse> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+                authService.requestPasswordReset(request);
+                return ResponseEntity.ok(ApiResponse.builder()
+                                .success(true)
+                                .message("If an account exists for this email, a password reset link has been sent.")
+                                .build());
+        }
+
+        @PostMapping("/reset-password")
+        public ResponseEntity<ApiResponse> resetPassword(@Valid @RequestBody PasswordResetConfirmRequest request) {
+                authService.resetPassword(request);
+                return ResponseEntity.ok(ApiResponse.builder()
+                                .success(true)
+                                .message("Password has been reset successfully")
+                                .build());
+        }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse> logout(
