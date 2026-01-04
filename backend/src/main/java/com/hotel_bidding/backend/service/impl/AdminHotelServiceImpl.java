@@ -13,6 +13,7 @@ import com.hotel_bidding.backend.repository.HotelRepository;
 import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.AdminHotelService;
 import com.hotel_bidding.backend.service.EmailService;
+import com.hotel_bidding.backend.service.NotificationService;
 import com.hotel_bidding.backend.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class AdminHotelServiceImpl implements AdminHotelService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final SubscriptionService subscriptionService;
+    private final NotificationService notificationService;
 
     @Override
     public Page<HotelProfileSummary> getAllHotelProfiles(HotelProfileStatus status, String search, Pageable pageable) {
@@ -99,6 +101,9 @@ public class AdminHotelServiceImpl implements AdminHotelService {
 
         // Send approval email
         emailService.sendHotelApprovalEmail(profile.getContactEmail(), profile.getName());
+        
+        // Send in-app notification
+        notificationService.notifyHotelProfileApproved(profile.getUserId(), profileId);
 
         log.info("Hotel profile approved: {} by admin: {}", profileId, adminUsername);
 
@@ -134,6 +139,9 @@ public class AdminHotelServiceImpl implements AdminHotelService {
 
         // Send rejection email
         emailService.sendHotelRejectionEmail(profile.getContactEmail(), profile.getName(), reason);
+        
+        // Send in-app notification
+        notificationService.notifyHotelProfileRejected(profile.getUserId(), profileId, reason);
 
         log.info("Hotel profile rejected: {} by admin: {}", profileId, adminUsername);
 

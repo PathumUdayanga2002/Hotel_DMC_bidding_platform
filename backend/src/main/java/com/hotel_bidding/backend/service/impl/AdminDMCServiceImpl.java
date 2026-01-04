@@ -13,6 +13,7 @@ import com.hotel_bidding.backend.repository.DMCProfileRepository;
 import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.AdminDMCService;
 import com.hotel_bidding.backend.service.EmailService;
+import com.hotel_bidding.backend.service.NotificationService;
 import com.hotel_bidding.backend.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class AdminDMCServiceImpl implements AdminDMCService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final SubscriptionService subscriptionService;
+    private final NotificationService notificationService;
 
     @Override
     public Page<DMCProfileSummary> getAllDMCProfiles(DMCProfileStatus status, String search, Pageable pageable) {
@@ -100,6 +102,9 @@ public class AdminDMCServiceImpl implements AdminDMCService {
 
         // Send approval email
         emailService.sendDMCApprovalEmail(profile.getEmail(), profile.getCompanyName());
+        
+        // Send in-app notification
+        notificationService.notifyDmcProfileApproved(profile.getUserId(), profileId);
 
         log.info("DMC profile approved: {} by admin: {}", profile.getCompanyName(), adminUsername);
 
@@ -134,6 +139,9 @@ public class AdminDMCServiceImpl implements AdminDMCService {
 
         // Send rejection email
         emailService.sendDMCRejectionEmail(profile.getEmail(), profile.getCompanyName(), reason);
+        
+        // Send in-app notification
+        notificationService.notifyDmcProfileRejected(profile.getUserId(), profileId, reason);
 
         log.info("DMC profile rejected: {} by admin: {} - Reason: {}", 
                 profile.getCompanyName(), adminUsername, reason);
@@ -164,15 +172,24 @@ public class AdminDMCServiceImpl implements AdminDMCService {
             case UNDER_REVIEW:
                 profile.setStatus(DMCProfileStatus.UNDER_REVIEW);
                 profile.setReviewedAt(LocalDateTime.now());
+                // Notify DMC about status change
+                notificationService.notifyDmcAccountStatusChanged(profile.getUserId(), "Under Review", 
+                    request.getAdminNote() != null ? request.getAdminNote() : "Your profile is currently under review.");
                 break;
             
             case SUSPENDED:
                 profile.setStatus(DMCProfileStatus.SUSPENDED);
                 profile.setReviewedAt(LocalDateTime.now());
+                // Notify DMC about suspension
+                notificationService.notifyDmcAccountStatusChanged(profile.getUserId(), "Suspended", 
+                    request.getAdminNote() != null ? request.getAdminNote() : "Your account has been suspended.");
                 break;
             
             case PENDING:
                 profile.setStatus(DMCProfileStatus.PENDING);
+                // Notify DMC about status change to pending
+                notificationService.notifyDmcAccountStatusChanged(profile.getUserId(), "Pending", 
+                    request.getAdminNote() != null ? request.getAdminNote() : "Your profile status has been changed to pending.");
                 break;
             
             default:

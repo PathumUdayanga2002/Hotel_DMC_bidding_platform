@@ -129,6 +129,35 @@ const NotificationBell = () => {
     }
   };
 
+  const getNotificationIcon = (type) => {
+    const iconMap = {
+      'HOTEL_PROFILE_APPROVED': '🎉',
+      'HOTEL_PROFILE_REJECTED': '📋',
+      'DMC_PROFILE_APPROVED': '🎉',
+      'DMC_PROFILE_REJECTED': '📋',
+      'DMC_ACCOUNT_ACTIVATED': '✅',
+      'DMC_ACCOUNT_SUSPENDED': '⚠️',
+      'DMC_ACCOUNT_DEACTIVATED': '🚫',
+      'NEW_INQUIRY': '🔔',
+      'NEW_BID': '💰',
+      'BID_ACCEPTED': '✅',
+      'BID_REJECTED': '❌',
+      'PROPOSAL_RECEIVED': '📩',
+      'DIRECT_INQUIRY_CREATED': '✅',
+      'CONTRACT_RECEIVED': '📄',
+      'MESSAGE_RECEIVED': '💬',
+      'MESSAGE_FAILED': '❌',
+      'HOTEL_STAFF_ADDED': '👤',
+      'HOTEL_STAFF_REMOVED': '👤',
+      'DMC_STAFF_ADDED': '👤',
+      'DMC_STAFF_REMOVED': '👤',
+      'INQUIRY_RECEIVED': '🔔',
+      'INQUIRY_UPDATED': '📝',
+      'DEADLINE_APPROACHING': '⏰'
+    };
+    return iconMap[type] || '🔔';
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Bell Icon */}
@@ -191,18 +220,26 @@ const NotificationBell = () => {
                     } ${getPriorityColor(notification.priority)}`}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex-1 pr-2">
-                        <h4 className={`text-sm font-semibold ${
-                          !notification.read ? 'text-gray-900' : 'text-gray-600'
-                        }`}>
-                          {notification.title}
-                        </h4>
-                        <p className="text-xs text-gray-600 mt-1">
-                          {notification.message}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {formatDateTime(notification.createdAt)}
-                        </p>
+                      <div className="flex items-start space-x-3 flex-1 pr-2">
+                        {/* Notification Icon */}
+                        <div className="text-2xl flex-shrink-0 mt-1">
+                          {getNotificationIcon(notification.type)}
+                        </div>
+                        
+                        {/* Notification Content */}
+                        <div className="flex-1">
+                          <h4 className={`text-sm font-semibold ${
+                            !notification.read ? 'text-gray-900' : 'text-gray-600'
+                          }`}>
+                            {notification.title}
+                          </h4>
+                          <p className="text-xs text-gray-600 mt-1">
+                            {notification.message}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {formatDateTime(notification.createdAt)}
+                          </p>
+                        </div>
                       </div>
                       
                       {/* Action Buttons */}
