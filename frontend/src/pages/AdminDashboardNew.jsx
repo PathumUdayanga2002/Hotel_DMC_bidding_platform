@@ -31,9 +31,25 @@ const AdminDashboardNew = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [approvalsSubmenuOpen, setApprovalsSubmenuOpen] = useState(true);
 
+  // Redirect non-admin users
   useEffect(() => {
-    fetchStats();
-  }, []);
+    if (user && !['ADMIN', 'PLATFORM_SUPER_ADMIN'].includes(user.role)) {
+      console.log('Non-admin user detected, redirecting...');
+      if (user.role === 'DMC_SUPER_ADMIN' || user.role === 'DMC_STAFF_ADMIN' || user.role === 'DMC_USER') {
+        navigate('/dmc/dashboard', { replace: true });
+      } else if (user.role === 'HOTEL_SUPER_ADMIN' || user.role === 'HOTEL_STAFF_ADMIN' || user.role === 'HOTEL_USER') {
+        navigate('/hotel/dashboard', { replace: true });
+      } else {
+        navigate('/login', { replace: true });
+      }
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    if (user && ['ADMIN', 'PLATFORM_SUPER_ADMIN'].includes(user.role)) {
+      fetchStats();
+    }
+  }, [user]);
 
   const fetchStats = async () => {
     try {
@@ -45,6 +61,10 @@ const AdminDashboardNew = () => {
       setHotelStats(hotelResponse.data.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
+      // Don't show error toast if it's a 403 (user doesn't have access)
+      if (error.response?.status !== 403) {
+        toast.error('Failed to fetch dashboard stats');
+      }
     }
   };
 
