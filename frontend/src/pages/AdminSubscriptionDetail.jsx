@@ -78,8 +78,16 @@ const AdminSubscriptionDetail = () => {
   };
 
   const getPlanBadge = (plan) => {
+    // Handle trial subscriptions (plan is null)
+    if (!plan || plan === null) {
+      return (
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+          TRIAL
+        </span>
+      );
+    }
+    
     const colors = {
-      'TRIAL': 'bg-gray-100 text-gray-800',
       'MONTHLY': 'bg-blue-100 text-blue-800',
       'YEARLY': 'bg-purple-100 text-purple-800'
     };
@@ -182,7 +190,7 @@ const AdminSubscriptionDetail = () => {
 
               <div>
                 <label className="text-sm font-medium text-gray-600">Plan Type</label>
-                <p className="text-gray-900 mt-1">{subscription.plan}</p>
+                <p className="text-gray-900 mt-1">{subscription.plan || 'TRIAL'}</p>
               </div>
 
               <div>
@@ -201,7 +209,8 @@ const AdminSubscriptionDetail = () => {
               <div>
                 <label className="text-sm font-medium text-gray-600">Price</label>
                 <p className="text-gray-900 mt-1 text-2xl font-bold">
-                  {subscription.plan === 'MONTHLY' ? '$200/month' : 
+                  {!subscription.plan || subscription.isTrial ? 'Free Trial' : 
+                   subscription.plan === 'MONTHLY' ? '$200/month' : 
                    subscription.plan === 'YEARLY' ? '$2,000/year' : 
                    'Free Trial'}
                 </p>
