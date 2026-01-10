@@ -44,10 +44,7 @@ import HotelBidsPage from './pages/HotelBidsPage';
 import HotelInquiryDetails from './pages/HotelInquiryDetails';
 import HotelDirectInquiriesPage from './pages/HotelDirectInquiriesPage';
 
-// Payment Pages
-import PaymentInitiation from './pages/PaymentInitiation';
-import PaymentReturn from './pages/PaymentReturn';
-import PaymentCancel from './pages/PaymentCancel';
+// Payment Pages - OLD SYSTEM REMOVED (PaymentInitiation, PaymentReturn, PaymentCancel)
 import DMCPaymentHistory from './pages/DMCPaymentHistory';
 import HotelPaymentHistory from './pages/HotelPaymentHistory';
 
@@ -356,30 +353,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/payment/initiate"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <PaymentInitiation />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/payment/return"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <PaymentReturn />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/payment/cancel"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <PaymentCancel />
-              </ProtectedRoute>
-            }
-          />
+          {/* OLD BID PAYMENT ROUTES REMOVED: /payment/initiate, /payment/return, /payment/cancel */}
           
           <Route
             path="/admin/dashboard"
