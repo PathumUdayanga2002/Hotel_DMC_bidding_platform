@@ -73,6 +73,7 @@ import DMCDirectInquiryHistory from './pages/DMCDirectInquiryHistory.jsx';
 import SubscriptionPlanIntro from './pages/SubscriptionPlanIntro.jsx';
 import SubscriptionPurchase from './pages/SubscriptionPurchase.jsx';
 import AdminSubscriptionManagement from './pages/AdminSubscriptionManagement.jsx';
+import AdminSubscriptionDetail from './pages/AdminSubscriptionDetail.jsx';
 
 const App = () => {
   // Role constants for easier management
@@ -408,6 +409,7 @@ const App = () => {
             <Route path="payments" element={<AdminPaymentDashboard />} />
             <Route path="payouts" element={<AdminPayoutManagement />} />
             <Route path="subscriptions" element={<AdminSubscriptionManagement />} />
+            <Route path="subscriptions/:subscriptionId" element={<AdminSubscriptionDetail />} />
           </Route>
 
           {/* 404 Redirect */}
