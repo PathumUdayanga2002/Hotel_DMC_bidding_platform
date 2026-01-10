@@ -50,8 +50,7 @@ import PaymentReturn from './pages/PaymentReturn';
 import PaymentCancel from './pages/PaymentCancel';
 import DMCPaymentHistory from './pages/DMCPaymentHistory';
 import HotelPaymentHistory from './pages/HotelPaymentHistory';
-import AdminPaymentDashboard from './pages/AdminPaymentDashboard';
-import AdminPayoutManagement from './pages/AdminPayoutManagement';
+
 import AdminUserManagement from './pages/AdminUserManagement';
 import AdminSettings from './pages/AdminSettings';
 import PlatformAnalytics from './pages/PlatformAnalytics';
@@ -406,8 +405,6 @@ const App = () => {
             <Route path="user-management" element={<AdminUserManagement />} />
             <Route path="analytics" element={<PlatformAnalytics />} />
             <Route path="settings" element={<AdminSettings />} />
-            <Route path="payments" element={<AdminPaymentDashboard />} />
-            <Route path="payouts" element={<AdminPayoutManagement />} />
             <Route path="subscriptions" element={<AdminSubscriptionManagement />} />
             <Route path="subscriptions/:subscriptionId" element={<AdminSubscriptionDetail />} />
           </Route>
