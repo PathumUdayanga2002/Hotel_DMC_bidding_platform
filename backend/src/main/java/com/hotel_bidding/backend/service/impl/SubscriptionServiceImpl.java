@@ -37,13 +37,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final EmailService emailService;
     private final PaymentHistoryRepository paymentHistoryRepository;
     
-    @Value("${payhere.merchant.id}")
-    private String payheremerchant;
+    // @Value("${payhere.merchant.id}")
+    // private String payhereMerchantId;
     
-    @Value("${payhere.merchant.secret}")
-    private String payhereSecret;
+    // @Value("${payhere.merchant.secret}")
+    // private String payhereMerchantSecret;
+
+    private final String payhereMerchantId = "1230399";
+    private final String payhereMerchantSecret = "MTQwMjQ2NjE4ODM0MjYyNTE5NjIxMjI0NDEyNTk3MzI1MDEzMTQ3";
     
-    @Value("${payhere.currency:USD}")
+    @Value("${payhere.currency:LKR}")
     private String currency;
     
     @Value("${app.base.url}")
@@ -115,7 +118,24 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     @Transactional
     public Map<String, Object> initializeSubscriptionPayment(String userId, SubscriptionPlan plan) {
-        log.info("Initializing subscription payment for user: {}, plan: {}", userId, plan);
+        log.info("=== INITIALIZING SUBSCRIPTION PAYMENT ===");
+        log.info("User ID: {}", userId);
+        log.info("Plan: {}", plan);
+        log.info("Plan Price: {}", plan.getPrice());
+        
+        // Validate PayHere credentials
+        if (payhereMerchantId == null || payhereMerchantId.trim().isEmpty()) {
+            log.error("PayHere Merchant ID is not configured!");
+            throw new IllegalStateException("Payment gateway not configured: Missing merchant ID");
+        }
+        if (payhereMerchantSecret == null || payhereMerchantSecret.trim().isEmpty()) {
+            log.error("PayHere Merchant Secret is not configured!");
+            throw new IllegalStateException("Payment gateway not configured: Missing merchant secret");
+        }
+        
+        log.info("PayHere Merchant ID: {}", payhereMerchantId);
+        log.info("PayHere Merchant Secret Length: {}", payhereMerchantSecret.length());
+        log.info("Currency: {}", currency);
         
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -125,11 +145,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         
         // Generate unique order ID
         String orderId = "SUB-" + UUID.randomUUID().toString();
+        log.info("Generated Order ID: {}", orderId);
         
         // Prepare PayHere payment data
         Map<String, Object> paymentData = new HashMap<>();
         paymentData.put("sandbox", true); // CRITICAL: Enable sandbox mode for testing
-        paymentData.put("merchant_id", payheremerchant); // Fixed: use merchant ID, not secret
+        paymentData.put("merchant_id", payhereMerchantId);
         paymentData.put("return_url", baseUrl + "/subscription/success"); // Frontend URL
         paymentData.put("cancel_url", baseUrl + "/subscription/cancel"); // Frontend URL
         paymentData.put("notify_url", backendUrl + "/subscription/payhere-notify"); // Backend URL for server-to-server callback
@@ -137,6 +158,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         paymentData.put("items", plan.name() + " Subscription");
         paymentData.put("currency", currency);
         paymentData.put("amount", String.format("%.2f", plan.getPrice()));
+        
+        // Use custom_1 to pass plan name so it comes back in webhook
+        paymentData.put("custom_1", plan.name());
+        paymentData.put("custom_2", String.format("%.2f", plan.getPrice()));
+        
         paymentData.put("first_name", user.getFullName() != null ? user.getFullName().split(" ")[0] : user.getUsername());
         paymentData.put("last_name", user.getFullName() != null && user.getFullName().split(" ").length > 1 ? 
                 user.getFullName().split(" ")[1] : "");
@@ -147,22 +173,35 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         paymentData.put("country", "Sri Lanka");
         
         // Generate hash
+        String amount = String.format("%.2f", plan.getPrice());
+        log.info("Generating hash with: merchantId={}, orderId={}, amount={}, currency={}", 
+                payhereMerchantId, orderId, amount, currency);
+        
         String hash = generatePayhereHash(
-                payhereSecret,
+                payhereMerchantSecret,
                 orderId,
-                String.format("%.2f", plan.getPrice()),
+                amount,
                 currency
         );
         paymentData.put("hash", hash);
+        log.info("Generated Hash: {}", hash);
         
-        // Update subscription with pending payment
+        // Store pending payment details WITHOUT changing the subscription plan
+        // The plan will only be updated after successful payment verification
         subscription.setPaymentId(orderId);
-        subscription.setPlan(plan);
-        subscription.setAmount(plan.getPrice());
+        // Store the intended plan and amount in payment data for verification later
+        paymentData.put("pending_plan", plan.name());
+        paymentData.put("pending_amount", plan.getPrice());
+        
         subscription.setUpdatedAt(LocalDateTime.now());
         subscriptionRepository.save(subscription);
         
-        log.info("Payment initialization successful. Order ID: {}", orderId);
+        log.info("=== PAYMENT INITIALIZATION COMPLETE ===");
+        log.info("Order ID: {}", orderId);
+        log.info("Amount: {}", amount);
+        log.info("Plan will be updated after payment confirmation");
+        log.info("Payment Data: {}", paymentData);
+        
         return paymentData;
     }
     
@@ -182,12 +221,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription not found for order: " + orderId));
         
         // Verify payment signature
+        log.info("Verifying payment signature for order: {}", orderId);
         String localHash = generatePayhereHash(
-                payhereSecret,
+                payhereMerchantSecret,
                 orderId,
                 payhereAmount,
                 currency.toUpperCase()
         );
+        log.info("PayHere signature: {}", payhereSignature);
+        log.info("Local signature: {}", localHash);
         
         if (!localHash.equalsIgnoreCase(payhereSignature)) {
             log.error("PayHere signature verification failed for order: {}", orderId);
@@ -200,9 +242,28 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             return subscription;
         }
         
+        // Extract plan from custom_1 field (sent during payment initialization)
+        String planName = payhereData.get("custom_1");
+        if (planName == null || planName.isEmpty()) {
+            log.error("Plan information missing in PayHere callback for order: {}", orderId);
+            throw new IllegalStateException("Plan information missing in payment callback");
+        }
+        
+        SubscriptionPlan plan;
+        try {
+            plan = SubscriptionPlan.valueOf(planName);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid plan name in PayHere callback: {}", planName);
+            throw new IllegalStateException("Invalid plan information in payment callback");
+        }
+        
+        // NOW set the plan and amount (only after successful payment verification)
+        subscription.setPlan(plan);
+        subscription.setAmount(plan.getPrice());
+        
         // Activate subscription
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime endDate = now.plusDays(subscription.getPlan().getDurationDays());
+        LocalDateTime endDate = now.plusDays(plan.getDurationDays());
         
         subscription.setStatus(SubscriptionStatus.ACTIVE);
         subscription.setPayherePaymentId(paymentId);
@@ -305,21 +366,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     
     private String generatePayhereHash(String merchantSecret, String orderId, String amount, String currency) {
         try {
-            // Decode Base64 merchant secret if needed
-            String decodedSecret = merchantSecret;
-            try {
-                // Check if secret is Base64 encoded
-                byte[] decodedBytes = java.util.Base64.getDecoder().decode(merchantSecret);
-                decodedSecret = new String(decodedBytes);
-                log.debug("Decoded Base64 merchant secret for hash generation");
-            } catch (IllegalArgumentException e) {
-                // Secret is not Base64 encoded, use as-is
-                log.debug("Using merchant secret as-is (not Base64 encoded)");
-            }
+            // Use merchant secret as-is (plain text from PayHere dashboard)
+            // PayHere expects the secret to be used directly without Base64 decoding
+            log.debug("Using merchant secret as plain text for hash generation");
+            log.debug("Merchant Secret Length: {}", merchantSecret.length());
             
             // Step 1: Generate MD5 of merchant secret
             MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] secretDigest = md.digest(decodedSecret.getBytes());
+            byte[] secretDigest = md.digest(merchantSecret.getBytes());
             BigInteger secretHash = new BigInteger(1, secretDigest);
             String merchantSecretMd5 = secretHash.toString(16);
             while (merchantSecretMd5.length() < 32) {
@@ -329,7 +383,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             
             // Step 2: Generate final hash using PayHere formula
             // MD5(merchant_id + order_id + amount + currency + MD5(merchant_secret))
-            String hashString = payheremerchant + orderId + amount + currency.toUpperCase() + merchantSecretMd5;
+            String hashString = payhereMerchantId + orderId + amount + currency.toUpperCase() + merchantSecretMd5;
+            
+            log.info("=== HASH GENERATION DETAILS ===");
+            log.info("Merchant ID: {}", payhereMerchantId);
+            log.info("Order ID: {}", orderId);
+            log.info("Amount: {}", amount);
+            log.info("Currency: {}", currency.toUpperCase());
+            log.info("Merchant Secret MD5: {}", merchantSecretMd5);
+            log.info("Hash String (before MD5): {}", hashString);
             
             byte[] messageDigest = md.digest(hashString.getBytes());
             BigInteger no = new BigInteger(1, messageDigest);
@@ -338,8 +400,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 hash = "0" + hash;
             }
             
-            log.debug("Generated PayHere hash for order: {} with merchant_id: {}", orderId, payheremerchant);
-            return hash.toUpperCase();
+            String finalHash = hash.toUpperCase();
+            log.info("Generated Final Hash: {}", finalHash);
+            log.info("=== HASH GENERATION COMPLETE ===");
+            
+            return finalHash;
         } catch (Exception e) {
             log.error("Error generating PayHere hash", e);
             throw new RuntimeException("Failed to generate payment hash");
