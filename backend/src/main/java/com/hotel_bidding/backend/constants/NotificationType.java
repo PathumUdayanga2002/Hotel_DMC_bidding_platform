@@ -42,6 +42,8 @@ public enum NotificationType {
     
     // Admin notifications
     USER_REGISTRATION,           // New user registered (for admin)
+    DMC_REGISTRATION,            // New DMC registered (for admin)
+    HOTEL_REGISTRATION,          // New hotel registered (for admin)
     PROFILE_SUBMITTED,           // New profile submitted for review (for admin)
     PAYMENT_RECEIVED,            // Payment received notification
     SUBSCRIPTION_EXPIRED,        // Subscription expired warning
