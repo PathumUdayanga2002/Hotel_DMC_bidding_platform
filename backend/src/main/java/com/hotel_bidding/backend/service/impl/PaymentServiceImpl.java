@@ -16,7 +16,7 @@ import com.hotel_bidding.backend.exception.UnauthorizedException;
 import com.hotel_bidding.backend.repository.*;
 import com.hotel_bidding.backend.service.CurrencyConversionService;
 // import com.hotel_bidding.backend.service.EmailService; // TODO: Uncomment when email methods are implemented
-import com.hotel_bidding.backend.service.PayHereService;
+// OLD PAYMENT SYSTEM - REMOVED: import com.hotel_bidding.backend.service.PayHereService;
 import com.hotel_bidding.backend.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final BidInquiryRepository bidInquiryRepository;
     private final HotelBidRepository hotelBidRepository;
     private final UserRepository userRepository;
-    private final PayHereService payHereService;
+    // OLD PAYMENT SYSTEM - REMOVED: private final PayHereService payHereService;
     private final CurrencyConversionService currencyService;
     // private final EmailService emailService; // TODO: Uncomment when email methods are implemented
     
@@ -59,10 +59,18 @@ public class PaymentServiceImpl implements PaymentService {
     private static final double PLATFORM_COMMISSION_RATE = 0.05; // 5%
     private static final long PAYMENT_TIMEOUT_MINUTES = 15;
     
+    /**
+     * @deprecated This method is part of the OLD bid payment system using PayHere.
+     * It has been deprecated in favor of subscription-based access.
+     * This method will throw UnsupportedOperationException.
+     */
     @Override
     @Transactional
+    @Deprecated
     public PayHereInitiationResponse initiatePayment(InitiatePaymentRequest request, String dmcUserId) {
-        log.info("Initiating payment for inquiry: {}, bid: {} by DMC: {}", 
+        throw new UnsupportedOperationException("Bid payment system has been deprecated. Please use subscription-based access.");
+        /* OLD CODE COMMENTED OUT - BID PAYMENT SYSTEM
+        log.info("Initiating payment for inquiry: {}, bid: {} by DMC: {}",
                  request.getInquiryId(), request.getBidId(), dmcUserId);
         
         // Get DMC user
@@ -157,35 +165,38 @@ public class PaymentServiceImpl implements PaymentService {
                                               inquiry.getNumberOfRooms(), 
                                               inquiry.getNumberOfNights());
         
-        String checkoutUrl = payHereService.generateCheckoutUrl(
-                orderId,
-                amountInLkr,
-                "LKR",
-                itemName,
-                itemDescription,
-                dmcUser.getId(),
-                dmcUser.getUsername(),
-                dmcUser.getEmail(),
-                returnUrl,
-                cancelUrl,
-                notifyUrl
-        );
+        // OLD PAYMENT SYSTEM - Method call removed
+        String checkoutUrl = "DEPRECATED - Use subscription system";
+        log.error("OLD BID PAYMENT SYSTEM - This method has been deprecated!");
+        
+        // OLD CODE:
+        // String checkoutUrl = payHereService.generateCheckoutUrl(
+        //         orderId,
+        //         amountInLkr,
+        //         "LKR",
+        //         itemName,
+        //         itemDescription,
+        //         dmcUser.getId(),
+        //         dmcUser.getUsername(),
+        //         dmcUser.getEmail(),
+        //         returnUrl,
+        //         cancelUrl,
+        //         notifyUrl
+        // );
         
         // Send email notification
         // TODO: Implement email service methods
-        /*
-        try {
-            emailService.sendPaymentInitiatedEmail(
-                    dmcUser.getEmail(),
-                    dmcUser.getUsername(),
-                    orderId,
-                    amountInLkr,
-                    expiresAt
-            );
-        } catch (Exception e) {
-            log.error("Failed to send payment initiation email", e);
-        }
-        */
+        // try {
+        //     emailService.sendPaymentInitiatedEmail(
+        //             dmcUser.getEmail(),
+        //             dmcUser.getUsername(),
+        //             orderId,
+        //             amountInLkr,
+        //             expiresAt
+        //     );
+        // } catch (Exception e) {
+        //     log.error("Failed to send payment initiation email", e);
+        // }
         
         return PayHereInitiationResponse.builder()
                 .paymentId(payment.getId())
@@ -199,11 +210,20 @@ public class PaymentServiceImpl implements PaymentService {
                 .itemDescription(itemDescription)
                 .expiresInMinutes(PAYMENT_TIMEOUT_MINUTES)
                 .build();
+        */ // END OLD CODE
     }
     
+    /**
+     * @deprecated This method handles PayHere webhooks for the OLD bid payment system.
+     * It has been deprecated. The subscription system uses different webhook handlers.
+     */
     @Override
     @Transactional
+    @Deprecated
     public void handlePayHereNotification(Map<String, String> params) {
+        throw new UnsupportedOperationException("Bid payment webhook has been deprecated.");
+        /* OLD CODE COMMENTED OUT
+        
         log.info("Received PayHere notification: {}", params);
         
         // Verify signature
@@ -250,21 +270,19 @@ public class PaymentServiceImpl implements PaymentService {
             
             // Send success email
             // TODO: Implement email service methods
-            /*
-            try {
-                User dmcUser = userRepository.findById(payment.getDmcUserId()).orElse(null);
-                if (dmcUser != null) {
-                    emailService.sendPaymentSuccessEmail(
-                            dmcUser.getEmail(),
-                            dmcUser.getUsername(),
-                            orderId,
-                            payment.getAmountInLkr()
-                    );
-                }
-            } catch (Exception e) {
-                log.error("Failed to send payment success email", e);
-            }
-            */
+            // try {
+            //     User dmcUser = userRepository.findById(payment.getDmcUserId()).orElse(null);
+            //     if (dmcUser != null) {
+            //         emailService.sendPaymentSuccessEmail(
+            //                 dmcUser.getEmail(),
+            //                 dmcUser.getUsername(),
+            //                 orderId,
+            //                 payment.getAmountInLkr()
+            //         );
+            //     }
+            // } catch (Exception e) {
+            //     log.error("Failed to send payment success email", e);
+            // }
             
         } else if ("0".equals(statusCode)) {
             // Payment pending
@@ -287,6 +305,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
         
         paymentRepository.save(payment);
+        */ // END OLD CODE COMMENTED OUT
     }
     
     private void updatePlatformBalance(Payment payment) {
@@ -429,14 +448,19 @@ public class PaymentServiceImpl implements PaymentService {
                 payment.setPayoutStatus(PayoutStatus.PROCESSING);
                 paymentRepository.save(payment);
                 
-                // Call PayHere payout API
-                String payoutReference = payHereService.processPayoutToHotel(
-                        payment.getId(),
-                        bankDetails.getAccountNumber(),
-                        payment.getHotelPayout(),
-                        "LKR",
-                        "Payout for bid: " + payment.getBidId()
-                );
+                // OLD PAYMENT SYSTEM - PayHere payout API call removed
+                // Manual payout processing required
+                String payoutReference = "MANUAL-PAYOUT-" + payment.getId();
+                log.warn("Manual payout required for payment: {}. Old PayHere payout system deprecated.", payment.getId());
+                
+                // OLD CODE:
+                // String payoutReference = payHereService.processPayoutToHotel(
+                //         payment.getId(),
+                //         bankDetails.getAccountNumber(),
+                //         payment.getHotelPayout(),
+                //         "LKR",
+                //         "Payout for bid: " + payment.getBidId()
+                // );
                 
                 // Update payment with payout details
                 payment.setPayoutStatus(PayoutStatus.PAID);
