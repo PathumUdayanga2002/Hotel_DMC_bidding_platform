@@ -14,13 +14,27 @@ import java.util.Map;
 
 /**
  * Payment service interface
+ * 
+ * NOTE: This interface contains methods for the OLD bid payment system.
+ * initiatePayment() and handlePayHereNotification() are DEPRECATED.
+ * Use the subscription system instead for payments.
  */
 public interface PaymentService {
     
-    // Payment Initiation
+    // Payment Initiation - DEPRECATED (Old Bid Payment System)
+    /**
+     * @deprecated This method is part of the OLD bid payment system.
+     * Use subscription-based access instead. Will throw UnsupportedOperationException.
+     */
+    @Deprecated
     PayHereInitiationResponse initiatePayment(InitiatePaymentRequest request, String dmcUserId);
     
-    // PayHere Webhook
+    // PayHere Webhook - DEPRECATED (Old Bid Payment System)
+    /**
+     * @deprecated This webhook is for the OLD bid payment system.
+     * Will throw UnsupportedOperationException.
+     */
+    @Deprecated
     void handlePayHereNotification(Map<String, String> params);
     
     // Payment Queries

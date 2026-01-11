@@ -1,6 +1,7 @@
 package com.hotel_bidding.backend.service;
 
 import com.hotel_bidding.backend.constants.SubscriptionStatus;
+import com.hotel_bidding.backend.dto.response.SubscriptionResponse;
 import com.hotel_bidding.backend.entity.Subscription;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +16,7 @@ public interface AdminSubscriptionService {
     /**
      * Get all subscriptions with pagination and filtering
      */
-    Page<Subscription> getAllSubscriptions(SubscriptionStatus status, String search, Pageable pageable);
+    Page<SubscriptionResponse> getAllSubscriptions(SubscriptionStatus status, String search, Pageable pageable);
     
     /**
      * Get subscription statistics for dashboard
@@ -33,7 +34,8 @@ public interface AdminSubscriptionService {
     void cancelSubscription(String subscriptionId);
     
     /**
-     * Get subscription by ID
+     * Get subscription by ID with user info
      */
-    Subscription getSubscriptionById(String subscriptionId);
+    SubscriptionResponse getSubscriptionById(String subscriptionId);
 }
+

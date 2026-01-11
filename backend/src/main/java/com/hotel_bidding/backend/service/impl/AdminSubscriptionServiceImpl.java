@@ -1,6 +1,7 @@
 package com.hotel_bidding.backend.service.impl;
 
 import com.hotel_bidding.backend.constants.SubscriptionStatus;
+import com.hotel_bidding.backend.dto.response.SubscriptionResponse;
 import com.hotel_bidding.backend.entity.Subscription;
 import com.hotel_bidding.backend.entity.User;
 import com.hotel_bidding.backend.exception.ResourceNotFoundException;
@@ -30,7 +31,7 @@ public class AdminSubscriptionServiceImpl implements AdminSubscriptionService {
     private final UserRepository userRepository;
     
     @Override
-    public Page<Subscription> getAllSubscriptions(SubscriptionStatus status, String search, Pageable pageable) {
+    public Page<SubscriptionResponse> getAllSubscriptions(SubscriptionStatus status, String search, Pageable pageable) {
         List<Subscription> allSubscriptions = subscriptionRepository.findAll();
         
         // Filter by status if provided
@@ -56,12 +57,53 @@ public class AdminSubscriptionServiceImpl implements AdminSubscriptionService {
                     .collect(Collectors.toList());
         }
         
+        // Convert to SubscriptionResponse with user info
+        List<SubscriptionResponse> responses = allSubscriptions.stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+        
         // Manual pagination
         int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), allSubscriptions.size());
-        List<Subscription> pageContent = allSubscriptions.subList(start, end);
+        int end = Math.min((start + pageable.getPageSize()), responses.size());
+        List<SubscriptionResponse> pageContent = responses.subList(start, end);
         
-        return new PageImpl<>(pageContent, pageable, allSubscriptions.size());
+        return new PageImpl<>(pageContent, pageable, responses.size());
+    }
+    
+    private SubscriptionResponse convertToResponse(Subscription subscription) {
+        User user = userRepository.findById(subscription.getUserId()).orElse(null);
+        
+        SubscriptionResponse.UserInfo userInfo = null;
+        if (user != null) {
+            userInfo = SubscriptionResponse.UserInfo.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .fullName(user.getFullName())
+                    .role(user.getRole() != null ? user.getRole().name() : null)
+                    .approved(user.getStatus() != null && user.getStatus().name().equals("APPROVED"))
+                    .build();
+        }
+        
+        return SubscriptionResponse.builder()
+                .id(subscription.getId())
+                .userId(subscription.getUserId())
+                .status(subscription.getStatus())
+                .plan(subscription.getPlan())
+                .startDate(subscription.getStartDate())
+                .endDate(subscription.getEndDate())
+                .paymentId(subscription.getPaymentId())
+                .payherePaymentId(subscription.getPayherePaymentId())
+                .amount(subscription.getAmount())
+                .currency(subscription.getCurrency())
+                .autoRenew(subscription.isAutoRenew())
+                .createdAt(subscription.getCreatedAt())
+                .updatedAt(subscription.getUpdatedAt())
+                .user(userInfo)
+                .isExpired(subscription.isExpired())
+                .isTrial(subscription.isTrial())
+                .daysRemaining(subscription.getDaysRemaining())
+                .build();
     }
     
     @Override
@@ -137,8 +179,9 @@ public class AdminSubscriptionServiceImpl implements AdminSubscriptionService {
     }
     
     @Override
-    public Subscription getSubscriptionById(String subscriptionId) {
-        return subscriptionRepository.findById(subscriptionId)
+    public SubscriptionResponse getSubscriptionById(String subscriptionId) {
+        Subscription subscription = subscriptionRepository.findById(subscriptionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Subscription not found"));
+        return convertToResponse(subscription);
     }
 }

@@ -103,7 +103,23 @@ const SubscriptionPurchase = () => {
       if (response.data.success) {
         const paymentData = response.data.data;
         
-        console.log('Payment data received:', paymentData);
+        console.log('=== PAYMENT DATA RECEIVED ===');
+        console.log('Full Payment Data:', JSON.stringify(paymentData, null, 2));
+        console.log('Merchant ID:', paymentData.merchant_id);
+        console.log('Order ID:', paymentData.order_id);
+        console.log('Amount:', paymentData.amount);
+        console.log('Currency:', paymentData.currency);
+        console.log('Hash:', paymentData.hash);
+        console.log('Sandbox Mode:', paymentData.sandbox);
+        console.log('============================');
+        
+        // Validate PayHere is loaded
+        if (typeof window.payhere === 'undefined') {
+          console.error('PayHere SDK not loaded!');
+          toast.error('Payment gateway not initialized. Please refresh the page.');
+          setPurchasing(false);
+          return;
+        }
         
         // Configure PayHere callbacks BEFORE starting payment
         window.payhere.onCompleted = function onCompleted(orderId) {
@@ -129,22 +145,43 @@ const SubscriptionPurchase = () => {
         };
 
         window.payhere.onError = function onError(error) {
-          console.error('Payment error:', error);
+          console.error('=== PAYHERE ERROR ===');
+          console.error('Error Object:', error);
+          console.error('Error String:', JSON.stringify(error));
+          console.error('====================');
           toast.error(`Payment failed: ${error || 'Unknown error'}`);
           setPurchasing(false);
         };
 
         // Validate payment data structure
         if (!paymentData.merchant_id || !paymentData.order_id || !paymentData.amount) {
+          console.error('Invalid payment data:', {
+            has_merchant_id: !!paymentData.merchant_id,
+            has_order_id: !!paymentData.order_id,
+            has_amount: !!paymentData.amount,
+            has_hash: !!paymentData.hash
+          });
           toast.error('Invalid payment configuration');
           setPurchasing(false);
           return;
         }
 
-        console.log('Initiating PayHere payment with sandbox:', paymentData.sandbox);
+        console.log('=== STARTING PAYHERE PAYMENT ===');
+        console.log('Sandbox Mode:', paymentData.sandbox);
         
         // Start PayHere payment (this opens PayHere modal, NOT an AJAX request)
-        window.payhere.startPayment(paymentData);
+        try {
+          window.payhere.startPayment(paymentData);
+          console.log('PayHere payment initiated successfully');
+        } catch (payhereError) {
+          console.error('=== PAYHERE START PAYMENT ERROR ===');
+          console.error('Error:', payhereError);
+          console.error('Error Message:', payhereError.message);
+          console.error('Error Stack:', payhereError.stack);
+          console.error('===================================');
+          toast.error('Failed to start payment. Please try again.');
+          setPurchasing(false);
+        }
         
       } else {
         toast.error(response.data.message || 'Failed to initialize payment');
