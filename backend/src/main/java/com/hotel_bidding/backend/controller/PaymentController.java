@@ -1,5 +1,7 @@
 package com.hotel_bidding.backend.controller;
 
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hotel_bidding.backend.dto.request.HotelBankDetailsRequest;
 import com.hotel_bidding.backend.dto.request.InitiatePaymentRequest;
-import com.hotel_bidding.backend.dto.response.PayHereInitiationResponse;
 import com.hotel_bidding.backend.dto.response.PaymentResponse;
 import com.hotel_bidding.backend.entity.HotelBankDetails;
 import com.hotel_bidding.backend.service.PaymentService;
@@ -25,7 +26,6 @@ import com.hotel_bidding.backend.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 /**
  * Payment controller for DMC and Hotel users
  */
@@ -41,20 +41,26 @@ public class PaymentController {
     /**
      * DMC initiates payment for awarded bid
      * POST /api/payments/initiate
+     * 
+     * @deprecated This endpoint is part of the OLD bid payment system.
+     * It has been deprecated in favor of subscription-based access.
+     * Will return 410 Gone status.
      */
+    @Deprecated
     @PostMapping("/initiate")
     @PreAuthorize("hasAnyRole('DMC_USER', 'DMC_SUPER_ADMIN', 'DMC_STAFF_ADMIN')")
-    public ResponseEntity<PayHereInitiationResponse> initiatePayment(
+    public ResponseEntity<?> initiatePayment(
             @Valid @RequestBody InitiatePaymentRequest request,
             Authentication authentication) {
         
-        log.info("DMC user {} initiating payment for inquiry: {}, bid: {}", 
-                authentication.getName(), request.getInquiryId(), request.getBidId());
+        log.warn("DEPRECATED: DMC user {} attempted to use old bid payment system", authentication.getName());
         
-        String dmcUserId = authentication.getName();
-        PayHereInitiationResponse response = paymentService.initiatePayment(request, dmcUserId);
-        
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(410)
+                .body(Map.of(
+                    "error", "Payment system deprecated",
+                    "message", "Bid payment system has been deprecated. Please use subscription-based access.",
+                    "recommendation", "Purchase a subscription plan to access bidding features."
+                ));
     }
 
     /**

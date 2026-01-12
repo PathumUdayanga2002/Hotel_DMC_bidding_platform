@@ -46,14 +46,10 @@ import HotelBidsPage from './pages/HotelBidsPage';
 import HotelInquiryDetails from './pages/HotelInquiryDetails';
 import HotelDirectInquiriesPage from './pages/HotelDirectInquiriesPage';
 
-// Payment Pages
-import PaymentInitiation from './pages/PaymentInitiation';
-import PaymentReturn from './pages/PaymentReturn';
-import PaymentCancel from './pages/PaymentCancel';
+// Payment Pages - OLD SYSTEM REMOVED (PaymentInitiation, PaymentReturn, PaymentCancel)
 import DMCPaymentHistory from './pages/DMCPaymentHistory';
 import HotelPaymentHistory from './pages/HotelPaymentHistory';
-import AdminPaymentDashboard from './pages/AdminPaymentDashboard';
-import AdminPayoutManagement from './pages/AdminPayoutManagement';
+
 import AdminUserManagement from './pages/AdminUserManagement';
 import AdminSettings from './pages/AdminSettings';
 import PlatformAnalytics from './pages/PlatformAnalytics';
@@ -75,6 +71,7 @@ import DMCDirectInquiryHistory from './pages/DMCDirectInquiryHistory.jsx';
 import SubscriptionPlanIntro from './pages/SubscriptionPlanIntro.jsx';
 import SubscriptionPurchase from './pages/SubscriptionPurchase.jsx';
 import AdminSubscriptionManagement from './pages/AdminSubscriptionManagement.jsx';
+import AdminSubscriptionDetail from './pages/AdminSubscriptionDetail.jsx';
 
 const App = () => {
   // Role constants for easier management
@@ -361,30 +358,7 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/payment/initiate"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <PaymentInitiation />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/payment/return"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <PaymentReturn />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/payment/cancel"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <PaymentCancel />
-              </ProtectedRoute>
-            }
-          />
+          {/* OLD BID PAYMENT ROUTES REMOVED: /payment/initiate, /payment/return, /payment/cancel */}
           
           {/* Admin Routes */}
           <Route
@@ -402,9 +376,8 @@ const App = () => {
             <Route path="user-management" element={<AdminUserManagement />} />
             <Route path="analytics" element={<PlatformAnalytics />} />
             <Route path="settings" element={<AdminSettings />} />
-            <Route path="payments" element={<AdminPaymentDashboard />} />
-            <Route path="payouts" element={<AdminPayoutManagement />} />
             <Route path="subscriptions" element={<AdminSubscriptionManagement />} />
+            <Route path="subscriptions/:subscriptionId" element={<AdminSubscriptionDetail />} />
           </Route>
 
           {/* 404 Redirect */}
