@@ -16,6 +16,7 @@ public class RevenueAnalyticsDTO {
     
     private Double totalRevenueYTD;           // Total revenue year-to-date
     private Double platformCommission;        // Total commission earned
+    private Double subscriptionRevenue;       // Revenue from subscriptions
     private Double averageBookingValue;       // Average booking amount
     private Double growthRate;                // Growth rate percentage (YoY or MoM)
     private String currency;                  // Default currency (e.g., "USD")

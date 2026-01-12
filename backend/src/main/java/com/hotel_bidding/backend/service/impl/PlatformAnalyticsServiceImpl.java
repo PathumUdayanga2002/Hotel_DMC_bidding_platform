@@ -1,8 +1,16 @@
 package com.hotel_bidding.backend.service.impl;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.hotel_bidding.backend.constants.BidStatus;
 import com.hotel_bidding.backend.constants.PaymentStatus;
-import com.hotel_bidding.backend.constants.PayoutStatus;
+import com.hotel_bidding.backend.constants.SubscriptionStatus;
 import com.hotel_bidding.backend.dto.analytics.PlatformAnalyticsDTO;
 import com.hotel_bidding.backend.dto.analytics.PlatformPerformanceDTO;
 import com.hotel_bidding.backend.dto.analytics.RevenueAnalyticsDTO;
@@ -10,29 +18,15 @@ import com.hotel_bidding.backend.dto.analytics.TopHotelMarketDTO;
 import com.hotel_bidding.backend.entity.HotelBid;
 import com.hotel_bidding.backend.entity.HotelProfile;
 import com.hotel_bidding.backend.entity.Payment;
+import com.hotel_bidding.backend.entity.Subscription;
 import com.hotel_bidding.backend.repository.HotelBidRepository;
 import com.hotel_bidding.backend.repository.HotelRepository;
 import com.hotel_bidding.backend.repository.PaymentRepository;
+import com.hotel_bidding.backend.repository.SubscriptionRepository;
 import com.hotel_bidding.backend.service.PlatformAnalyticsService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.ConditionalOperators;
-import org.springframework.data.mongodb.core.aggregation.GroupOperation;
-import org.springframework.data.mongodb.core.aggregation.SortOperation;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of Platform Analytics Service
@@ -45,7 +39,7 @@ public class PlatformAnalyticsServiceImpl implements PlatformAnalyticsService {
     private final PaymentRepository paymentRepository;
     private final HotelBidRepository hotelBidRepository;
     private final HotelRepository hotelRepository;
-    private final MongoTemplate mongoTemplate;
+    private final SubscriptionRepository subscriptionRepository;
     
     @Override
     public PlatformAnalyticsDTO getPlatformAnalytics() {
@@ -66,7 +60,6 @@ public class PlatformAnalyticsServiceImpl implements PlatformAnalyticsService {
         
         // Get year-to-date date range
         LocalDateTime startOfYear = LocalDateTime.now().withDayOfYear(1).withHour(0).withMinute(0).withSecond(0);
-        LocalDateTime now = LocalDateTime.now();
         
         // Get all completed payments for this year
         List<Payment> completedPayments = paymentRepository.findAll().stream()
@@ -82,6 +75,16 @@ public class PlatformAnalyticsServiceImpl implements PlatformAnalyticsService {
         
         double totalCommission = completedPayments.stream()
                 .mapToDouble(p -> p.getPlatformCommission() != null ? p.getPlatformCommission() : 0.0)
+                .sum();
+        
+        // Calculate subscription revenue for the year
+        List<Subscription> activeSubscriptions = subscriptionRepository.findAll().stream()
+                .filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE || s.getStatus() == SubscriptionStatus.TRIAL)
+                .filter(s -> s.getCreatedAt() != null && s.getCreatedAt().isAfter(startOfYear))
+                .collect(Collectors.toList());
+        
+        double subscriptionRevenue = activeSubscriptions.stream()
+                .mapToDouble(s -> s.getAmount() != null ? s.getAmount() : 0.0)
                 .sum();
         
         int totalBookings = completedPayments.size();
@@ -114,6 +117,7 @@ public class PlatformAnalyticsServiceImpl implements PlatformAnalyticsService {
         return RevenueAnalyticsDTO.builder()
                 .totalRevenueYTD(Math.round(totalRevenue * 100.0) / 100.0)
                 .platformCommission(Math.round(totalCommission * 100.0) / 100.0)
+                .subscriptionRevenue(Math.round(subscriptionRevenue * 100.0) / 100.0)
                 .averageBookingValue(Math.round(averageBookingValue * 100.0) / 100.0)
                 .growthRate(Math.round(growthRate * 100.0) / 100.0)
                 .currency("USD")
@@ -162,11 +166,11 @@ public class PlatformAnalyticsServiceImpl implements PlatformAnalyticsService {
                             p.getPaymentStatus() == PaymentStatus.CANCELLED)
                 .count();
         
-        double disputeRate = allPayments.size() > 0 ? 
+        double disputeRate = !allPayments.isEmpty() ?
                 (disputedPayments * 100.0) / allPayments.size() : 0.0;
         
         // Calculate user satisfaction (simplified: based on successful completion rate)
-        double userSatisfaction = allPayments.size() > 0 ?
+        double userSatisfaction = !allPayments.isEmpty() ?
                 (completedPayments * 100.0) / allPayments.size() : 0.0;
         
         // Average response time for platform (simplified to 24 hours)
@@ -186,73 +190,114 @@ public class PlatformAnalyticsServiceImpl implements PlatformAnalyticsService {
     }
     
     @Override
-    public List<TopHotelMarketDTO> getTopHotelMarkets(int limit) {
-        log.info("Fetching top {} hotel markets", limit);
+    public List<TopHotelMarketDTO> getTopHotelMarkets(int limit, String sortBy, Integer minStars, String city) {
+        log.info("Fetching top {} hotel markets with filters - sortBy: {}, minStars: {}, city: {}", 
+                limit, sortBy, minStars, city);
         
         try {
-            // Group bids by hotel and calculate statistics
-            GroupOperation groupByHotel = Aggregation.group("hotelUserId")
-                    .count().as("totalBids")
-                    .sum(ConditionalOperators.when(Criteria.where("status").is(BidStatus.ACCEPTED.toString()))
-                            .then(1).otherwise(0)).as("acceptedBids")
-                    .avg("totalPrice").as("avgBidValue")
-                    .first("hotelUserId").as("hotelUserId")
-                    .first("hotelName").as("hotelName")
-                    .first("hotelCity").as("hotelCity");
+            // Get all approved hotel profiles
+            List<HotelProfile> allHotels = hotelRepository.findByStatus("APPROVED");
             
-            SortOperation sortByTotalBids = Aggregation.sort(Sort.Direction.DESC, "totalBids");
+            // Apply filters
+            List<HotelProfile> filteredHotels = allHotels.stream()
+                    .filter(hotel -> {
+                        // City filter
+                        if (city != null && !city.trim().isEmpty()) {
+                            return hotel.getCity() != null && 
+                                   hotel.getCity().toLowerCase().contains(city.toLowerCase());
+                        }
+                        return true;
+                    })
+                    .filter(hotel -> {
+                        // Star rating filter
+                        if (minStars != null) {
+                            Integer hotelStars = hotel.getHotelStars();
+                            return hotelStars != null && hotelStars >= minStars;
+                        }
+                        return true;
+                    })
+                    .collect(Collectors.toList());
             
-            Aggregation aggregation = Aggregation.newAggregation(
-                    groupByHotel,
-                    sortByTotalBids,
-                    Aggregation.limit(limit)
-            );
+            // Get all bids for statistics
+            List<HotelBid> allBids = hotelBidRepository.findAll();
             
-            AggregationResults<Map> results = mongoTemplate.aggregate(
-                    aggregation, "hotel_bids", Map.class);
+            // Get all payments for revenue calculation
+            List<Payment> allPayments = paymentRepository.findAll().stream()
+                    .filter(p -> p.getPaymentStatus() == PaymentStatus.COMPLETED)
+                    .collect(Collectors.toList());
             
+            // Build DTOs for each hotel
             List<TopHotelMarketDTO> topMarkets = new ArrayList<>();
             
-            for (Map result : results.getMappedResults()) {
-                String hotelUserId = (String) result.get("hotelUserId");
+            for (HotelProfile hotel : filteredHotels) {
+                String hotelUserId = hotel.getUserId();
                 
-                // Get hotel profile details
-                HotelProfile hotelProfile = hotelRepository.findByUserId(hotelUserId).orElse(null);
+                // Calculate bid statistics for this hotel
+                List<HotelBid> hotelBids = allBids.stream()
+                        .filter(bid -> bid.getHotelUserId() != null && 
+                                      bid.getHotelUserId().equals(hotelUserId))
+                        .collect(Collectors.toList());
+                
+                int totalBids = hotelBids.size();
+                long acceptedBids = hotelBids.stream()
+                        .filter(bid -> bid.getStatus() == BidStatus.ACCEPTED)
+                        .count();
+                
+                double avgBidValue = hotelBids.stream()
+                        .mapToDouble(bid -> bid.getTotalPrice() != null ? bid.getTotalPrice() : 0.0)
+                        .average()
+                        .orElse(0.0);
                 
                 // Calculate revenue for this hotel
-                double totalRevenue = paymentRepository.findAll().stream()
-                        .filter(p -> p.getHotelUserId() != null && p.getHotelUserId().equals(hotelUserId))
-                        .filter(p -> p.getPaymentStatus() == PaymentStatus.COMPLETED)
+                double totalRevenue = allPayments.stream()
+                        .filter(p -> p.getHotelUserId() != null && 
+                                    p.getHotelUserId().equals(hotelUserId))
                         .mapToDouble(p -> p.getTotalAmount() != null ? p.getTotalAmount() : 0.0)
                         .sum();
-                
-                Integer totalBids = result.get("totalBids") != null ? 
-                        ((Number) result.get("totalBids")).intValue() : 0;
-                Integer acceptedBids = result.get("acceptedBids") != null ? 
-                        ((Number) result.get("acceptedBids")).intValue() : 0;
-                Double avgBidValue = result.get("avgBidValue") != null ? 
-                        ((Number) result.get("avgBidValue")).doubleValue() : 0.0;
                 
                 double successRate = totalBids > 0 ? (acceptedBids * 100.0) / totalBids : 0.0;
                 
                 TopHotelMarketDTO dto = TopHotelMarketDTO.builder()
-                        .hotelId(hotelProfile != null ? hotelProfile.getId() : null)
-                        .hotelName((String) result.get("hotelName"))
-                        .city((String) result.get("hotelCity"))
-                        .country(hotelProfile != null ? hotelProfile.getCountry() : "N/A")
+                        .hotelId(hotel.getId())
+                        .hotelName(hotel.getName())
+                        .city(hotel.getCity())
+                        .country(hotel.getCountry())
                         .totalBids(totalBids)
-                        .acceptedBids(acceptedBids)
+                        .acceptedBids((int) acceptedBids)
                         .totalRevenue(Math.round(totalRevenue * 100.0) / 100.0)
                         .successRate(Math.round(successRate * 100.0) / 100.0)
                         .averageBidValue(Math.round(avgBidValue * 100.0) / 100.0)
-                        .hotelStars(hotelProfile != null ? hotelProfile.getHotelStars() : null)
-                        .status(hotelProfile != null ? hotelProfile.getStatus() : "N/A")
+                        .hotelStars(hotel.getHotelStars())
+                        .status(hotel.getStatus())
                         .build();
                 
                 topMarkets.add(dto);
             }
             
-            return topMarkets;
+            // Apply sorting based on sortBy parameter
+            if (sortBy != null && !topMarkets.isEmpty()) {
+                switch (sortBy.toLowerCase()) {
+                    case "successrate":
+                        topMarkets.sort((a, b) -> Double.compare(b.getSuccessRate(), a.getSuccessRate()));
+                        break;
+                    case "revenue":
+                        topMarkets.sort((a, b) -> Double.compare(b.getTotalRevenue(), a.getTotalRevenue()));
+                        break;
+                    case "avgbidvalue":
+                        topMarkets.sort((a, b) -> Double.compare(b.getAverageBidValue(), a.getAverageBidValue()));
+                        break;
+                    case "totalbids":
+                    default:
+                        topMarkets.sort((a, b) -> Integer.compare(b.getTotalBids(), a.getTotalBids()));
+                        break;
+                }
+            } else {
+                // Default sort by total bids descending
+                topMarkets.sort((a, b) -> Integer.compare(b.getTotalBids(), a.getTotalBids()));
+            }
+            
+            // Return limited results
+            return topMarkets.stream().limit(limit).collect(Collectors.toList());
             
         } catch (Exception e) {
             log.error("Error fetching top hotel markets", e);
