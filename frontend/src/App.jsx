@@ -385,15 +385,7 @@ const App = () => {
             }
           />
           
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-                {/* <AdminDashboard /> */}
-                <AdminDashboardNew />
-              </ProtectedRoute>
-            }
-          />
+          {/* Admin Routes */}
           <Route
             path="/admin"
             element={
@@ -402,7 +394,7 @@ const App = () => {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route index element={<AdminHome />} />
             <Route path="dashboard" element={<AdminHome />} />
             <Route path="dmc-approvals" element={<DMCApprovals />} />
             <Route path="hotel-approvals" element={<HotelApprovals />} />
