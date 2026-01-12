@@ -355,15 +355,15 @@ const App = () => {
           />
           {/* OLD BID PAYMENT ROUTES REMOVED: /payment/initiate, /payment/return, /payment/cancel */}
           
-          <Route
+          {/* <Route
             path="/admin/dashboard"
             element={
-              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
+              <ProtectedRoute allowedRoles={ADMIN_ROLES}> */}
                 {/* <AdminDashboard /> */}
-                <AdminDashboardNew />
-              </ProtectedRoute>
+                {/* <AdminDashboardNew /> */}
+              {/* </ProtectedRoute>
             }
-          />
+          /> */}
           <Route
             path="/admin"
             element={
