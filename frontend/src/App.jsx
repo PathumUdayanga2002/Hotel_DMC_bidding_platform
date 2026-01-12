@@ -180,8 +180,8 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
-          {/* Hotel Messages */} 
+          
+          {/* Hotel Messages 
             <Route
             path="/hotel/messages"
             element={
@@ -189,8 +189,9 @@ const App = () => {
                 <HotelMessages />
               </ProtectedRoute>
             }
-          />
-
+          /> 
+          */}
+         
           {/* Hotel Staff Management - Super Admin Only */}
           <Route
             path="/hotel/staff"
