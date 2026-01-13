@@ -76,15 +76,15 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-cyan-50 via-blue-50 to-green-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo/Title */}
         <div className="text-center mb-8">
-          <div className="bg-cyan-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-gradient-to-r from-teal-500 to-emerald-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
             <LogIn className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Login to access your dashboard</p>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2" style={{fontFamily: 'Inter, sans-serif', letterSpacing: '-0.02em'}}>Welcome Back</h1>
+          <p className="text-slate-600" style={{fontFamily: 'Inter, sans-serif'}}>Login to access your dashboard</p>
         </div>
 
         <Card>
@@ -105,7 +105,7 @@ const LoginPage = () => {
             />
 
             <div className="flex justify-end">
-              <Link to="/forgot-password" className="text-sm text-cyan-700 font-semibold hover:underline">
+              <Link to="/forgot-password" className="text-sm text-teal-600 font-semibold hover:text-teal-700">
                 Forgot password?
               </Link>
             </div>
@@ -121,10 +121,10 @@ const LoginPage = () => {
           </form>
 
           {/* Divider */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-center text-gray-600 text-sm">
+          <div className="mt-6 pt-6 border-t border-slate-200">
+            <p className="text-center text-slate-600 text-sm" style={{fontFamily: 'Inter, sans-serif'}}>
               Don't have an account?{' '}
-              <Link to="/" className="text-cyan-600 hover:text-cyan-700 font-semibold">
+              <Link to="/" className="text-teal-600 hover:text-teal-700 font-semibold">
                 Register here
               </Link>
             </p>

@@ -29,7 +29,6 @@ import HotelProfileRegister from './pages/HotelProfileRegister';
 // Legal & Info Pages
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
-import FAQ from './pages/FAQ';
 
 // RBAC Pages
 import DMCStaffManagement from './pages/DMCStaffManagement';
@@ -96,7 +95,6 @@ const App = () => {
           {/* Legal & Info Routes */}
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsAndConditions />} />
-          <Route path="/faq" element={<FAQ />} />
 
           {/* Subscription Routes (for both Hotel and DMC users) */}
           <Route
