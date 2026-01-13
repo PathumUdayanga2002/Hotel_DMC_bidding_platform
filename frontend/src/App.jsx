@@ -57,6 +57,7 @@ import PlatformAnalytics from './pages/PlatformAnalytics';
 //messages
 import DMCMessages from './pages/DMCMessages.jsx';
 import HotelMessages from './pages/HotelMessages.jsx';
+import AdminMessages from './pages/AdminMessages.jsx';
 
 // Contracts
 import MyContracts from './pages/MyContracts.jsx';
@@ -378,6 +379,7 @@ const App = () => {
             <Route path="settings" element={<AdminSettings />} />
             <Route path="subscriptions" element={<AdminSubscriptionManagement />} />
             <Route path="subscriptions/:subscriptionId" element={<AdminSubscriptionDetail />} />
+            <Route path="messages" element={<AdminMessages />} />
           </Route>
 
           {/* 404 Redirect */}

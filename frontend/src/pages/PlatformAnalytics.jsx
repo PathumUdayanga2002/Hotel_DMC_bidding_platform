@@ -153,8 +153,8 @@ const PlatformAnalytics = () => {
           <h2 className="text-2xl font-semibold text-gray-800">Revenue Analytics</h2>
         </div>
         
-        {/* First row: 3 main revenue metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        {/* First row: 2 main revenue metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           
           {/* Total Revenue YTD */}
           <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white transform transition hover:scale-105">
@@ -167,20 +167,6 @@ const PlatformAnalytics = () => {
             </p>
             <p className="text-xs opacity-80">
               From {formatNumber(revenueAnalytics.totalBookingsYTD)} completed bookings
-            </p>
-          </div>
-
-          {/* Platform Commission  */}
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white transform transition hover:scale-105">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium opacity-90">Platform Commission</h3>
-              <DollarSign className="w-5 h-5 opacity-80" />
-            </div>
-            <p className="text-3xl font-bold mb-2">
-              {formatCurrency(revenueAnalytics.platformCommission)}
-            </p>
-            <p className="text-xs opacity-80">
-              Earned from booking transactions
             </p>
           </div>
           

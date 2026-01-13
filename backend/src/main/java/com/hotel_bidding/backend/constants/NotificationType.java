@@ -47,5 +47,9 @@ public enum NotificationType {
     PROFILE_SUBMITTED,           // New profile submitted for review (for admin)
     PAYMENT_RECEIVED,            // Payment received notification
     SUBSCRIPTION_EXPIRED,        // Subscription expired warning
-    SUBSCRIPTION_RENEWED         // Subscription renewed confirmation
+    SUBSCRIPTION_RENEWED,        // Subscription renewed confirmation
+    
+    // Platform offer notifications (admin to users)
+    PLATFORM_OFFER,              // Platform offer/announcement from admin
+    PLATFORM_ANNOUNCEMENT        // Important platform announcements
 }

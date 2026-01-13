@@ -39,6 +39,8 @@ import com.hotel_bidding.backend.dto.analytics.PlatformPerformanceDTO;
 import com.hotel_bidding.backend.dto.analytics.RevenueAnalyticsDTO;
 import com.hotel_bidding.backend.dto.analytics.TopHotelMarketDTO;
 import com.hotel_bidding.backend.dto.response.ApiResponse;
+import com.hotel_bidding.backend.entity.User;
+import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.security.UserDetailsImpl;
 import com.hotel_bidding.backend.service.AdminDMCService;
 import com.hotel_bidding.backend.service.AdminHotelService;
@@ -59,6 +61,7 @@ public class AdminController {
     private final AdminHotelService adminHotelService;
     private final PlatformSettingsService platformSettingsService;
     private final PlatformAnalyticsService platformAnalyticsService;
+    private final UserRepository userRepository;
 
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse> getDashboard(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -430,6 +433,12 @@ public class AdminController {
                 .message("DMCs retrieved successfully")
                 .data(response)
                 .build());
+    }
+
+    @GetMapping("/user-management/all")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return ResponseEntity.ok(users);
     }
 
     // ==================== Platform Settings Management ====================
