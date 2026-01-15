@@ -56,6 +56,7 @@ import PlatformAnalytics from './pages/PlatformAnalytics';
 //messages
 import DMCMessages from './pages/DMCMessages.jsx';
 import HotelMessages from './pages/HotelMessages.jsx';
+import AdminMessages from './pages/AdminMessages.jsx';
 
 // Contracts
 import MyContracts from './pages/MyContracts.jsx';
@@ -175,8 +176,8 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
-          {/* Hotel Messages */} 
+          
+          {/* Hotel Messages 
             <Route
             path="/hotel/messages"
             element={
@@ -184,8 +185,9 @@ const App = () => {
                 <HotelMessages />
               </ProtectedRoute>
             }
-          />
-
+          /> 
+          */}
+         
           {/* Hotel Staff Management - Super Admin Only */}
           <Route
             path="/hotel/staff"
@@ -357,15 +359,7 @@ const App = () => {
           />
           {/* OLD BID PAYMENT ROUTES REMOVED: /payment/initiate, /payment/return, /payment/cancel */}
           
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-                {/* <AdminDashboard /> */}
-                <AdminDashboardNew />
-              </ProtectedRoute>
-            }
-          />
+          {/* Admin Routes */}
           <Route
             path="/admin"
             element={
@@ -374,7 +368,7 @@ const App = () => {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route index element={<AdminHome />} />
             <Route path="dashboard" element={<AdminHome />} />
             <Route path="dmc-approvals" element={<DMCApprovals />} />
             <Route path="hotel-approvals" element={<HotelApprovals />} />
@@ -383,6 +377,7 @@ const App = () => {
             <Route path="settings" element={<AdminSettings />} />
             <Route path="subscriptions" element={<AdminSubscriptionManagement />} />
             <Route path="subscriptions/:subscriptionId" element={<AdminSubscriptionDetail />} />
+            <Route path="messages" element={<AdminMessages />} />
           </Route>
 
           {/* 404 Redirect */}

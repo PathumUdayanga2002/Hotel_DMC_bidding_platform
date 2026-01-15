@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from '../components/NotificationBell';
 import api from '../services/api';
 import {
   Shield,
@@ -31,9 +32,25 @@ const AdminDashboardNew = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [approvalsSubmenuOpen, setApprovalsSubmenuOpen] = useState(true);
 
+  // Redirect non-admin users
   useEffect(() => {
-    fetchStats();
-  }, []);
+    if (user && !['ADMIN', 'PLATFORM_SUPER_ADMIN'].includes(user.role)) {
+      console.log('Non-admin user detected, redirecting...');
+      if (user.role === 'DMC_SUPER_ADMIN' || user.role === 'DMC_STAFF_ADMIN' || user.role === 'DMC_USER') {
+        navigate('/dmc/dashboard', { replace: true });
+      } else if (user.role === 'HOTEL_SUPER_ADMIN' || user.role === 'HOTEL_STAFF_ADMIN' || user.role === 'HOTEL_USER') {
+        navigate('/hotel/dashboard', { replace: true });
+      } else {
+        navigate('/login', { replace: true });
+      }
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
+    if (user && ['ADMIN', 'PLATFORM_SUPER_ADMIN'].includes(user.role)) {
+      fetchStats();
+    }
+  }, [user]);
 
   const fetchStats = async () => {
     try {
@@ -45,6 +62,10 @@ const AdminDashboardNew = () => {
       setHotelStats(hotelResponse.data.data);
     } catch (error) {
       console.error('Error fetching stats:', error);
+      // Don't show error toast if it's a 403 (user doesn't have access)
+      if (error.response?.status !== 403) {
+        toast.error('Failed to fetch dashboard stats');
+      }
     }
   };
 
@@ -150,13 +171,13 @@ const AdminDashboardNew = () => {
           {/* Right Section - Notifications & Profile */}
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
-              <Bell className="w-5 h-5 text-gray-600" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            <NotificationBell />
 
             {/* Messages */}
-            <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <button 
+              onClick={() => navigate('/admin/messages')}
+              className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
               <MessageSquare className="w-5 h-5 text-gray-600" />
             </button>
 
