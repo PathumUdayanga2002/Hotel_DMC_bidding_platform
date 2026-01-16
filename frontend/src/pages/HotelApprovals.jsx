@@ -60,6 +60,11 @@ const HotelApprovals = () => {
       setTotalPages(response.data.data.totalPages);
       setTotalElements(response.data.data.totalElements);
     } catch (error) {
+      // Don't show error for 403 - user will be redirected by ProtectedRoute
+      if (error.response?.status === 403) {
+        console.log('Access denied - redirecting...');
+        return;
+      }
       toast.error('Failed to fetch hotel profiles');
       console.error('Error fetching profiles:', error);
     } finally {

@@ -1,16 +1,24 @@
 package com.hotel_bidding.backend.service.impl;
 
-import com.hotel_bidding.backend.dto.request.DirectInquiryRequestDTO;
-import com.hotel_bidding.backend.dto.response.ApiResponse;
-import com.hotel_bidding.backend.entity.DirectInquiry;
-import com.hotel_bidding.backend.repository.DirectInquiryRepository;
-import com.hotel_bidding.backend.service.DirectInquiryService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.hotel_bidding.backend.constants.NotificationType;
+import com.hotel_bidding.backend.dto.request.DirectInquiryRequestDTO;
+import com.hotel_bidding.backend.dto.response.ApiResponse;
+import com.hotel_bidding.backend.entity.DMCProfile;
+import com.hotel_bidding.backend.entity.DirectInquiry;
+import com.hotel_bidding.backend.entity.HotelProfile;
+import com.hotel_bidding.backend.repository.DMCProfileRepository;
+import com.hotel_bidding.backend.repository.DirectInquiryRepository;
+import com.hotel_bidding.backend.repository.HotelRepository;
+import com.hotel_bidding.backend.service.DirectInquiryService;
+import com.hotel_bidding.backend.service.NotificationService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -18,6 +26,9 @@ import java.util.List;
 public class DirectInquiryServiceImpl implements DirectInquiryService {
 
     private final DirectInquiryRepository directInquiryRepository;
+    private final NotificationService notificationService;
+    private final HotelRepository hotelRepository;
+    private final DMCProfileRepository dmcProfileRepository;
 
     @Override
     public ApiResponse createDirectInquiry(DirectInquiryRequestDTO request, String dmcId) {
@@ -50,6 +61,46 @@ public class DirectInquiryServiceImpl implements DirectInquiryService {
         DirectInquiry saved = directInquiryRepository.save(inquiry);
 
         log.info("Direct inquiry created successfully with ID: {}", saved.getId());
+
+        // Get DMC name for notification
+        String dmcName = "DMC";
+        try {
+            DMCProfile dmcProfile = dmcProfileRepository.findByUserId(dmcId).orElse(null);
+            if (dmcProfile != null) {
+                dmcName = dmcProfile.getCompanyName();
+            }
+        } catch (Exception e) {
+            log.warn("Could not fetch DMC profile for user {}: {}", dmcId, e.getMessage());
+        }
+
+        // Notify each hotel about the direct inquiry
+        if (request.getHotelIds() != null && !request.getHotelIds().isEmpty()) {
+            for (String hotelId : request.getHotelIds()) {
+                try {
+                    HotelProfile hotel = hotelRepository.findById(hotelId).orElse(null);
+                    if (hotel != null && hotel.getUserId() != null) {
+                        notificationService.createNotification(
+                            hotel.getUserId(),
+                            NotificationType.PROPOSAL_RECEIVED,
+                            "New Direct Inquiry from " + dmcName,
+                            String.format("You have received a direct inquiry '%s' from %s for %s. Check-in: %s, Rooms: %d",
+                                saved.getTitle(),
+                                dmcName,
+                                String.join(", ", saved.getDestinationCities()),
+                                saved.getCheckInDate(),
+                                saved.getNumberOfRooms()),
+                            saved.getId(),
+                            null,
+                            "/hotel/direct-inquiries",
+                            1 // High priority
+                        );
+                        log.info("Notified hotel {} about direct inquiry {}", hotelId, saved.getId());
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to notify hotel {} about direct inquiry: {}", hotelId, e.getMessage());
+                }
+            }
+        }
 
         return ApiResponse.builder()
                 .success(true)

@@ -1,20 +1,28 @@
 package com.hotel_bidding.backend.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.hotel_bidding.backend.constants.UserRole;
 import com.hotel_bidding.backend.dto.request.LoginRequest;
+import com.hotel_bidding.backend.dto.request.PasswordResetConfirmRequest;
+import com.hotel_bidding.backend.dto.request.PasswordResetRequest;
 import com.hotel_bidding.backend.dto.request.RegisterRequest;
 import com.hotel_bidding.backend.dto.response.ApiResponse;
 import com.hotel_bidding.backend.dto.response.AuthResponse;
 import com.hotel_bidding.backend.security.UserDetailsImpl;
 import com.hotel_bidding.backend.service.AuthService;
+
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -78,6 +86,24 @@ public class AuthController {
                 .data(authResponse)
                 .build());
     }
+
+        @PostMapping("/forgot-password")
+        public ResponseEntity<ApiResponse> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+                authService.requestPasswordReset(request);
+                return ResponseEntity.ok(ApiResponse.builder()
+                                .success(true)
+                                .message("If an account exists for this email, a password reset link has been sent.")
+                                .build());
+        }
+
+        @PostMapping("/reset-password")
+        public ResponseEntity<ApiResponse> resetPassword(@Valid @RequestBody PasswordResetConfirmRequest request) {
+                authService.resetPassword(request);
+                return ResponseEntity.ok(ApiResponse.builder()
+                                .success(true)
+                                .message("Password has been reset successfully")
+                                .build());
+        }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse> logout(

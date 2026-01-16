@@ -1,32 +1,55 @@
 package com.hotel_bidding.backend.controller;
 
-import com.hotel_bidding.backend.constants.DMCProfileStatus;
-import com.hotel_bidding.backend.constants.HotelProfileStatus;
-import com.hotel_bidding.backend.dto.*;
-import com.hotel_bidding.backend.dto.response.ApiResponse;
-import com.hotel_bidding.backend.security.UserDetailsImpl;
-import com.hotel_bidding.backend.dto.analytics.PlatformAnalyticsDTO;
-import com.hotel_bidding.backend.dto.analytics.RevenueAnalyticsDTO;
-import com.hotel_bidding.backend.dto.analytics.PlatformPerformanceDTO;
-import com.hotel_bidding.backend.dto.analytics.TopHotelMarketDTO;
-import com.hotel_bidding.backend.service.AdminDMCService;
-import com.hotel_bidding.backend.service.AdminHotelService;
-import com.hotel_bidding.backend.service.PlatformSettingsService;
-import com.hotel_bidding.backend.service.PlatformAnalyticsService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import com.hotel_bidding.backend.constants.DMCProfileStatus;
+import com.hotel_bidding.backend.constants.HotelProfileStatus;
+import com.hotel_bidding.backend.dto.AdminNoteRequest;
+import com.hotel_bidding.backend.dto.DMCProfileResponse;
+import com.hotel_bidding.backend.dto.DMCProfileStats;
+import com.hotel_bidding.backend.dto.DMCProfileSummary;
+import com.hotel_bidding.backend.dto.HotelAdminNoteRequest;
+import com.hotel_bidding.backend.dto.HotelProfileResponse;
+import com.hotel_bidding.backend.dto.HotelProfileStats;
+import com.hotel_bidding.backend.dto.HotelProfileSummary;
+import com.hotel_bidding.backend.dto.PlatformSettingsResponse;
+import com.hotel_bidding.backend.dto.UpdateCommissionSettingsRequest;
+import com.hotel_bidding.backend.dto.UpdateDMCStatusRequest;
+import com.hotel_bidding.backend.dto.UpdateHotelStatusRequest;
+import com.hotel_bidding.backend.dto.UpdateSystemSettingsRequest;
+import com.hotel_bidding.backend.dto.analytics.PlatformAnalyticsDTO;
+import com.hotel_bidding.backend.dto.analytics.PlatformPerformanceDTO;
+import com.hotel_bidding.backend.dto.analytics.RevenueAnalyticsDTO;
+import com.hotel_bidding.backend.dto.analytics.TopHotelMarketDTO;
+import com.hotel_bidding.backend.dto.response.ApiResponse;
+import com.hotel_bidding.backend.entity.User;
+import com.hotel_bidding.backend.repository.UserRepository;
+import com.hotel_bidding.backend.security.UserDetailsImpl;
+import com.hotel_bidding.backend.service.AdminDMCService;
+import com.hotel_bidding.backend.service.AdminHotelService;
+import com.hotel_bidding.backend.service.PlatformAnalyticsService;
+import com.hotel_bidding.backend.service.PlatformSettingsService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RestController
@@ -38,6 +61,7 @@ public class AdminController {
     private final AdminHotelService adminHotelService;
     private final PlatformSettingsService platformSettingsService;
     private final PlatformAnalyticsService platformAnalyticsService;
+    private final UserRepository userRepository;
 
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse> getDashboard(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -411,6 +435,12 @@ public class AdminController {
                 .build());
     }
 
+    @GetMapping("/user-management/all")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return ResponseEntity.ok(users);
+    }
+
     // ==================== Platform Settings Management ====================
 
     @GetMapping("/settings")
@@ -463,9 +493,23 @@ public class AdminController {
     // ==================== Platform Analytics ====================
 
     @GetMapping("/analytics")
-    public ResponseEntity<ApiResponse> getPlatformAnalytics() {
-        log.info("Fetching complete platform analytics");
-        PlatformAnalyticsDTO analytics = platformAnalyticsService.getPlatformAnalytics();
+    public ResponseEntity<ApiResponse> getPlatformAnalytics(
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) Integer minStars,
+            @RequestParam(required = false) String city
+    ) {
+        log.info("Fetching complete platform analytics with filters: limit={}, sortBy={}, minStars={}, city={}", 
+                limit, sortBy, minStars, city);
+        
+        // Build analytics with filtered top hotels
+        PlatformAnalyticsDTO analytics = PlatformAnalyticsDTO.builder()
+                .revenueAnalytics(platformAnalyticsService.getRevenueAnalytics())
+                .platformPerformance(platformAnalyticsService.getPlatformPerformance())
+                .topHotelMarkets(platformAnalyticsService.getTopHotelMarkets(limit, sortBy, minStars, city))
+                .generatedAt(java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ISO_DATE_TIME))
+                .period("YTD " + java.time.LocalDateTime.now().getYear())
+                .build();
 
         return ResponseEntity.ok(ApiResponse.builder()
                 .success(true)
@@ -500,10 +544,13 @@ public class AdminController {
 
     @GetMapping("/analytics/top-hotels")
     public ResponseEntity<ApiResponse> getTopHotelMarkets(
-            @RequestParam(defaultValue = "10") int limit
+            @RequestParam(defaultValue = "10") int limit,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) Integer minStars,
+            @RequestParam(required = false) String city
     ) {
-        log.info("Fetching top {} hotel markets", limit);
-        List<TopHotelMarketDTO> topHotels = platformAnalyticsService.getTopHotelMarkets(limit);
+        log.info("Fetching top {} hotel markets with filters: sortBy={}, minStars={}, city={}", limit, sortBy, minStars, city);
+        List<TopHotelMarketDTO> topHotels = platformAnalyticsService.getTopHotelMarkets(limit, sortBy, minStars, city);
 
         return ResponseEntity.ok(ApiResponse.builder()
                 .success(true)
