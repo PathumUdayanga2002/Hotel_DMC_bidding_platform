@@ -12,7 +12,6 @@ import SendContractPanel from '../components/SendContractPanel';
 
 export default function ContractBuilder() {
   const [activeTab, setActiveTab] = useState(0);
-  const [showPayloadPreview, setShowPayloadPreview] = useState(false);
   const [savedContractId, setSavedContractId] = useState(null);
 
   const [general, setGeneral] = useState({
@@ -132,29 +131,26 @@ export default function ContractBuilder() {
           <h1 className="text-3xl font-bold mb-2 text-gray-800">Hotel Contract Builder</h1>
           <p className="text-sm text-gray-600">Create and manage contract rates, policies and value-adds for your hotel. Use the tabs to progress through the sections; rooms will auto-save when moving forward.</p>
           <div className="mt-4 flex items-center justify-end">
-            <button
-              type="button"
-              onClick={() => setShowPayloadPreview((s) => !s)}
-              className="px-3 py-2 border rounded-md text-sm bg-white hover:bg-gray-50"
-            >
-              {showPayloadPreview ? 'Hide' : 'Preview'} Payload
-            </button>
+            {/* Intentionally left blank; payload preview removed for enterprise flow */}
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
           <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} onSave={handleSave} beforeNext={handleBeforeNext} />
 
-          {showPayloadPreview && (
-            <div className="mb-6 bg-gray-50 border rounded p-4 mt-4">
-              <h3 className="font-semibold mb-2">Payload Preview</h3>
-              <pre className="text-xs max-h-64 overflow-auto bg-white p-2 rounded">{JSON.stringify({ general, rooms, meals, childPolicy, offers, valueAdded, terms }, null, 2)}</pre>
+          {/* Payload preview removed per request */}
+        </div>
+
+        {/* DMC Search / Send panel appears last so user can save then send */}
+        <div className="mt-6">
+          {savedContractId ? (
+            <SendContractPanel contractId={savedContractId} onSent={(saved) => console.log('SentContract:', saved)} />
+          ) : (
+            <div className="bg-white border border-dashed border-slate-200 rounded-lg p-6 text-center text-slate-600">
+              <p className="mb-2">Save the contract first to enable sending to DMCs.</p>
+              <p className="text-sm text-slate-500">Use the <strong>Save Contract</strong> button at the end of the tabs. Once saved, this panel will allow searching and sending.</p>
             </div>
           )}
-
-          <div className="mt-6">
-            <SendContractPanel contractId={savedContractId} onSent={(saved) => console.log('SentContract:', saved)} />
-          </div>
         </div>
       </div>
     </div>

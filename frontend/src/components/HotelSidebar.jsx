@@ -69,7 +69,7 @@ const HotelSidebar = ({ profileStatus, isSuperAdmin, isStaff, pendingInquiriesCo
                   locked
                     ? 'text-gray-400 cursor-not-allowed bg-gray-50'
                     : item.name === activeItem
-                      ? 'bg-cyan-50 text-cyan-600'
+                      ? 'bg-cyan-50 text-green-600'
                       : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
                 }`}
               >
