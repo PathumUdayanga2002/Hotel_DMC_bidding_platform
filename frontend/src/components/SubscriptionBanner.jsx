@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, AlertTriangle, CheckCircle, CreditCard, X, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 /**
@@ -14,6 +15,11 @@ const SubscriptionBanner = () => {
   const [dismissed, setDismissed] = useState(false);
   const [noSubscription, setNoSubscription] = useState(false);
   const navigate = useNavigate();
+  const { user, isStaff } = useAuth();
+
+  // Staff members shouldn't see subscription banner
+  // They use their organization's subscription (managed by super admin)
+  if (isStaff()) return null;
 
   useEffect(() => {
     fetchSubscriptionStatus();

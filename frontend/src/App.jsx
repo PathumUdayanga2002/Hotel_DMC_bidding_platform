@@ -198,11 +198,12 @@ const App = () => {
             }
           />
 
-          {/* Hotel Activity Logs */}
+          {/* Activity Logs - Platform Admin Only */}
+          {/* Hotel users cannot access activity logs - only Platform Admin */}
           <Route
             path="/hotel/activity-logs"
             element={
-              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
+              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
                 <ActivityLogs portalType="hotel" />
               </ProtectedRoute>
             }
@@ -286,11 +287,12 @@ const App = () => {
             }
           />
 
-          {/* DMC Activity Logs */}
+          {/* Activity Logs - Platform Admin Only */}
+          {/* DMC users cannot access activity logs - only Platform Admin */}
           <Route
             path="/dmc/activity-logs"
             element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
+              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
                 <ActivityLogs portalType="dmc" />
               </ProtectedRoute>
             }
@@ -361,7 +363,7 @@ const App = () => {
           
           {/* Admin Routes */}
           <Route
-            path="/admin/dashboard"
+            path="/admin"
             element={
               <ProtectedRoute allowedRoles={ADMIN_ROLES}>
                 <AdminDashboardNew />
