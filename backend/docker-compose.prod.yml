@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Spring Boot Backend
+  # MongoDB is hosted on MongoDB Atlas (cloud)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotel-bidding-backend
+    restart: unless-stopped
+    environment:
+      # Server Configuration
+      SERVER_PORT: ${SERVER_PORT}
+      CONTEXT_PATH: ${CONTEXT_PATH}
+      
+      # MongoDB Configuration
+      SPRING_DATA_MONGODB_URI: ${SPRING_DATA_MONGODB_URI}
+      
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ACCESS_TOKEN_EXPIRATION: ${JWT_ACCESS_TOKEN_EXPIRATION}
+      JWT_REFRESH_TOKEN_EXPIRATION: ${JWT_REFRESH_TOKEN_EXPIRATION}
+      
+      # PayHere Configuration
+      PAYHERE_MERCHANT_ID: ${PAYHERE_MERCHANT_ID}
+      PAYHERE_MERCHANT_SECRET: ${PAYHERE_MERCHANT_SECRET}
+      PAYHERE_CHECKOUT_URL: ${PAYHERE_CHECKOUT_URL}
+      PAYHERE_API_URL: ${PAYHERE_API_URL}
+      PAYHERE_CURRENCY: ${PAYHERE_CURRENCY}
+      
+      # Email Configuration
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      
+      # File Upload Configuration
+      SPRING_SERVLET_MULTIPART_ENABLED: ${SPRING_SERVLET_MULTIPART_ENABLED}
+      SPRING_SERVLET_MULTIPART_MAX-FILE-SIZE: ${SPRING_SERVLET_MULTIPART_MAX-FILE-SIZE}
+      SPRING_SERVLET_MULTIPART_MAX-REQUEST-SIZE: ${SPRING_SERVLET_MULTIPART_MAX-REQUEST-SIZE}
+      FILE_UPLOAD_DIR: ${FILE_UPLOAD_DIR}
+      
+      # Cloudinary Configuration
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      
+      # Admin Configuration
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      
+      # CORS Configuration
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      CORS_ALLOWED_METHODS: ${CORS_ALLOWED_METHODS}
+      
+      # Application URLs
+      APP_FRONTEND_URL: ${APP_FRONTEND_URL}
+      APP_BACKEND_URL: ${APP_BACKEND_URL}
+      APP_BASE_URL: ${APP_BASE_URL}
+    ports:
+      - "8081:8081"
+    volumes:
+      - backend_uploads:/app/uploads
+
+volumes:
+  backend_uploads:
+    driver: local
