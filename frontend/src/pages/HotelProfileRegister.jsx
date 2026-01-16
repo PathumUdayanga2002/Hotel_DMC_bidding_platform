@@ -180,7 +180,7 @@ const HotelProfileRegister = () => {
         <div className="mb-6">
           <button
             onClick={() => navigate("/hotel/dashboard")}
-            className="flex items-center text-green-600 hover:text-green-700 mb-4"
+            className="flex items-center text-teal-600 hover:text-teal-700 mb-4 font-medium"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back to Dashboard
@@ -206,15 +206,15 @@ const HotelProfileRegister = () => {
 
         {/* Subscription Status Card */}
         {subscription && !subscription.isPendingApproval && (
-          <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-lg shadow-sm p-6 mb-6 border border-cyan-200">
+          <div className="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-lg shadow-sm p-6 mb-6 border border-teal-200">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-gray-900 flex items-center">
-                <CreditCard className="w-5 h-5 mr-2 text-cyan-600" />
+                <CreditCard className="w-5 h-5 mr-2 text-teal-600" />
                 Subscription Status
               </h2>
               <button
                 onClick={() => navigate('/subscription/purchase')}
-                className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors text-sm font-medium"
+                className="px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 text-sm font-medium"
               >
                 Upgrade Plan
               </button>
@@ -272,12 +272,12 @@ const HotelProfileRegister = () => {
 
         {/* Pending Approval Message */}
         {subscription?.isPendingApproval && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+          <div className="bg-teal-50 border border-teal-200 rounded-lg p-6 mb-6">
             <div className="flex items-center">
-              <Clock className="w-6 h-6 text-blue-600 mr-3" />
+              <Clock className="w-6 h-6 text-teal-600 mr-3" />
               <div>
-                <h3 className="text-lg font-semibold text-blue-900">Profile Pending Approval</h3>
-                <p className="text-sm text-blue-700 mt-1">
+                <h3 className="text-lg font-semibold text-teal-900">Profile Pending Approval</h3>
+                <p className="text-sm text-teal-700 mt-1">
                   Complete your profile below and submit for review. Your 30-day free trial will begin once your profile is approved by our admin team.
                 </p>
               </div>
@@ -389,7 +389,7 @@ const HotelProfileRegister = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Award className="w-4 h-4 inline mr-2" /> Certifications (Optional)
               </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-teal-500 transition-colors">
                 <input
                   type="file"
                   id="certifications"
@@ -409,7 +409,7 @@ const HotelProfileRegister = () => {
                 </label>
               </div>
               {certificationPreviews.length > 0 && (
-                <ul className="mt-2 text-sm text-green-600 space-y-1">
+                <ul className="mt-2 text-sm text-teal-600 space-y-1">
                   {certificationPreviews.map((file, i) => (
                     <li key={i} className="flex items-center">
                       <CheckCircle className="w-4 h-4 mr-2" /> {file}
@@ -427,7 +427,7 @@ const HotelProfileRegister = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <ImageIcon className="w-4 h-4 inline mr-2" /> Gallery Images (Optional)
               </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-teal-500 transition-colors">
                 <input
                   type="file"
                   id="galleryImages"
@@ -464,9 +464,9 @@ const HotelProfileRegister = () => {
             {/* Submit Button */}
             <div className="flex items-center justify-between pt-6 border-t">
               <button type="button" onClick={() => navigate("/hotel/dashboard")}
-                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
+                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
               <button type="submit" disabled={loading}
-                className="px-8 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 flex items-center">
+                className="px-8 py-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg font-semibold hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center transition-all duration-300">
                 {loading ? <><Loader className="w-5 h-5 mr-2 animate-spin" />Submitting...</> :
                 <><CheckCircle className="w-5 h-5 mr-2" />{existingProfile ? "Update & Resubmit" : "Submit for Approval"}</>}
               </button>
