@@ -126,7 +126,7 @@ const Sidebar = ({ profileStatus, isSuperAdmin, isStaff, pendingInquiriesCount }
     { name: 'My Contracts', icon: FileText, path: '/hotel/mycontracts', locked: !isApproved },
     { name: 'Send Contracts', icon: FileText, path: '/hotel/sendcontracts', locked: !isApproved },
     { name: 'Staff Management', icon: Users, path: '/hotel/staff', locked: !isApproved, showForSuperAdminOnly: true },
-    { name: 'Activity Logs', icon: Activity, path: '/hotel/activity-logs', locked: !isApproved },
+    // Activity Logs removed - Only accessible to Platform Admin, not Hotel users
   ];
 
   return (
