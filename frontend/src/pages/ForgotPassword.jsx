@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -15,6 +15,7 @@ const schema = yup.object({
 });
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
@@ -38,24 +39,35 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-cyan-50 via-blue-50 to-green-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="flex items-center gap-3 text-cyan-700 mb-6">
-          <Link to="/login" className="flex items-center gap-2 text-sm font-semibold hover:underline">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      {/* Header */}
+      <header className="bg-white/90 backdrop-blur-md shadow-sm border-b border-slate-100 sticky top-0 z-20">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+            <span className="bg-gradient-to-r from-teal-500 to-emerald-600 bg-clip-text text-transparent">Rezpitch</span>
+          </h1>
+          <button
+            onClick={() => navigate('/login')}
+            className="flex items-center gap-2 px-4 py-2 border-2 border-slate-200 text-slate-700 rounded-lg hover:border-teal-400 hover:text-teal-600 transition-all duration-300"
+          >
             <ArrowLeft className="w-4 h-4" />
-            Back to login
-          </Link>
+            Back to Login
+          </button>
         </div>
+      </header>
 
-        <div className="text-center mb-8">
-          <div className="bg-cyan-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Mail className="w-8 h-8 text-white" />
+      {/* Main Content */}
+      <div className="flex items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="bg-gradient-to-r from-teal-500 to-emerald-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Mail className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2" style={{fontFamily: 'Inter, sans-serif', letterSpacing: '-0.02em'}}>Forgot Password?</h2>
+            <p className="text-slate-600 text-lg" style={{fontFamily: 'Inter, sans-serif'}}>We'll email you a secure reset link.</p>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Forgot password?</h1>
-          <p className="text-gray-600">We will email you a secure reset link.</p>
-        </div>
 
-        <Card>
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <Input
               label="Email"
@@ -69,7 +81,18 @@ const ForgotPassword = () => {
               {isSubmitting ? 'Sending link...' : 'Send reset link'}
             </Button>
           </form>
-        </Card>
+
+          {/* Divider */}
+          <div className="mt-6 pt-6 border-t border-slate-200">
+            <p className="text-center text-slate-600 text-sm" style={{fontFamily: 'Inter, sans-serif'}}>
+              Remember your password?{' '}
+              <Link to="/login" className="text-teal-600 hover:text-teal-700 font-semibold">
+                Sign in here
+              </Link>
+            </p>
+          </div>
+        </div>
+        </div>
       </div>
     </div>
   );
