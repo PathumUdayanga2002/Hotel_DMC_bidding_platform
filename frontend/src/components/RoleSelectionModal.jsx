@@ -18,7 +18,7 @@ const RoleSelectionModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-y-auto">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-teal-900/80 backdrop-blur-md"
@@ -26,10 +26,10 @@ const RoleSelectionModal = ({ isOpen, onClose }) => {
       ></div>
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-4xl my-8 animate-fadeInUp">
-        <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+      <div className="relative z-10 w-full max-w-4xl my-auto animate-fadeInUp">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] md:max-h-[calc(100vh-4rem)] flex flex-col">
           {/* Header */}
-          <div className="relative px-4 sm:px-8 py-6 bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-600 text-white">
+          <div className="relative px-4 sm:px-8 py-6 bg-gradient-to-r from-teal-500 via-emerald-500 to-teal-600 text-white flex-shrink-0">
             <button
               onClick={onClose}
               className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full hover:bg-white/20 transition-all duration-300"
@@ -43,7 +43,7 @@ const RoleSelectionModal = ({ isOpen, onClose }) => {
           </div>
 
           {/* Content */}
-          <div className="p-4 sm:p-8 md:p-12 bg-gradient-to-b from-slate-50 to-white">
+          <div className="p-4 sm:p-8 md:p-12 bg-gradient-to-b from-slate-50 to-white overflow-y-auto flex-1">
             <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6 sm:mb-8 text-center" style={{ fontFamily: 'Inter, sans-serif' }}>
               Are you a <span className="bg-gradient-to-r from-teal-500 to-emerald-600 bg-clip-text text-transparent">DMC</span> or <span className="bg-gradient-to-r from-teal-500 to-emerald-600 bg-clip-text text-transparent">Hotel</span>?
             </h3>
@@ -68,20 +68,7 @@ const RoleSelectionModal = ({ isOpen, onClose }) => {
                     Find verified DMC partners, receive competitive bids, and secure premium collaborations.
                   </p>
 
-                  <div className="space-y-2 text-left text-xs sm:text-sm text-slate-700 mb-4 sm:mb-6">
-                    <div className="flex items-center gap-2">
-                      <span className="text-teal-500">✓</span>
-                      <span>Post inquiries to DMCs</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-teal-500">✓</span>
-                      <span>Review & compare bids</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-teal-500">✓</span>
-                      <span>Manage contracts securely</span>
-                    </div>
-                  </div>
+                 
 
                   <div className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base text-center group-hover:from-teal-600 group-hover:to-emerald-700 transition-all duration-300">
                     Register as Hotel →
@@ -108,21 +95,7 @@ const RoleSelectionModal = ({ isOpen, onClose }) => {
                     Discover hotel opportunities, submit competitive bids, and grow your business globally.
                   </p>
 
-                  <div className="space-y-2 text-left text-xs sm:text-sm text-slate-700 mb-4 sm:mb-6">
-                    <div className="flex items-center gap-2">
-                      <span className="text-emerald-500">✓</span>
-                      <span>Browse hotel inquiries</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-emerald-500">✓</span>
-                      <span>Submit competitive bids</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-emerald-500">✓</span>
-                      <span>Receive direct inquiries</span>
-                    </div>
-                  </div>
-
+              
                   <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-bold text-sm sm:text-base text-center group-hover:from-emerald-600 group-hover:to-teal-700 transition-all duration-300">
                     Register as DMC →
                   </div>

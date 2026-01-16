@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, AlertTriangle, CheckCircle, CreditCard, X, Info } from 'lucide-react';
+import { Clock, AlertTriangle, CheckCircle, CreditCard, X, Info, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -140,6 +140,14 @@ const SubscriptionBanner = () => {
         </div>
         
         <div className="flex items-center space-x-2">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center space-x-2 px-4 py-2 bg-white border border-current rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back</span>
+          </button>
+          
           {isExpired || daysRemaining <= 7 ? (
             <button
               onClick={() => navigate('/subscription/purchase')}
