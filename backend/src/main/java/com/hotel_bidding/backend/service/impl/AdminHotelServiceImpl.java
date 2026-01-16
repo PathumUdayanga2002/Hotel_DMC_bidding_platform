@@ -1,8 +1,21 @@
 package com.hotel_bidding.backend.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.hotel_bidding.backend.constants.HotelProfileStatus;
 import com.hotel_bidding.backend.constants.UserRole;
-import com.hotel_bidding.backend.dto.*;
+import com.hotel_bidding.backend.dto.HotelAdminNoteRequest;
+import com.hotel_bidding.backend.dto.HotelProfileResponse;
+import com.hotel_bidding.backend.dto.HotelProfileStats;
+import com.hotel_bidding.backend.dto.HotelProfileSummary;
+import com.hotel_bidding.backend.dto.UpdateHotelStatusRequest;
 import com.hotel_bidding.backend.entity.HotelAdminNote;
 import com.hotel_bidding.backend.entity.HotelProfile;
 import com.hotel_bidding.backend.entity.HotelRejectionHistory;
@@ -13,17 +26,11 @@ import com.hotel_bidding.backend.repository.HotelRepository;
 import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.AdminHotelService;
 import com.hotel_bidding.backend.service.EmailService;
+import com.hotel_bidding.backend.service.NotificationService;
 import com.hotel_bidding.backend.service.SubscriptionService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +41,7 @@ public class AdminHotelServiceImpl implements AdminHotelService {
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final SubscriptionService subscriptionService;
+    private final NotificationService notificationService;
 
     @Override
     public Page<HotelProfileSummary> getAllHotelProfiles(HotelProfileStatus status, String search, Pageable pageable) {
@@ -99,6 +107,9 @@ public class AdminHotelServiceImpl implements AdminHotelService {
 
         // Send approval email
         emailService.sendHotelApprovalEmail(profile.getContactEmail(), profile.getName());
+        
+        // Send in-app notification
+        notificationService.notifyHotelProfileApproved(profile.getUserId(), profileId);
 
         log.info("Hotel profile approved: {} by admin: {}", profileId, adminUsername);
 
@@ -134,6 +145,9 @@ public class AdminHotelServiceImpl implements AdminHotelService {
 
         // Send rejection email
         emailService.sendHotelRejectionEmail(profile.getContactEmail(), profile.getName(), reason);
+        
+        // Send in-app notification
+        notificationService.notifyHotelProfileRejected(profile.getUserId(), profileId, reason);
 
         log.info("Hotel profile rejected: {} by admin: {}", profileId, adminUsername);
 
