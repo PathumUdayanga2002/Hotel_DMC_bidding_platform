@@ -66,7 +66,7 @@ const HotelHeader = ({ profileStatus }) => {
       <div className="flex items-center space-x-4">
         <button
           onClick={() => navigate('/subscription/purchase')}
-          className="px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 text-white"
+          className="px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-teal-500 to-emerald-600 text-white"
         >
           <CreditCard className="w-4 h-4 mr-2 inline" /> Upgrade Plan
         </button>
@@ -81,8 +81,11 @@ const HotelHeader = ({ profileStatus }) => {
           <User className="w-10 h-10 rounded-full bg-gray-200 text-gray-500 p-2" />
         </div>
 
-        <button onClick={handleLogout} className="px-3 py-2 rounded-lg border">
-          <LogOut className="w-4 h-4 inline mr-2" /> Logout
+        <button 
+          onClick={handleLogout} 
+          className="px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-semibold rounded-lg transition-all duration-300 shadow-md hover:shadow-lg"
+        >
+          Logout
         </button>
       </div>
     </header>

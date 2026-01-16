@@ -33,10 +33,10 @@ const HotelSidebar = ({ profileStatus, isSuperAdmin, isStaff, pendingInquiriesCo
   return (
     <aside className={`${sidebarOpen ? 'block' : 'hidden'} md:block w-64 bg-white shadow-md flex flex-col flex-shrink-0`}>
       <div className="flex items-center justify-center h-16 border-b shadow-sm">
-        <div className="bg-cyan-600 w-8 h-8 rounded-lg flex items-center justify-center mr-2">
+        <div className="bg-gradient-to-r from-teal-500 to-emerald-600 w-8 h-8 rounded-lg flex items-center justify-center mr-2">
           <Building2 className="w-5 h-5 text-white" />
         </div>
-        <h1 className="text-xl font-bold text-cyan-600">Hotel Portal</h1>
+        <h1 className="text-xl font-bold bg-gradient-to-r from-teal-500 to-emerald-600 bg-clip-text text-transparent">Hotel Portal</h1>
       </div>
 
       <nav className="p-4 space-y-2">

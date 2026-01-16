@@ -37,11 +37,11 @@ const Card = ({ className = '', children }) => (
 
 const Button = ({ variant = 'default', onClick, children, className = '' }) => {
   let styles =
-    'px-4 py-2 rounded-lg font-semibold flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2';
-  if (variant === 'outline') styles += ' border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-cyan-500';
-  else if (variant === 'primary') styles += ' bg-white text-cyan-600 hover:bg-cyan-50 focus:ring-cyan-500';
+    'px-4 py-2 rounded-lg font-semibold flex items-center justify-center transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 shadow-md hover:shadow-lg';
+  if (variant === 'outline') styles += ' border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-teal-500';
+  else if (variant === 'primary') styles += ' bg-gradient-to-r from-teal-500 to-emerald-600 text-white focus:ring-teal-500';
   else if (variant === 'ghost') styles += ' text-gray-600 hover:bg-gray-100 focus:ring-gray-400';
-  else styles += ' bg-cyan-600 text-white hover:bg-cyan-700 focus:ring-cyan-500';
+  else styles += ' bg-gradient-to-r from-teal-500 to-emerald-600 text-white focus:ring-teal-500';
   return (
     <button onClick={onClick} className={`${styles} ${className}`}>
       {children}
@@ -59,12 +59,12 @@ const LoadingSpinner = () => (
 // --- CTACard ---
 // --- CTACard ---
 const CTACard = ({ title, message, buttonText, icon: Icon, onButtonClick }) => (
-  <div className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl p-8 md:p-12 text-center flex flex-col items-center">
+  <div className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-xl p-8 md:p-12 text-center flex flex-col items-center">
     <div className="bg-white/20 p-4 rounded-full mb-4">
       <Icon className="w-10 h-10 text-white" />
     </div>
     <h3 className="text-3xl font-bold mb-2">{title}</h3>
-    <p className="text-lg text-cyan-100 max-w-2xl mb-6">{message}</p>
+    <p className="text-lg text-teal-100 max-w-2xl mb-6">{message}</p>
     <Button variant="primary" onClick={onButtonClick}>
       <CheckCircle2 className="w-5 h-5 mr-2" />
       {buttonText}
