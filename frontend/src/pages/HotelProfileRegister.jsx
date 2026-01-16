@@ -41,7 +41,7 @@ const HotelProfileRegister = () => {
     country: "",
     contactEmail: user?.email || "",
     contactNumber: "",
-    website: "",
+    website: "https://",
     amenities: "",
     totalRooms: "",
     roomEnvironment: "",      // AC / Non-AC / Mixed
@@ -125,8 +125,11 @@ const HotelProfileRegister = () => {
       toast.error("Each gallery image must be smaller than 10MB");
       return;
     }
-    setGalleryFiles(files);
-    setGalleryPreviews(files.map((f) => URL.createObjectURL(f)));
+    // Append new files to existing files instead of replacing
+    setGalleryFiles((prev) => [...prev, ...files]);
+    setGalleryPreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
+    // Reset input so user can select more files
+    e.target.value = '';
   };
 
   const removePreview = (type, index) => {
@@ -141,6 +144,18 @@ const HotelProfileRegister = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate required files
+    if (certificationFiles.length === 0 && certificationPreviews.length === 0) {
+      toast.error("Certifications are required. Please upload at least one file.");
+      return;
+    }
+    
+    if (galleryFiles.length === 0 && galleryPreviews.length === 0) {
+      toast.error("Gallery images are required. Please upload at least one image.");
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -337,6 +352,7 @@ const HotelProfileRegister = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
               <input type="url" name="website" value={formData.website} onChange={handleInputChange}
+                placeholder="https://yourwebsite.com"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" />
             </div>
 
@@ -387,7 +403,7 @@ const HotelProfileRegister = () => {
             {/* Certifications Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Award className="w-4 h-4 inline mr-2" /> Certifications (Optional)
+                <Award className="w-4 h-4 inline mr-2" /> Certifications <span className="text-red-500">*</span>
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-teal-500 transition-colors">
                 <input
@@ -425,7 +441,7 @@ const HotelProfileRegister = () => {
             {/* Gallery Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <ImageIcon className="w-4 h-4 inline mr-2" /> Gallery Images (Optional)
+                <ImageIcon className="w-4 h-4 inline mr-2" /> Gallery Images <span className="text-red-500">*</span>
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-teal-500 transition-colors">
                 <input
