@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { Plane, CheckCircle2, XCircle } from 'lucide-react';
+import { Plane, CheckCircle2, XCircle, ArrowLeft } from 'lucide-react';
 import React from 'react';
 
 const registerSchema = yup.object({
@@ -79,18 +79,36 @@ const DMCRegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-cyan-50 via-blue-50 to-green-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo/Title */}
-        <div className="text-center mb-8">
-          <div className="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Plane className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">DMC Registration</h1>
-          <p className="text-gray-600">Join as a DMC partner</p>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      {/* Header */}
+      <header className="bg-white/90 backdrop-blur-md shadow-sm border-b border-slate-100 sticky top-0 z-20">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+            <span className="bg-gradient-to-r from-teal-500 to-emerald-600 bg-clip-text text-transparent">Rezpitch</span>
+          </h1>
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 px-4 py-2 border-2 border-slate-200 text-slate-700 rounded-lg hover:border-teal-400 hover:text-teal-600 transition-all duration-300"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </button>
         </div>
+      </header>
 
-        <Card>
+      {/* Main Content */}
+      <div className="flex items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md">
+          {/* Logo/Title */}
+          <div className="text-center mb-8">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Plane className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2" style={{fontFamily: 'Inter, sans-serif', letterSpacing: '-0.02em'}}>DMC Registration</h2>
+            <p className="text-slate-600 text-lg" style={{fontFamily: 'Inter, sans-serif'}}>Join as a DMC partner</p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <Input
               label="Username"
@@ -121,51 +139,51 @@ const DMCRegisterPage = () => {
                 <div className="mt-3 space-y-2 text-sm">
                   <div className="flex items-center">
                     {passwordChecks.length ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
+                      <CheckCircle2 className="w-4 h-4 text-teal-600 mr-2" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-red-600 mr-2" />
+                      <XCircle className="w-4 h-4 text-slate-400 mr-2" />
                     )}
-                    <span className={passwordChecks.length ? 'text-green-600' : 'text-gray-600'}>
+                    <span className={passwordChecks.length ? 'text-teal-600' : 'text-slate-600'}>
                       At least 8 characters
                     </span>
                   </div>
                   <div className="flex items-center">
                     {passwordChecks.uppercase ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
+                      <CheckCircle2 className="w-4 h-4 text-teal-600 mr-2" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-red-600 mr-2" />
+                      <XCircle className="w-4 h-4 text-slate-400 mr-2" />
                     )}
-                    <span className={passwordChecks.uppercase ? 'text-green-600' : 'text-gray-600'}>
+                    <span className={passwordChecks.uppercase ? 'text-teal-600' : 'text-slate-600'}>
                       One uppercase letter
                     </span>
                   </div>
                   <div className="flex items-center">
                     {passwordChecks.lowercase ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
+                      <CheckCircle2 className="w-4 h-4 text-teal-600 mr-2" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-red-600 mr-2" />
+                      <XCircle className="w-4 h-4 text-slate-400 mr-2" />
                     )}
-                    <span className={passwordChecks.lowercase ? 'text-green-600' : 'text-gray-600'}>
+                    <span className={passwordChecks.lowercase ? 'text-teal-600' : 'text-slate-600'}>
                       One lowercase letter
                     </span>
                   </div>
                   <div className="flex items-center">
                     {passwordChecks.number ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
+                      <CheckCircle2 className="w-4 h-4 text-teal-600 mr-2" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-red-600 mr-2" />
+                      <XCircle className="w-4 h-4 text-slate-400 mr-2" />
                     )}
-                    <span className={passwordChecks.number ? 'text-green-600' : 'text-gray-600'}>
+                    <span className={passwordChecks.number ? 'text-teal-600' : 'text-slate-600'}>
                       One number
                     </span>
                   </div>
                   <div className="flex items-center">
                     {passwordChecks.special ? (
-                      <CheckCircle2 className="w-4 h-4 text-green-600 mr-2" />
+                      <CheckCircle2 className="w-4 h-4 text-teal-600 mr-2" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-red-600 mr-2" />
+                      <XCircle className="w-4 h-4 text-slate-400 mr-2" />
                     )}
-                    <span className={passwordChecks.special ? 'text-green-600' : 'text-gray-600'}>
+                    <span className={passwordChecks.special ? 'text-teal-600' : 'text-slate-600'}>
                       One special character
                     </span>
                   </div>
@@ -192,20 +210,16 @@ const DMCRegisterPage = () => {
           </form>
 
           {/* Divider */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-center text-gray-600 text-sm">
+          <div className="mt-6 pt-6 border-t border-slate-200">
+            <p className="text-center text-slate-600 text-sm" style={{fontFamily: 'Inter, sans-serif'}}>
               Already have an account?{' '}
-              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold">
+              <Link to="/login" className="text-teal-600 hover:text-teal-700 font-semibold">
                 Login here
               </Link>
             </p>
-            <p className="text-center text-gray-600 text-sm mt-2">
-              <Link to="/" className="text-blue-600 hover:text-blue-700 font-semibold">
-                ← Back to home
-              </Link>
-            </p>
           </div>
-        </Card>
+        </div>
+        </div>
       </div>
     </div>
   );
