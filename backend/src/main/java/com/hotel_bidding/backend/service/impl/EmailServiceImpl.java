@@ -455,10 +455,6 @@ public class EmailServiceImpl implements EmailService {
             );
 
             mailSender.send(message);
-            log.info("Password reset email sent to: {}", userEmail);
-
-        } catch (Exception e) {
-            log.error("Failed to send password reset email: {}", e.getMessage());
             log.info("Payment success email sent to: {}", email);
 
         } catch (Exception e) {
