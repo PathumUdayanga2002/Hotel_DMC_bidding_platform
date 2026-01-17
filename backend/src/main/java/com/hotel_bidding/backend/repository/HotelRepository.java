@@ -26,4 +26,7 @@ public interface HotelRepository extends MongoRepository<HotelProfile, String> {
     
     // Find hotels by cities (for matching with inquiries)
     List<HotelProfile> findByCityInAndStatus(List<String> cities, String status);
+    
+    // Find recent profile activities sorted by updatedAt
+    List<HotelProfile> findTop10ByUpdatedAtIsNotNullOrderByUpdatedAtDesc();
 }

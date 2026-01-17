@@ -37,5 +37,8 @@ public interface DMCProfileRepository extends MongoRepository<DMCProfile, String
         Pageable pageable);
     // Find approved DMCs by partial company name (case-insensitive)
     List<DMCProfile> findByStatusAndCompanyNameContainingIgnoreCase(DMCProfileStatus status, String companyName);
+    
+    // Find recent profile activities sorted by reviewedAt
+    List<DMCProfile> findTop10ByReviewedAtIsNotNullOrderByReviewedAtDesc();
 
 }
