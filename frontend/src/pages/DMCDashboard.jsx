@@ -91,7 +91,7 @@ const DMCDashboard = () => {
       },
       APPROVED: {
         icon: CheckCircle,
-        color: 'green',
+        color: 'teal',
         text: 'Approved'
       },
       REJECTED: {
@@ -111,7 +111,7 @@ const DMCDashboard = () => {
     const colorClasses = {
       yellow: 'bg-yellow-50 border-yellow-200 text-yellow-800',
       blue: 'bg-blue-50 border-blue-200 text-blue-800',
-      green: 'bg-green-50 border-green-200 text-green-800',
+      teal: 'bg-teal-50 border-teal-200 text-teal-800',
       red: 'bg-red-50 border-red-200 text-red-800'
     };
 
@@ -193,7 +193,7 @@ const DMCDashboard = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
       </div>
     );
   }
@@ -211,10 +211,10 @@ const DMCDashboard = () => {
               {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
             <div className="flex items-center">
-              <div className="bg-green-600 w-10 h-10 rounded-full flex items-center justify-center mr-3">
+              <div className="bg-teal-600 w-10 h-10 rounded-full flex items-center justify-center mr-3">
                 <Plane className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-green-600">DMC Portal</h1>
+              <h1 className="text-xl font-bold text-gray-900 sm:text-2xl md:text-3xl lg:text-3xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-teal-500 to-emerald-600">DMC Portal</h1>
             </div>
           </div>
 
@@ -222,7 +222,7 @@ const DMCDashboard = () => {
             {/* Upgrade Button */}
             <button
               onClick={() => navigate('/subscription/purchase')}
-              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-lg hover:from-green-700 hover:to-blue-700 transition-all duration-200 shadow-md font-medium"
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-teal-600 to-blue-600 text-white rounded-lg hover:from-teal-700 hover:to-blue-700 transition-all duration-200 shadow-md font-medium"
             >
               <CreditCard className="w-4 h-4" />
               <span>Upgrade Plan</span>
@@ -287,7 +287,7 @@ const DMCDashboard = () => {
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                       locked
                         ? 'text-gray-400 cursor-not-allowed bg-gray-50'
-                        : 'text-gray-700 hover:bg-green-50 hover:text-green-600'
+                        : 'text-gray-700 hover:bg-teal-50 hover:text-teal-600'
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -364,8 +364,8 @@ const DMCDashboard = () => {
                   <p className="text-sm font-medium text-gray-600">Active Bids</p>
                   <p className="text-3xl font-bold text-gray-900">0</p>
                 </div>
-                <div className="bg-green-100 rounded-full p-3">
-                  <Gavel className="w-8 h-8 text-green-600" />
+                <div className="bg-teal-100 rounded-full p-3">
+                  <Gavel className="w-8 h-8 text-teal-600" />
                 </div>
               </div>
             </div>
@@ -409,7 +409,7 @@ const DMCDashboard = () => {
 
           {/* Call to Action */}
           {!profileStatus?.isApproved && (
-            <div className="bg-linear-to-r from-green-500 to-blue-600 rounded-lg shadow-lg p-8 text-white text-center">
+            <div className="bg-linear-to-r from-teal-500 to-blue-600 rounded-lg shadow-lg p-8 text-white text-center">
               <FileText className="w-16 h-16 mx-auto mb-4 opacity-90" />
               <h3 className="text-2xl font-bold mb-2">Complete Your DMC Profile</h3>
               <p className="mb-6 opacity-90">
@@ -417,7 +417,7 @@ const DMCDashboard = () => {
               </p>
               <button
                 onClick={() => navigate('/dmc/profile/register')}
-                className="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                className="bg-white text-teal-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
               >
                 Complete Profile Registration
               </button>
@@ -431,8 +431,8 @@ const DMCDashboard = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <div className="text-center">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-8 h-8 text-green-600" />
+              <div className="bg-teal-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-8 h-8 text-teal-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">
                 Welcome to DMC Portal!
@@ -446,7 +446,7 @@ const DMCDashboard = () => {
                   setShowRegistrationModal(false);
                   navigate('/dmc/profile/register');
                 }}
-                className="w-full bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                className="w-full bg-teal-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-teal-700 transition-colors"
               >
                 Complete Profile Now
               </button>
