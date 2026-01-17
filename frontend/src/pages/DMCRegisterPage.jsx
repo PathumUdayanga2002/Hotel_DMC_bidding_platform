@@ -201,8 +201,7 @@ const DMCRegisterPage = () => {
 
             <Button
               type="submit"
-              variant="secondary"
-              className="w-full"
+              className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white shadow-md hover:shadow-lg py-3 rounded-lg font-semibold transition-all duration-200"
               disabled={isLoading}
             >
               {isLoading ? 'Creating Account...' : 'Create Account'}

@@ -135,7 +135,7 @@ const HotelRegisterPage = () => {
 
             <Input label="Confirm Password" type="password" placeholder="Confirm your password" register={register('confirmPassword')} error={errors.confirmPassword?.message} />
 
-            <Button type="submit" variant="primary" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white shadow-md hover:shadow-lg py-3 rounded-lg font-semibold transition-all duration-200" disabled={isLoading}>
               {isLoading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
