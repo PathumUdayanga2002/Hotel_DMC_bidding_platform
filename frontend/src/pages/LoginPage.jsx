@@ -8,7 +8,8 @@ import { useAuth } from '../context/AuthContext';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { LogIn } from 'lucide-react';
+import { LogIn, ArrowLeft } from 'lucide-react';
+import RoleSelectionModal from '../components/RoleSelectionModal';
 import React from 'react';
 
 const loginSchema = yup.object({
@@ -24,6 +25,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
 
   const {
     register,
@@ -76,61 +78,92 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-cyan-50 via-blue-50 to-green-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo/Title */}
-        <div className="text-center mb-8">
-          <div className="bg-cyan-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-            <LogIn className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Login to access your dashboard</p>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      {/* Header */}
+      <header className="bg-white/90 backdrop-blur-md shadow-sm border-b border-slate-100 sticky top-0 z-20">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
+            <span className="bg-gradient-to-r from-teal-500 to-emerald-600 bg-clip-text text-transparent">Rezpitch</span>
+          </h1>
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 px-4 py-2 border-2 border-slate-200 text-slate-700 rounded-lg hover:border-teal-400 hover:text-teal-600 transition-all duration-300"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Home
+          </button>
         </div>
+      </header>
 
-        <Card>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <Input
-              label="Email or Username"
-              placeholder="Enter your email or username"
-              register={register('emailOrUsername')}
-              error={errors.emailOrUsername?.message}
-            />
-
-            <Input
-              label="Password"
-              type="password"
-              placeholder="Enter your password"
-              register={register('password')}
-              error={errors.password?.message}
-            />
-
-            <div className="flex justify-end">
-              <Link to="/forgot-password" className="text-sm text-cyan-700 font-semibold hover:underline">
-                Forgot password?
-              </Link>
+      {/* Main Content */}
+      <div className="flex items-center justify-center px-4 py-16">
+        <div className="w-full max-w-md">
+          {/* Logo/Title */}
+          <div className="text-center mb-8">
+            <div className="bg-gradient-to-r from-teal-500 to-emerald-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <LogIn className="w-8 h-8 text-white" />
             </div>
-
-            <Button
-              type="submit"
-              variant="primary"
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Logging in...' : 'Login'}
-            </Button>
-          </form>
-
-          {/* Divider */}
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-center text-gray-600 text-sm">
-              Don't have an account?{' '}
-              <Link to="/" className="text-cyan-600 hover:text-cyan-700 font-semibold">
-                Register here
-              </Link>
-            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2" style={{fontFamily: 'Inter, sans-serif', letterSpacing: '-0.02em'}}>Welcome Back</h2>
+            <p className="text-slate-600 text-lg" style={{fontFamily: 'Inter, sans-serif'}}>Login to access your dashboard</p>
           </div>
-        </Card>
+
+          {/* Login Card */}
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <Input
+                label="Email or Username"
+                placeholder="Enter your email or username"
+                register={register('emailOrUsername')}
+                error={errors.emailOrUsername?.message}
+              />
+
+              <Input
+                label="Password"
+                type="password"
+                placeholder="Enter your password"
+                register={register('password')}
+                error={errors.password?.message}
+              />
+
+              <div className="flex justify-end">
+                <Link to="/forgot-password" className="text-sm text-teal-600 font-semibold hover:text-teal-700">
+                  Forgot password?
+                </Link>
+              </div>
+
+              <Button
+                type="submit"
+                variant="primary"
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Logging in...' : 'Login'}
+              </Button>
+            </form>
+
+            {/* Divider */}
+            <div className="mt-6 pt-6 border-t border-slate-200">
+              <p className="text-center text-slate-600 text-sm" style={{fontFamily: 'Inter, sans-serif'}}>
+                Don't have an account?{' '}
+                <button 
+                  onClick={() => setShowRoleModal(true)}
+                  className="text-teal-600 hover:text-teal-700 font-semibold"
+                >
+                  Register here
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Role Selection Modal */}
+      {showRoleModal && (
+        <RoleSelectionModal
+          isOpen={showRoleModal}
+          onClose={() => setShowRoleModal(false)}
+        />
+      )}
     </div>
   );
 };

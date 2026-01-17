@@ -9,7 +9,9 @@ import {
   AlertCircle,
   Award,
   MapPin,
-  Star
+  Star,
+  Filter,
+  CreditCard
 } from 'lucide-react';
 import api from '../services/api';
 import { toast } from 'react-toastify';
@@ -17,19 +19,44 @@ import { toast } from 'react-toastify';
 const PlatformAnalytics = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // Filter states for Top Hotels
+  const [sortBy, setSortBy] = useState('totalbids');
+  const [minStars, setMinStars] = useState('');
+  const [cityFilter, setCityFilter] = useState('');
+  const [limit, setLimit] = useState(10);
 
   useEffect(() => {
     fetchAnalytics();
-  }, []);
+  }, [sortBy, minStars, cityFilter, limit]);
 
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/analytics');
-      setAnalytics(response.data.data);
+      
+      // Build query parameters for top hotels filter
+      const params = new URLSearchParams();
+      if (sortBy) params.append('sortBy', sortBy);
+      if (minStars) params.append('minStars', minStars);
+      if (cityFilter) params.append('city', cityFilter);
+      if (limit) params.append('limit', limit);
+      
+      console.log('Fetching analytics with params:', params.toString());
+      
+      // Fetch main analytics (will use filtered top hotels)
+      const response = await api.get(`/admin/analytics?${params.toString()}`);
+      console.log('Analytics response:', response.data);
+      
+      if (response.data.success) {
+        setAnalytics(response.data.data);
+        console.log('Top hotels count:', response.data.data?.topHotelMarkets?.length || 0);
+      } else {
+        toast.error(response.data.message || 'Failed to load analytics data');
+      }
     } catch (error) {
       console.error('Error fetching analytics:', error);
-      toast.error('Failed to load analytics data');
+      console.error('Error response:', error.response?.data);
+      toast.error(error.response?.data?.message || 'Failed to load analytics data');
     } finally {
       setLoading(false);
     }
@@ -103,6 +130,11 @@ const PlatformAnalytics = () => {
   }
 
   const { revenueAnalytics, platformPerformance, topHotelMarkets, period } = analytics;
+  
+  // Debug logging
+  console.log('Analytics data:', analytics);
+  console.log('Top Hotel Markets:', topHotelMarkets);
+  console.log('Top Hotel Markets length:', topHotelMarkets?.length);
 
   return (
     <div className="p-6">
@@ -121,7 +153,9 @@ const PlatformAnalytics = () => {
           <h2 className="text-2xl font-semibold text-gray-800">Revenue Analytics</h2>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* First row: 2 main revenue metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          
           {/* Total Revenue YTD */}
           <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-lg shadow-lg p-6 text-white transform transition hover:scale-105">
             <div className="flex items-center justify-between mb-4">
@@ -132,24 +166,27 @@ const PlatformAnalytics = () => {
               {formatCurrency(revenueAnalytics.totalRevenueYTD)}
             </p>
             <p className="text-xs opacity-80">
-              {formatNumber(revenueAnalytics.totalBookingsYTD)} bookings completed
+              From {formatNumber(revenueAnalytics.totalBookingsYTD)} completed bookings
             </p>
           </div>
-
-          {/* Platform Commission */}
-          <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 text-white transform transition hover:scale-105">
+          
+          {/* Subscription Revenue */}
+          <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-lg shadow-lg p-6 text-white transform transition hover:scale-105">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium opacity-90">Platform Commission</h3>
-              <DollarSign className="w-5 h-5 opacity-80" />
+              <h3 className="text-sm font-medium opacity-90">Subscription Revenue</h3>
+              <CreditCard className="w-5 h-5 opacity-80" />
             </div>
             <p className="text-3xl font-bold mb-2">
-              {formatCurrency(revenueAnalytics.platformCommission)}
+              {formatCurrency(revenueAnalytics.subscriptionRevenue)}
             </p>
             <p className="text-xs opacity-80">
-              Earned from {revenueAnalytics.totalBookingsYTD} transactions
+              From active subscriptions (YTD)
             </p>
           </div>
+        </div>
 
+        {/* Second row: 2 performance metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Average Booking Value */}
           <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg shadow-lg p-6 text-white transform transition hover:scale-105">
             <div className="flex items-center justify-between mb-4">
@@ -171,7 +208,7 @@ const PlatformAnalytics = () => {
               : 'from-red-500 to-red-600'
           } rounded-lg shadow-lg p-6 text-white transform transition hover:scale-105`}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium opacity-90">Growth Rate</h3>
+              <h3 className="text-sm font-medium opacity-90">Growth Rate (YoY)</h3>
               <TrendingUp className="w-5 h-5 opacity-80" />
             </div>
             <p className="text-3xl font-bold mb-2">
@@ -179,7 +216,7 @@ const PlatformAnalytics = () => {
               {formatPercentage(revenueAnalytics.growthRate)}
             </p>
             <p className="text-xs opacity-80">
-              Year-over-year comparison
+              Compared to {new Date().getFullYear() - 1}
             </p>
           </div>
         </div>
@@ -253,9 +290,63 @@ const PlatformAnalytics = () => {
 
       {/* Top Hotel Markets Section */}
       <div>
-        <div className="flex items-center mb-4">
-          <Award className="w-6 h-6 text-yellow-600 mr-2" />
-          <h2 className="text-2xl font-semibold text-gray-800">Top Market Hotels</h2>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <Award className="w-6 h-6 text-yellow-600 mr-2" />
+            <h2 className="text-2xl font-semibold text-gray-800">Top Market Hotels</h2>
+          </div>
+          
+          {/* Filter Controls */}
+          <div className="flex items-center gap-3">
+            <Filter className="w-5 h-5 text-gray-600" />
+            
+            {/* Sort By Dropdown */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="totalbids">Sort by Total Bids</option>
+              <option value="revenue">Sort by Revenue</option>
+              <option value="successrate">Sort by Success Rate</option>
+              <option value="avgbidvalue">Sort by Avg Bid Value</option>
+            </select>
+            
+            {/* Minimum Stars Filter */}
+            <select
+              value={minStars}
+              onChange={(e) => setMinStars(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">All Stars</option>
+              <option value="5">5 Stars Only</option>
+              <option value="4">4+ Stars</option>
+              <option value="3">3+ Stars</option>
+              <option value="2">2+ Stars</option>
+              <option value="1">1+ Star</option>
+            </select>
+            
+            {/* City Filter */}
+            <input
+              type="text"
+              placeholder="Filter by city..."
+              value={cityFilter}
+              onChange={(e) => setCityFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-48"
+            />
+            
+            {/* Limit Dropdown */}
+            <select
+              value={limit}
+              onChange={(e) => setLimit(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="5">Top 5</option>
+              <option value="10">Top 10</option>
+              <option value="20">Top 20</option>
+              <option value="50">Top 50</option>
+            </select>
+          </div>
         </div>
         
         <div className="bg-white rounded-lg shadow-md overflow-hidden">

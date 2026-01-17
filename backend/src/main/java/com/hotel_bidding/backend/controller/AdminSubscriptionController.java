@@ -2,6 +2,7 @@ package com.hotel_bidding.backend.controller;
 
 import com.hotel_bidding.backend.constants.SubscriptionStatus;
 import com.hotel_bidding.backend.dto.response.ApiResponse;
+import com.hotel_bidding.backend.dto.response.SubscriptionResponse;
 import com.hotel_bidding.backend.entity.Subscription;
 import com.hotel_bidding.backend.service.AdminSubscriptionService;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class AdminSubscriptionController {
         Sort.Direction direction = sortDirection.equalsIgnoreCase("ASC") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         
-        Page<Subscription> subscriptions = adminSubscriptionService.getAllSubscriptions(status, search, pageable);
+        Page<SubscriptionResponse> subscriptions = adminSubscriptionService.getAllSubscriptions(status, search, pageable);
         
         return ResponseEntity.ok(ApiResponse.builder()
                 .success(true)
@@ -77,7 +78,7 @@ public class AdminSubscriptionController {
     public ResponseEntity<ApiResponse> getSubscriptionById(@PathVariable String subscriptionId) {
         log.info("Admin fetching subscription: {}", subscriptionId);
         
-        Subscription subscription = adminSubscriptionService.getSubscriptionById(subscriptionId);
+        SubscriptionResponse subscription = adminSubscriptionService.getSubscriptionById(subscriptionId);
         
         return ResponseEntity.ok(ApiResponse.builder()
                 .success(true)

@@ -29,7 +29,6 @@ import HotelProfileRegister from './pages/HotelProfileRegister';
 // Legal & Info Pages
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
-import FAQ from './pages/FAQ';
 
 // RBAC Pages
 import DMCStaffManagement from './pages/DMCStaffManagement';
@@ -46,14 +45,10 @@ import HotelBidsPage from './pages/HotelBidsPage';
 import HotelInquiryDetails from './pages/HotelInquiryDetails';
 import HotelDirectInquiriesPage from './pages/HotelDirectInquiriesPage';
 
-// Payment Pages
-import PaymentInitiation from './pages/PaymentInitiation';
-import PaymentReturn from './pages/PaymentReturn';
-import PaymentCancel from './pages/PaymentCancel';
+// Payment Pages - OLD SYSTEM REMOVED (PaymentInitiation, PaymentReturn, PaymentCancel)
 import DMCPaymentHistory from './pages/DMCPaymentHistory';
 import HotelPaymentHistory from './pages/HotelPaymentHistory';
-import AdminPaymentDashboard from './pages/AdminPaymentDashboard';
-import AdminPayoutManagement from './pages/AdminPayoutManagement';
+
 import AdminUserManagement from './pages/AdminUserManagement';
 import AdminSettings from './pages/AdminSettings';
 import PlatformAnalytics from './pages/PlatformAnalytics';
@@ -61,6 +56,7 @@ import PlatformAnalytics from './pages/PlatformAnalytics';
 //messages
 import DMCMessages from './pages/DMCMessages.jsx';
 import HotelMessages from './pages/HotelMessages.jsx';
+import AdminMessages from './pages/AdminMessages.jsx';
 
 // Contracts
 import MyContracts from './pages/MyContracts.jsx';
@@ -75,6 +71,7 @@ import DMCDirectInquiryHistory from './pages/DMCDirectInquiryHistory.jsx';
 import SubscriptionPlanIntro from './pages/SubscriptionPlanIntro.jsx';
 import SubscriptionPurchase from './pages/SubscriptionPurchase.jsx';
 import AdminSubscriptionManagement from './pages/AdminSubscriptionManagement.jsx';
+import AdminSubscriptionDetail from './pages/AdminSubscriptionDetail.jsx';
 
 const App = () => {
   // Role constants for easier management
@@ -99,7 +96,6 @@ const App = () => {
           {/* Legal & Info Routes */}
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsAndConditions />} />
-          <Route path="/faq" element={<FAQ />} />
 
           {/* Subscription Routes (for both Hotel and DMC users) */}
           <Route
@@ -180,8 +176,8 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
-          {/* Hotel Messages */} 
+          
+          {/* Hotel Messages 
             <Route
             path="/hotel/messages"
             element={
@@ -189,8 +185,9 @@ const App = () => {
                 <HotelMessages />
               </ProtectedRoute>
             }
-          />
-
+          /> 
+          */}
+         
           {/* Hotel Staff Management - Super Admin Only */}
           <Route
             path="/hotel/staff"
@@ -201,11 +198,12 @@ const App = () => {
             }
           />
 
-          {/* Hotel Activity Logs */}
+          {/* Activity Logs - Platform Admin Only */}
+          {/* Hotel users cannot access activity logs - only Platform Admin */}
           <Route
             path="/hotel/activity-logs"
             element={
-              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
+              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
                 <ActivityLogs portalType="hotel" />
               </ProtectedRoute>
             }
@@ -289,11 +287,12 @@ const App = () => {
             }
           />
 
-          {/* DMC Activity Logs */}
+          {/* Activity Logs - Platform Admin Only */}
+          {/* DMC users cannot access activity logs - only Platform Admin */}
           <Route
             path="/dmc/activity-logs"
             element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
+              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
                 <ActivityLogs portalType="dmc" />
               </ProtectedRoute>
             }
@@ -360,40 +359,9 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/payment/initiate"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <PaymentInitiation />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/payment/return"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <PaymentReturn />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/payment/cancel"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <PaymentCancel />
-              </ProtectedRoute>
-            }
-          />
+          {/* OLD BID PAYMENT ROUTES REMOVED: /payment/initiate, /payment/return, /payment/cancel */}
           
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-                {/* <AdminDashboard /> */}
-                <AdminDashboardNew />
-              </ProtectedRoute>
-            }
-          />
+          {/* Admin Routes */}
           <Route
             path="/admin"
             element={
@@ -402,16 +370,16 @@ const App = () => {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+            <Route index element={<AdminHome />} />
             <Route path="dashboard" element={<AdminHome />} />
             <Route path="dmc-approvals" element={<DMCApprovals />} />
             <Route path="hotel-approvals" element={<HotelApprovals />} />
             <Route path="user-management" element={<AdminUserManagement />} />
             <Route path="analytics" element={<PlatformAnalytics />} />
             <Route path="settings" element={<AdminSettings />} />
-            <Route path="payments" element={<AdminPaymentDashboard />} />
-            <Route path="payouts" element={<AdminPayoutManagement />} />
             <Route path="subscriptions" element={<AdminSubscriptionManagement />} />
+            <Route path="subscriptions/:subscriptionId" element={<AdminSubscriptionDetail />} />
+            <Route path="messages" element={<AdminMessages />} />
           </Route>
 
           {/* 404 Redirect */}

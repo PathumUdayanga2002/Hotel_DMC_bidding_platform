@@ -158,13 +158,6 @@ const DMCDashboard = () => {
       requiresApproval: true // Requires profile approval
     },
     {
-      id: 'browse',
-      name: 'Browse Inquiries',
-      icon: Search,
-      path: '/dmc/browse-inquiries',
-      requiresApproval: true // Requires profile approval
-    },
-    {
       id: 'bids',
       name: 'My Bids',
       icon: Gavel,
@@ -186,13 +179,7 @@ const DMCDashboard = () => {
       requiresApproval: true, // Requires profile approval AND super admin role
       showForSuperAdminOnly: true // Only show to super admin
     },
-    {
-      id: 'activity-logs',
-      name: 'Activity Logs',
-      icon: Activity,
-      path: '/dmc/activity-logs',
-      requiresApproval: true // Requires profile approval
-    },
+    // Activity Logs removed - Only accessible to Platform Admin, not DMC users
     {
       id: 'myprofile',
       name: 'Profile',
@@ -246,11 +233,6 @@ const DMCDashboard = () => {
 
             {/* Notifications */}
             <NotificationBell />
-
-            {/* Messages */}
-            <button className="relative p-2 rounded-full hover:bg-gray-100">
-              <MessageSquare className="w-6 h-6 text-gray-600" />
-            </button>
 
             {/* User Menu */}
             <div className="flex items-center space-x-2">
@@ -375,7 +357,7 @@ const DMCDashboard = () => {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -403,11 +385,23 @@ const DMCDashboard = () => {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Messages</p>
+                  <p className="text-sm font-medium text-gray-600">Direct Inquiries</p>
+                  <p className="text-3xl font-bold text-gray-900">0</p>
+                </div>
+                <div className="bg-orange-100 rounded-full p-3">
+                  <TrendingUp className="w-8 h-8 text-orange-600" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Active Staff</p>
                   <p className="text-3xl font-bold text-gray-900">0</p>
                 </div>
                 <div className="bg-purple-100 rounded-full p-3">
-                  <MessageSquare className="w-8 h-8 text-purple-600" />
+                  <Users className="w-8 h-8 text-purple-600" />
                 </div>
               </div>
             </div>
