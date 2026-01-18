@@ -17,7 +17,12 @@ import {
   Ban,
   Award,
   Loader2,
-  AlertTriangle
+  AlertTriangle,
+  Info,
+  X,
+  Phone,
+  Mail,
+  Building
 } from 'lucide-react';
 import {
   getInquiryById,
@@ -52,6 +57,8 @@ const InquiryDetailsPage = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(null);
   const [selectedBid, setSelectedBid] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [showBidDetailsModal, setShowBidDetailsModal] = useState(false);
+  const [bidDetailsData, setBidDetailsData] = useState(null);
 
   useEffect(() => {
     fetchInquiryDetails();
@@ -165,6 +172,16 @@ const InquiryDetailsPage = () => {
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleViewBidDetails = (bid) => {
+    setBidDetailsData(bid);
+    setShowBidDetailsModal(true);
+  };
+
+  const handleCloseBidDetailsModal = () => {
+    setShowBidDetailsModal(false);
+    setBidDetailsData(null);
   };
 
   if (loading) {
@@ -369,6 +386,7 @@ const InquiryDetailsPage = () => {
                         setRejectionReason('');
                         setShowConfirmModal('reject');
                       }}
+                      onViewDetails={() => handleViewBidDetails(bid)}
                     />
                   ))}
                 </div>
@@ -467,12 +485,33 @@ const InquiryDetailsPage = () => {
           setRejectionReason={setRejectionReason}
         />
       )}
+
+      {/* Bid Details Modal */}
+      {showBidDetailsModal && bidDetailsData && (
+        <BidDetailsModal
+          bid={bidDetailsData}
+          inquiry={inquiry}
+          onClose={handleCloseBidDetailsModal}
+          onAward={() => {
+            handleCloseBidDetailsModal();
+            setSelectedBid(bidDetailsData);
+            setShowConfirmModal('award');
+          }}
+          onReject={() => {
+            handleCloseBidDetailsModal();
+            setSelectedBid(bidDetailsData);
+            setRejectionReason('');
+            setShowConfirmModal('reject');
+          }}
+          canTakeAction={canTakeAction}
+        />
+      )}
     </div>
   );
 };
 
 // Bid Card Component
-const BidCard = ({ bid, inquiry, canTakeAction, onAward, onReject }) => {
+const BidCard = ({ bid, inquiry, canTakeAction, onAward, onReject, onViewDetails }) => {
   const totalPrice = calculateTotalPrice(
     bid.pricePerRoomPerNight,
     inquiry.numberOfRooms,
@@ -539,9 +578,18 @@ const BidCard = ({ bid, inquiry, canTakeAction, onAward, onReject }) => {
       )}
 
       <div className="flex items-center justify-between pt-3 border-t">
-        <span className="text-xs text-gray-500">
-          Submitted {formatDateTime(bid.submittedAt)}
-        </span>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-gray-500">
+            Submitted {formatDateTime(bid.submittedAt)}
+          </span>
+          <button
+            onClick={onViewDetails}
+            className="flex items-center px-3 py-1.5 text-cyan-600 border border-cyan-300 rounded-lg hover:bg-cyan-50 transition-colors text-xs font-medium"
+          >
+            <Info className="w-3.5 h-3.5 mr-1.5" />
+            See All Details
+          </button>
+        </div>
         
         {canTakeAction && bid.status === BID_STATUS.PENDING && !isAwarded && (
           <div className="flex items-center space-x-2">
@@ -648,6 +696,301 @@ const ConfirmModal = ({ type, onConfirm, onCancel, loading, bid, rejectionReason
             )}
           </button>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Bid Details Modal Component
+const BidDetailsModal = ({ bid, inquiry, onClose, onAward, onReject, canTakeAction }) => {
+  const totalPrice = calculateTotalPrice(
+    bid.pricePerRoomPerNight,
+    inquiry.numberOfRooms,
+    inquiry.numberOfNights
+  );
+
+  const isAwarded = inquiry.awardedBidId === bid.id;
+  const isPending = bid.status === BID_STATUS.PENDING;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">{bid.bidTitle || 'Bid Details'}</h2>
+            <p className="text-sm text-gray-600 mt-1">{bid.hotelName}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* Status Badge */}
+          <div className="flex items-center space-x-3">
+            <span className={`px-4 py-2 rounded-full text-sm font-semibold border ${getStatusColor(bid.status)}`}>
+              {getStatusLabel(bid.status)}
+            </span>
+            {isAwarded && (
+              <span className="flex items-center px-4 py-2 bg-green-600 text-white rounded-full text-sm font-semibold">
+                <Award className="w-4 h-4 mr-2" />
+                Awarded Bid
+              </span>
+            )}
+          </div>
+
+          {/* Hotel Information */}
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+              <Building className="w-5 h-5 mr-2 text-cyan-600" />
+              Hotel Information
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs text-gray-600 uppercase tracking-wide">Hotel Name</label>
+                <p className="text-sm font-medium text-gray-900 mt-1">{bid.hotelName}</p>
+              </div>
+              <div>
+                <label className="text-xs text-gray-600 uppercase tracking-wide">Location</label>
+                <p className="text-sm font-medium text-gray-900 mt-1 flex items-center">
+                  <MapPin className="w-4 h-4 mr-1 text-gray-500" />
+                  {bid.hotelCity}
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-xs text-gray-600 uppercase tracking-wide">Address</label>
+                <p className="text-sm font-medium text-gray-900 mt-1">{bid.hotelAddress}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Pricing Details */}
+          <div className="bg-cyan-50 rounded-lg p-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+              <DollarSign className="w-5 h-5 mr-2 text-cyan-600" />
+              Pricing Details
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs text-gray-600 uppercase tracking-wide">Price per Room/Night</label>
+                <p className="text-2xl font-bold text-cyan-600 mt-1">
+                  {formatPrice(bid.pricePerRoomPerNight, bid.currency)}
+                </p>
+              </div>
+              <div>
+                <label className="text-xs text-gray-600 uppercase tracking-wide">Total Price</label>
+                <p className="text-2xl font-bold text-gray-900 mt-1">
+                  {formatPrice(totalPrice, bid.currency)}
+                </p>
+              </div>
+              <div>
+                <label className="text-xs text-gray-600 uppercase tracking-wide">Available Rooms</label>
+                <p className="text-2xl font-bold text-gray-900 mt-1">{bid.availableRooms}</p>
+              </div>
+            </div>
+
+            {(bid.discountPercentage || bid.discountAmount) && (
+              <div className="mt-4 p-3 bg-green-100 border border-green-200 rounded">
+                <p className="text-sm font-medium text-green-800">
+                  💰 Discount Applied: {bid.discountPercentage ? `${bid.discountPercentage}%` : formatPrice(bid.discountAmount, bid.currency)}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Room & Meal Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <label className="text-xs text-gray-600 uppercase tracking-wide flex items-center">
+                <Home className="w-4 h-4 mr-1" />
+                Room Type
+              </label>
+              <p className="text-lg font-semibold text-gray-900 mt-2">{getRoomTypeLabel(bid.roomType)}</p>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4">
+              <label className="text-xs text-gray-600 uppercase tracking-wide flex items-center">
+                <Utensils className="w-4 h-4 mr-1" />
+                Meal Plan
+              </label>
+              <p className="text-lg font-semibold text-gray-900 mt-2">{getMealPlanLabel(bid.mealPlan)}</p>
+            </div>
+          </div>
+
+          {/* Description */}
+          {bid.bidDescription && (
+            <div>
+              <label className="text-xs text-gray-600 uppercase tracking-wide block mb-2">Bid Description</label>
+              <p className="text-sm text-gray-900 bg-gray-50 rounded-lg p-4 leading-relaxed">
+                {bid.bidDescription}
+              </p>
+            </div>
+          )}
+
+          {/* Special Offer */}
+          {bid.specialOffer && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <label className="text-xs text-yellow-800 uppercase tracking-wide font-semibold block mb-2">
+                🎁 Special Offer
+              </label>
+              <p className="text-sm text-yellow-900 font-medium">{bid.specialOffer}</p>
+            </div>
+          )}
+
+          {/* Amenities */}
+          {bid.includedAmenities && bid.includedAmenities.length > 0 && (
+            <div>
+              <label className="text-xs text-gray-600 uppercase tracking-wide block mb-2">Included Amenities</label>
+              <div className="flex flex-wrap gap-2">
+                {bid.includedAmenities.map((amenity, index) => (
+                  <span key={index} className="px-3 py-1.5 bg-cyan-100 text-cyan-800 rounded-full text-sm font-medium">
+                    ✓ {amenity}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Terms & Conditions */}
+          {bid.termsAndConditions && (
+            <div>
+              <label className="text-xs text-gray-600 uppercase tracking-wide block mb-2">Terms & Conditions</label>
+              <p className="text-sm text-gray-900 bg-gray-50 rounded-lg p-4 leading-relaxed whitespace-pre-wrap">
+                {bid.termsAndConditions}
+              </p>
+            </div>
+          )}
+
+          {/* Additional Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {bid.validityDate && (
+              <div>
+                <label className="text-xs text-gray-600 uppercase tracking-wide block mb-1">Bid Valid Until</label>
+                <p className="text-sm font-medium text-gray-900 flex items-center">
+                  <Calendar className="w-4 h-4 mr-2 text-gray-500" />
+                  {formatDate(bid.validityDate)}
+                </p>
+              </div>
+            )}
+            {bid.openToNegotiation !== undefined && (
+              <div>
+                <label className="text-xs text-gray-600 uppercase tracking-wide block mb-1">Open to Negotiation</label>
+                <p className="text-sm font-medium text-gray-900">
+                  {bid.openToNegotiation ? (
+                    <span className="text-green-600 flex items-center">
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Yes
+                    </span>
+                  ) : (
+                    <span className="text-gray-500 flex items-center">
+                      <XCircle className="w-4 h-4 mr-2" />
+                      No
+                    </span>
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Additional Notes */}
+          {bid.additionalNotes && (
+            <div>
+              <label className="text-xs text-gray-600 uppercase tracking-wide block mb-2">Additional Notes</label>
+              <p className="text-sm text-gray-900 bg-gray-50 rounded-lg p-4 leading-relaxed">
+                {bid.additionalNotes}
+              </p>
+            </div>
+          )}
+
+          {/* Negotiation Notes (if DMC added any) */}
+          {bid.negotiationNotes && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <label className="text-xs text-blue-800 uppercase tracking-wide font-semibold block mb-2">
+                DMC Negotiation Notes
+              </label>
+              <p className="text-sm text-blue-900">{bid.negotiationNotes}</p>
+            </div>
+          )}
+
+          {/* Rejection Reason (if rejected) */}
+          {bid.status === BID_STATUS.REJECTED && bid.rejectionReason && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <label className="text-xs text-red-800 uppercase tracking-wide font-semibold block mb-2">
+                Rejection Reason
+              </label>
+              <p className="text-sm text-red-900">{bid.rejectionReason}</p>
+            </div>
+          )}
+
+          {/* Timestamps */}
+          <div className="border-t border-gray-200 pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-gray-500">
+              <div>
+                <label className="uppercase tracking-wide block mb-1">Submitted At</label>
+                <p className="text-gray-900 font-medium">{formatDateTime(bid.submittedAt)}</p>
+              </div>
+              {bid.updatedAt && bid.updatedAt !== bid.submittedAt && (
+                <div>
+                  <label className="uppercase tracking-wide block mb-1">Last Updated</label>
+                  <p className="text-gray-900 font-medium">{formatDateTime(bid.updatedAt)}</p>
+                </div>
+              )}
+              {bid.acceptedAt && (
+                <div>
+                  <label className="uppercase tracking-wide block mb-1">Accepted At</label>
+                  <p className="text-green-700 font-medium">{formatDateTime(bid.acceptedAt)}</p>
+                </div>
+              )}
+              {bid.rejectedAt && (
+                <div>
+                  <label className="uppercase tracking-wide block mb-1">Rejected At</label>
+                  <p className="text-red-700 font-medium">{formatDateTime(bid.rejectedAt)}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Actions */}
+        {canTakeAction && isPending && !isAwarded && (
+          <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-end space-x-3">
+            <button
+              onClick={onClose}
+              className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+            >
+              Close
+            </button>
+            <button
+              onClick={onReject}
+              className="flex items-center px-6 py-2.5 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-medium"
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Reject Bid
+            </button>
+            <button
+              onClick={onAward}
+              className="flex items-center px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+            >
+              <Award className="w-4 h-4 mr-2" />
+              Award This Bid
+            </button>
+          </div>
+        )}
+
+        {!canTakeAction || !isPending || isAwarded ? (
+          <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-end">
+            <button
+              onClick={onClose}
+              className="px-6 py-2.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium"
+            >
+              Close
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );
