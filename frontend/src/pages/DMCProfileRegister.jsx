@@ -19,6 +19,28 @@ import {
   Shield
 } from 'lucide-react';
 
+// Utility function to sanitize input and prevent XSS
+const sanitizeInput = (input) => {
+  if (!input) return '';
+  // Remove potential XSS patterns
+  return input
+    .replace(/<script[^>]*>.*?<\/script>/gi, '') // Remove script tags
+    .replace(/<[^>]+>/g, '') // Remove all HTML tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    .trim();
+};
+
+// Validate input against SQL injection patterns
+const containsSQLInjection = (input) => {
+  if (!input) return false;
+  const sqlPatterns = [
+    /('|(\-\-)|(;)|(\|\|)|(\*))/i,  // Basic SQL injection characters
+    /(union|select|insert|update|delete|drop|create|alter|exec|execute)/i // SQL keywords
+  ];
+  return sqlPatterns.some(pattern => pattern.test(input));
+};
+
 const DMCProfileRegister = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -77,9 +99,19 @@ const DMCProfileRegister = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Check for SQL injection patterns
+    if (containsSQLInjection(value)) {
+      toast.error('Invalid input detected. Please remove special characters.');
+      return;
+    }
+    
+    // Sanitize input to prevent XSS
+    const sanitizedValue = sanitizeInput(value);
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: sanitizedValue
     }));
   };
 
@@ -106,6 +138,34 @@ const DMCProfileRegister = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate SLTDA certificate is required
+    if (!selectedFile && !existingProfile?.sltdaCertificationFileName) {
+      toast.error('SLTDA Certification is required. Please upload your certificate.');
+      return;
+    }
+    
+    // Additional validation for all fields
+    if (!formData.companyName || !formData.address || !formData.businessRegistrationNumber || 
+        !formData.contactNumber || !formData.email) {
+      toast.error('All fields are required');
+      return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    
+    // Validate phone number format
+    const phoneRegex = /^[+]?[0-9]{10,15}$/;
+    if (!phoneRegex.test(formData.contactNumber.replace(/\s/g, ''))) {
+      toast.error('Please enter a valid contact number (10-15 digits)');
+      return;
+    }
+    
     setLoading(true);
 
     try {
@@ -138,7 +198,29 @@ const DMCProfileRegister = () => {
 
     } catch (error) {
       console.error('Profile registration error:', error);
-      toast.error(error.response?.data?.message || 'Failed to register profile');
+      
+      // Handle validation errors from backend
+      if (error.response?.status === 400) {
+        const errorMessage = error.response?.data?.message;
+        
+        // Check if it's a validation error with multiple fields
+        if (error.response?.data?.errors) {
+          // Multiple validation errors
+          const errors = error.response.data.errors;
+          Object.keys(errors).forEach(field => {
+            toast.error(`${field}: ${errors[field]}`);
+          });
+        } else if (errorMessage) {
+          // Single error message
+          toast.error(errorMessage);
+        } else {
+          toast.error('Validation failed. Please check your inputs.');
+        }
+      } else if (error.response?.status === 413) {
+        toast.error('File size is too large. Maximum 50MB allowed.');
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to register profile. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -365,8 +447,11 @@ const DMCProfileRegister = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Upload className="w-4 h-4 inline mr-2" />
-                SLTDA Certification (Optional)
+                SLTDA Certification *
               </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Required: Sri Lanka Tourism Development Authority certification
+              </p>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
                 <input
                   type="file"
