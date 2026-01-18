@@ -91,7 +91,7 @@ const HotelBidsPage = () => {
   };
 
   const tabs = [
-    { key: 'ALL', label: 'All Bids', count: stats?.totalBids || 0 },
+    { key: 'ALL', label: 'All Bids', count: stats?.totalBidsSubmitted || 0 },
     { key: BID_STATUS.PENDING, label: 'Pending', count: stats?.pendingBids || 0 },
     { key: BID_STATUS.ACCEPTED, label: 'Accepted', count: stats?.acceptedBids || 0 },
     { key: BID_STATUS.REJECTED, label: 'Rejected', count: stats?.rejectedBids || 0 }
@@ -112,7 +112,7 @@ const HotelBidsPage = () => {
             <StatCard
               icon={<FileText className="w-6 h-6" />}
               label="Total Bids"
-              value={stats.totalBids || 0}
+              value={stats.totalBidsSubmitted || 0}
               color="cyan"
             />
             <StatCard
@@ -130,7 +130,7 @@ const HotelBidsPage = () => {
             <StatCard
               icon={<TrendingUp className="w-6 h-6" />}
               label="Win Rate"
-              value={`${calculateWinRate(stats.acceptedBids, stats.totalBids)}%`}
+              value={`${calculateWinRate(stats.acceptedBids, stats.totalBidsSubmitted)}%`}
               color="purple"
             />
           </div>
