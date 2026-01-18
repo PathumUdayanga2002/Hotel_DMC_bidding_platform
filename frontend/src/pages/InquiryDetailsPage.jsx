@@ -24,7 +24,8 @@ import {
   getBidsForInquiry,
   closeInquiry,
   cancelInquiry,
-  awardBid
+  awardBid,
+  rejectBid
 } from '../services/bidInquiryService';
 import {
   BID_INQUIRY_STATUS,
@@ -50,6 +51,7 @@ const InquiryDetailsPage = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(null);
   const [selectedBid, setSelectedBid] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   useEffect(() => {
     fetchInquiryDetails();
@@ -133,6 +135,33 @@ const InquiryDetailsPage = () => {
     } catch (error) {
       console.error('Error awarding bid:', error);
       toast.error(error.response?.data?.message || 'Failed to award bid');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRejectBid = async () => {
+    if (!rejectionReason.trim()) {
+      toast.error('Please provide a rejection reason');
+      return;
+    }
+
+    if (rejectionReason.trim().length < 10) {
+      toast.error('Rejection reason must be at least 10 characters');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await rejectBid(inquiryId, selectedBid.id, rejectionReason);
+      toast.success('Bid rejected successfully. Hotel has been notified via email.');
+      fetchBids();
+      setShowConfirmModal(null);
+      setSelectedBid(null);
+      setRejectionReason('');
+    } catch (error) {
+      console.error('Error rejecting bid:', error);
+      toast.error(error.response?.data?.message || 'Failed to reject bid');
     } finally {
       setActionLoading(false);
     }
@@ -335,6 +364,11 @@ const InquiryDetailsPage = () => {
                         setSelectedBid(bid);
                         setShowConfirmModal('award');
                       }}
+                      onReject={() => {
+                        setSelectedBid(bid);
+                        setRejectionReason('');
+                        setShowConfirmModal('reject');
+                      }}
                     />
                   ))}
                 </div>
@@ -420,13 +454,17 @@ const InquiryDetailsPage = () => {
             if (showConfirmModal === 'close') handleCloseInquiry();
             else if (showConfirmModal === 'cancel') handleCancelInquiry();
             else if (showConfirmModal === 'award') handleAwardBid(selectedBid.id);
+            else if (showConfirmModal === 'reject') handleRejectBid();
           }}
           onCancel={() => {
             setShowConfirmModal(null);
             setSelectedBid(null);
+            setRejectionReason('');
           }}
           loading={actionLoading}
           bid={selectedBid}
+          rejectionReason={rejectionReason}
+          setRejectionReason={setRejectionReason}
         />
       )}
     </div>
@@ -434,7 +472,7 @@ const InquiryDetailsPage = () => {
 };
 
 // Bid Card Component
-const BidCard = ({ bid, inquiry, canTakeAction, onAward }) => {
+const BidCard = ({ bid, inquiry, canTakeAction, onAward, onReject }) => {
   const totalPrice = calculateTotalPrice(
     bid.pricePerRoomPerNight,
     inquiry.numberOfRooms,
@@ -506,13 +544,22 @@ const BidCard = ({ bid, inquiry, canTakeAction, onAward }) => {
         </span>
         
         {canTakeAction && bid.status === BID_STATUS.PENDING && !isAwarded && (
-          <button
-            onClick={onAward}
-            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-          >
-            <Award className="w-4 h-4 mr-2" />
-            Award This Bid
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={onReject}
+              className="flex items-center px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Reject Bid
+            </button>
+            <button
+              onClick={onAward}
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+            >
+              <Award className="w-4 h-4 mr-2" />
+              Award This Bid
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -520,7 +567,7 @@ const BidCard = ({ bid, inquiry, canTakeAction, onAward }) => {
 };
 
 // Confirmation Modal Component
-const ConfirmModal = ({ type, onConfirm, onCancel, loading, bid }) => {
+const ConfirmModal = ({ type, onConfirm, onCancel, loading, bid, rejectionReason, setRejectionReason }) => {
   const config = {
     close: {
       title: 'Close Inquiry',
@@ -539,6 +586,13 @@ const ConfirmModal = ({ type, onConfirm, onCancel, loading, bid }) => {
       message: bid ? `Are you sure you want to award this bid to ${bid.hotelName}? The hotel will be notified and the inquiry will be closed.` : '',
       confirmText: 'Award Bid',
       confirmClass: 'bg-green-600 hover:bg-green-700'
+    },
+    reject: {
+      title: 'Reject Bid',
+      message: bid ? `Are you sure you want to reject the bid from ${bid.hotelName}? The hotel will be notified via email and can submit an improved bid if the inquiry is still open.` : '',
+      confirmText: 'Reject Bid',
+      confirmClass: 'bg-red-600 hover:bg-red-700',
+      requiresInput: true
     }
   };
 
@@ -550,6 +604,27 @@ const ConfirmModal = ({ type, onConfirm, onCancel, loading, bid }) => {
         <h3 className="text-xl font-bold text-gray-900 mb-4">{currentConfig.title}</h3>
         <p className="text-gray-600 mb-6">{currentConfig.message}</p>
         
+        {currentConfig.requiresInput && (
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Rejection Reason <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              placeholder="Please provide a clear reason for rejection (min 10 characters)..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+              rows={4}
+              disabled={loading}
+            />
+            {rejectionReason.length > 0 && rejectionReason.length < 10 && (
+              <p className="text-red-500 text-xs mt-1">
+                Minimum 10 characters required ({rejectionReason.length}/10)
+              </p>
+            )}
+          </div>
+        )}
+        
         <div className="flex items-center justify-end space-x-3">
           <button
             onClick={onCancel}
@@ -560,7 +635,7 @@ const ConfirmModal = ({ type, onConfirm, onCancel, loading, bid }) => {
           </button>
           <button
             onClick={onConfirm}
-            disabled={loading}
+            disabled={loading || (currentConfig.requiresInput && rejectionReason.trim().length < 10)}
             className={`px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 flex items-center ${currentConfig.confirmClass}`}
           >
             {loading ? (

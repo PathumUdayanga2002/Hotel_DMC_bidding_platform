@@ -67,6 +67,18 @@ export const awardBid = async (inquiryId, bidId) => {
 };
 
 /**
+ * Reject a bid with a reason
+ */
+export const rejectBid = async (inquiryId, bidId, rejectionReason) => {
+  const response = await api.put(`/dmc/inquiries/${inquiryId}/reject/${bidId}`, rejectionReason, {
+    headers: {
+      'Content-Type': 'text/plain'
+    }
+  });
+  return response.data;
+};
+
+/**
  * Get all bids for a specific inquiry (DMC)
  */
 export const getBidsForInquiry = async (inquiryId, page = 0, size = 10) => {
