@@ -85,9 +85,9 @@ const HotelDetailsModal = ({ profile, onClose }) => {
 
     setLoading(true);
     try {
-      const payload = { newStatus };
+      const payload = { status: newStatus };
       if (adminNote.trim()) {
-        payload.note = adminNote;
+        payload.adminNote = adminNote;
       }
       
       await api.put(`/admin/hotel-approvals/${profile.id}/status`, payload);
