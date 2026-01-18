@@ -15,6 +15,8 @@ import DMCRegisterPage from './pages/DMCRegisterPage';
 import AdminRegisterPage from './pages/AdminRegisterPage';
 import HotelDashboard from './pages/HotelDashboard';
 import HotelLayout from './layouts/HotelLayout';
+import DMCLayout from './pages/DMCLayout';
+import DMCHome from './pages/DMCHome';
 import DMCDashboard from './pages/DMCDashboard';
 import DMCReceivedContracts from './pages/DMCReceivedContracts';
 import DMCContractDetail from './pages/DMCContractDetail';
@@ -148,144 +150,66 @@ const App = () => {
             <Route path="payments" element={<HotelPaymentHistory />} />
           </Route>
 
-          
+          {/* DMC Routes - All nested within DMCLayout */}
           <Route
-            path="/dmc/dashboard"
+            path="/dmc"
             element={
               <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <DMCDashboard />
+                <DMCLayout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/dmc/profile/register"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <DMCProfileRegister />
-              </ProtectedRoute>
-            }
-          />
-
-          
-          <Route
-            path="/dmc/profile"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <DMCProfile />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/dmc/received-contracts"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <DMCReceivedContracts />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/dmc/received-contracts/:contractId"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <DMCContractDetail />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* DMC Messages */} 
+          >
+            {/* DMC Dashboard Home */}
+            <Route path="dashboard" element={<DMCHome />} />
+            
+            {/* DMC Profile */}
+            <Route path="profile/register" element={<DMCProfileRegister />} />
+            <Route path="profile" element={<DMCProfile />} />
+            
+            {/* DMC Contracts */}
+            <Route path="received-contracts" element={<DMCReceivedContracts />} />
+            <Route path="received-contracts/:contractId" element={<DMCContractDetail />} />
+            
+            {/* DMC Messages */}
+            <Route path="messages" element={<DMCMessages />} />
+            
+            {/* DMC Staff Management */}
             <Route
-            path="/dmc/messages"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <DMCMessages />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* DMC Staff Management - Super Admin Only */}
-          <Route
-            path="/dmc/staff"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES} requireSuperAdmin={true}>
-                <DMCStaffManagement />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Activity Logs - Platform Admin Only */}
-          {/* DMC users cannot access activity logs - only Platform Admin */}
-          <Route
-            path="/dmc/activity-logs"
-            element={
-              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-                <ActivityLogs portalType="dmc" />
-              </ProtectedRoute>
-            }
-          />
+              path="staff"
+              element={
+                <ProtectedRoute allowedRoles={DMC_ROLES} requireSuperAdmin={true}>
+                  <DMCStaffManagement />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Activity Logs - Platform Admin Only */}
+            <Route
+              path="activity-logs"
+              element={
+                <ProtectedRoute allowedRoles={ADMIN_ROLES}>
+                  <ActivityLogs portalType="dmc" />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* DMC Bid Inquiry Routes */}
+            <Route path="inquiries" element={<DMCInquiriesPage />} />
+            <Route path="inquiries/post" element={<PostInquiryForm />} />
+            <Route path="inquiries/:inquiryId" element={<InquiryDetailsPage />} />
+            
+            {/* DMC Direct Inquiry Routes */}
+            <Route path="direct-inquiries" element={<DMCDirectInquiry />} />
+            <Route path="direct-inquiries/history" element={<DMCDirectInquiryHistory />} />
+            <Route path="direct-inquiries/select-hotels" element={<DMCHotelSelection />} />
+            
+            {/* DMC Payment Routes */}
+            <Route path="payments" element={<DMCPaymentHistory />} />
+            
+            {/* DMC My Bids Route */}
+            <Route path="my-bids" element={<div className="p-6"><h1 className="text-2xl font-bold">My Bids - Coming Soon</h1></div>} />
+          </Route>
           
-          {/* DMC Bid Inquiry Routes */}
-          <Route
-            path="/dmc/inquiries"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <DMCInquiriesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dmc/inquiries/post"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <PostInquiryForm />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dmc/inquiries/:inquiryId"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <InquiryDetailsPage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* DMC Direct Inquiry Routes */}
-          <Route
-            path="/dmc/direct-inquiries"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <DMCDirectInquiry />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dmc/direct-inquiries/history"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <DMCDirectInquiryHistory />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dmc/direct-inquiries/select-hotels"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <DMCHotelSelection />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* DMC Payment Routes */}
-          <Route
-            path="/dmc/payments"
-            element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
-                <DMCPaymentHistory />
-              </ProtectedRoute>
-            }
-          />
           {/* OLD BID PAYMENT ROUTES REMOVED: /payment/initiate, /payment/return, /payment/cancel */}
           
           {/* Admin Routes */}
