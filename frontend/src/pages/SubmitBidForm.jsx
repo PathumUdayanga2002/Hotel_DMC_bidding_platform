@@ -43,6 +43,7 @@ const SubmitBidForm = () => {
     pricePerRoomPerNight: '',
     totalPrice: '',
     availableRooms: '',
+    currency: '',
     roomType: '',
     mealPlan: '',
     bidDescription: '',
@@ -67,11 +68,12 @@ const SubmitBidForm = () => {
       const response = await getInquiryDetailsForHotel(inquiryId);
       setInquiry(response);
       
-      // Pre-fill dates with inquiry dates
+      // Pre-fill dates and currency with inquiry data
       setFormData(prev => ({
         ...prev,
         availableFrom: response.checkInDate,
-        availableTo: response.checkOutDate
+        availableTo: response.checkOutDate,
+        currency: response.currency || 'USD'
       }));
     } catch (error) {
       console.error('Error fetching inquiry:', error);
@@ -151,6 +153,10 @@ const SubmitBidForm = () => {
       newErrors.mealPlan = 'Please select a meal plan';
     }
 
+    if (!formData.currency) {
+      newErrors.currency = 'Please select a currency';
+    }
+
     if (!formData.bidDescription || formData.bidDescription.trim().length < 20) {
       newErrors.bidDescription = 'Please provide a description (minimum 20 characters)';
     }
@@ -223,7 +229,7 @@ const SubmitBidForm = () => {
         pricePerRoomPerNight: parseFloat(formData.pricePerRoomPerNight),
         totalPrice: parseFloat(formData.totalPrice),
         availableRooms: parseInt(formData.availableRooms),
-        currency: inquiry.currency,
+        currency: formData.currency,
         roomType: formData.roomType,
         mealPlan: formData.mealPlan,
         bidDescription: formData.bidDescription.trim(),
@@ -334,15 +340,47 @@ const SubmitBidForm = () => {
                 </h2>
 
                 <div className="space-y-4">
+                  {/* Currency Selector */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Currency <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="currency"
+                      value={formData.currency}
+                      onChange={handleInputChange}
+                      disabled={deadlinePassed}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent ${
+                        errors.currency ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select currency</option>
+                      <option value="USD">USD - US Dollar</option>
+                      <option value="EUR">EUR - Euro</option>
+                      <option value="GBP">GBP - British Pound</option>
+                      <option value="LKR">LKR - Sri Lankan Rupee</option>
+                      <option value="INR">INR - Indian Rupee</option>
+                      <option value="AED">AED - UAE Dirham</option>
+                    </select>
+                    {errors.currency && (
+                      <p className="text-red-500 text-sm mt-1">{errors.currency}</p>
+                    )}
+                    {inquiry.currency && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Inquiry currency: {inquiry.currency}
+                      </p>
+                    )}
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Price per Room per Night <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                        {inquiry.currency === 'USD' ? '$' :
-                         inquiry.currency === 'EUR' ? '€' :
-                         inquiry.currency === 'GBP' ? '£' : 'LKR'}
+                        {formData.currency === 'USD' ? '$' :
+                         formData.currency === 'EUR' ? '€' :
+                         formData.currency === 'GBP' ? '£' : 'LKR'}
                       </span>
                       <input
                         type="number"
@@ -361,9 +399,9 @@ const SubmitBidForm = () => {
                     {errors.pricePerRoomPerNight && (
                       <p className="text-red-500 text-sm mt-1">{errors.pricePerRoomPerNight}</p>
                     )}
-                    {inquiry.budgetMin && inquiry.budgetMax && (
+                    {inquiry.budgetMin && inquiry.budgetMax && formData.currency && (
                       <p className="text-xs text-gray-500 mt-1">
-                        Budget range: {formatPrice(inquiry.budgetMin, inquiry.currency)} - {formatPrice(inquiry.budgetMax, inquiry.currency)}
+                        Budget range: {formatPrice(inquiry.budgetMin, formData.currency)} - {formatPrice(inquiry.budgetMax, formData.currency)}
                       </p>
                     )}
                   </div>
@@ -376,10 +414,10 @@ const SubmitBidForm = () => {
                         <div className="flex-1">
                           <p className="text-sm text-cyan-900 mb-2">Price Calculation:</p>
                           <p className="text-xs text-cyan-700">
-                            {formatPrice(parseFloat(formData.pricePerRoomPerNight), inquiry.currency)} × {inquiry.numberOfRooms} rooms × {inquiry.numberOfNights} nights
+                            {formatPrice(parseFloat(formData.pricePerRoomPerNight), formData.currency)} × {inquiry.numberOfRooms} rooms × {inquiry.numberOfNights} nights
                           </p>
                           <p className="text-lg font-bold text-cyan-900 mt-2">
-                            Total: {formatPrice(totalPrice, inquiry.currency)}
+                            Total: {formatPrice(totalPrice, formData.currency)}
                           </p>
                         </div>
                       </div>
@@ -393,9 +431,9 @@ const SubmitBidForm = () => {
                       </label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                          {inquiry.currency === 'USD' ? '$' :
-                           inquiry.currency === 'EUR' ? '€' :
-                           inquiry.currency === 'GBP' ? '£' : 'LKR'}
+                          {formData.currency === 'USD' ? '$' :
+                           formData.currency === 'EUR' ? '€' :
+                           formData.currency === 'GBP' ? '£' : 'LKR'}
                         </span>
                         <input
                           type="number"
@@ -653,7 +691,7 @@ const SubmitBidForm = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Terms & Conditions (Optional)
+                      Terms & Conditions <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       name="termsAndConditions"
@@ -662,8 +700,13 @@ const SubmitBidForm = () => {
                       rows={3}
                       placeholder="Cancellation policy, payment terms, additional charges, etc..."
                       disabled={deadlinePassed}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none"
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none ${
+                        errors.termsAndConditions ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {errors.termsAndConditions && (
+                      <p className="text-red-500 text-sm mt-1">{errors.termsAndConditions}</p>
+                    )}
                   </div>
 
                   <div>

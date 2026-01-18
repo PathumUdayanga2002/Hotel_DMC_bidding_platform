@@ -231,12 +231,16 @@ public class EmailServiceImpl implements EmailService {
     
     @Async
     @Override
-    public void sendNewBidNotificationToDmc(String dmcCompanyName, String hotelName, String inquiryTitle,
+    public void sendNewBidNotificationToDmc(String dmcEmail, String dmcCompanyName, String hotelName, String inquiryTitle,
                                            Double bidPrice, String currency) {
         try {
+            if (dmcEmail == null || dmcEmail.isBlank()) {
+                log.warn("Skipping DMC bid notification because email is missing for {}", dmcCompanyName);
+                return;
+            }
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(fromEmail);
-            message.setTo(adminEmail); // DMC email should be passed here
+            message.setTo(dmcEmail);
             message.setSubject("New Bid Received - " + inquiryTitle);
             message.setText(
                 "Dear " + dmcCompanyName + ",\n\n" +
