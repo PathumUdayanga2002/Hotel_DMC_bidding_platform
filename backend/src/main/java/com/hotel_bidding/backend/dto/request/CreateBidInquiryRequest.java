@@ -67,16 +67,13 @@ public class CreateBidInquiryRequest {
     @NotEmpty(message = "At least one meal plan preference is required")
     private List<MealPlan> preferredMealPlans;
     
-    // Budget
-    @NotNull(message = "Minimum budget is required")
+    // Budget (Optional - DMC may not specify budget range)
     @Min(value = 0, message = "Budget cannot be negative")
     private Double budgetMin;
     
-    @NotNull(message = "Maximum budget is required")
     @Min(value = 0, message = "Budget cannot be negative")
     private Double budgetMax;
     
-    @NotBlank(message = "Currency is required")
     @Pattern(regexp = "USD|EUR|GBP|LKR|INR|AED", message = "Invalid currency code")
     private String currency;
     

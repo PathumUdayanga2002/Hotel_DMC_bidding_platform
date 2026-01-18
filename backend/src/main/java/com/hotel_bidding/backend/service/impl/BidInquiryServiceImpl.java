@@ -66,8 +66,11 @@ public class BidInquiryServiceImpl implements BidInquiryService {
             throw new IllegalArgumentException("Check-out date must be after check-in date");
         }
 
-        if (request.getBudgetMax() < request.getBudgetMin()) {
-            throw new IllegalArgumentException("Maximum budget must be greater than minimum budget");
+        // Validate budget only if both min and max are provided
+        if (request.getBudgetMin() != null && request.getBudgetMax() != null) {
+            if (request.getBudgetMax() < request.getBudgetMin()) {
+                throw new IllegalArgumentException("Maximum budget must be greater than minimum budget");
+            }
         }
 
         int numberOfNights = (int) ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
