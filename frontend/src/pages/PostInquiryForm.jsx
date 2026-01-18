@@ -8,8 +8,7 @@ import {
   ROOM_TYPES,
   MEAL_PLANS,
   CURRENCIES,
-  validateDateRange,
-  validateBudget
+  validateDateRange
 } from '../utils/bidInquiryUtils';
 
 const PostInquiryForm = () => {
@@ -18,7 +17,7 @@ const PostInquiryForm = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    destinationCities: [],
+    destinationCities: [], // Will contain only one city
     country: 'Sri Lanka',
     checkInDate: '',
     checkOutDate: '',
@@ -27,9 +26,7 @@ const PostInquiryForm = () => {
     numberOfChildren: 0,
     preferredRoomTypes: [],
     preferredMealPlans: [],
-    budgetMin: '',
-    budgetMax: '',
-    currency: 'USD',
+    // Budget and currency fields removed as per requirement
     specialRequirements: '',
     specialNotes: ''
   });
@@ -43,20 +40,19 @@ const PostInquiryForm = () => {
   };
 
   const handleCitySelect = (city) => {
-    if (!formData.destinationCities.includes(city)) {
-      setFormData(prev => ({
-        ...prev,
-        destinationCities: [...prev.destinationCities, city]
-      }));
-    }
+    // Only allow one city selection
+    setFormData(prev => ({
+      ...prev,
+      destinationCities: [city] // Replace with single city
+    }));
     setCitySearch('');
     setShowCityDropdown(false);
   };
 
-  const handleCityRemove = (cityToRemove) => {
+  const handleCityRemove = () => {
     setFormData(prev => ({
       ...prev,
-      destinationCities: prev.destinationCities.filter(city => city !== cityToRemove)
+      destinationCities: []
     }));
   };
 
@@ -84,13 +80,13 @@ const PostInquiryForm = () => {
       return false;
     }
 
-    if (!formData.description.trim()) {
-      toast.error('Please enter a description');
+    if (!formData.description.trim() || formData.description.trim().length < 20) {
+      toast.error('Description must be at least 20 characters long');
       return false;
     }
 
     if (formData.destinationCities.length === 0) {
-      toast.error('Please select at least one destination city');
+      toast.error('Please select a destination city');
       return false;
     }
 
@@ -104,13 +100,10 @@ const PostInquiryForm = () => {
       toast.error(dateError);
       return false;
     }
-
-    if (formData.budgetMin && formData.budgetMax) {
-      const budgetError = validateBudget(formData.budgetMin, formData.budgetMax);
-      if (budgetError) {
-        toast.error(budgetError);
-        return false;
-      }
+    
+    if (formData.preferredMealPlans.length === 0) {
+      toast.error('Please select at least one meal plan preference');
+      return false;
     }
 
     return true;
@@ -135,9 +128,7 @@ const PostInquiryForm = () => {
         numberOfChildren: parseInt(formData.numberOfChildren),
         preferredRoomTypes: formData.preferredRoomTypes,
         preferredMealPlans: formData.preferredMealPlans,
-        budgetMin: parseFloat(formData.budgetMin) || null,
-        budgetMax: parseFloat(formData.budgetMax) || null,
-        currency: formData.currency,
+        // Budget and currency fields removed
         specialRequirements: formData.specialRequirements 
           ? formData.specialRequirements.split('\n').filter(req => req.trim()) 
           : null,
@@ -150,7 +141,26 @@ const PostInquiryForm = () => {
       navigate('/dmc/inquiries');
     } catch (error) {
       console.error('Error creating inquiry:', error);
-      toast.error(error.response?.data?.message || 'Failed to post inquiry');
+      
+      // Handle validation errors from backend
+      if (error.response?.status === 400) {
+        const errorData = error.response?.data;
+        
+        // Check if error message is an object with field-specific errors
+        if (errorData?.message && typeof errorData.message === 'object') {
+          // Display each field error
+          Object.entries(errorData.message).forEach(([field, message]) => {
+            toast.error(`${field.charAt(0).toUpperCase() + field.slice(1)}: ${message}`);
+          });
+        } else if (errorData?.message) {
+          // Single error message
+          toast.error(errorData.message);
+        } else {
+          toast.error('Validation failed. Please check your inputs.');
+        }
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to post inquiry. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -227,27 +237,24 @@ const PostInquiryForm = () => {
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Destination Cities * (Multiple selection)
+                Destination City * (Select one city)
               </label>
               
-              {/* Selected Cities */}
+              {/* Selected City */}
               {formData.destinationCities.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {formData.destinationCities.map(city => (
-                    <span
-                      key={city}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-cyan-100 text-cyan-800"
+                  <span
+                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-cyan-100 text-cyan-800"
+                  >
+                    {formData.destinationCities[0]}
+                    <button
+                      type="button"
+                      onClick={handleCityRemove}
+                      className="ml-2 hover:text-cyan-900"
                     >
-                      {city}
-                      <button
-                        type="button"
-                        onClick={() => handleCityRemove(city)}
-                        className="ml-2 hover:text-cyan-900"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </span>
-                  ))}
+                      <X className="w-4 h-4" />
+                    </button>
+                  </span>
                 </div>
               )}
 
@@ -261,7 +268,7 @@ const PostInquiryForm = () => {
                     setShowCityDropdown(true);
                   }}
                   onFocus={() => setShowCityDropdown(true)}
-                  placeholder="Search and select cities..."
+                  placeholder="Search and select a city..."
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
                 />
                 
@@ -426,66 +433,6 @@ const PostInquiryForm = () => {
                     </button>
                   ))}
                 </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Budget */}
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-              <DollarSign className="w-5 h-5 mr-2 text-cyan-600" />
-              Budget (Per Room Per Night)
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Minimum Budget
-                </label>
-                <input
-                  type="number"
-                  name="budgetMin"
-                  value={formData.budgetMin}
-                  onChange={handleChange}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Maximum Budget
-                </label>
-                <input
-                  type="number"
-                  name="budgetMax"
-                  value={formData.budgetMax}
-                  onChange={handleChange}
-                  placeholder="0.00"
-                  step="0.01"
-                  min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Currency
-                </label>
-                <select
-                  name="currency"
-                  value={formData.currency}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
-                >
-                  {CURRENCIES.map(curr => (
-                    <option key={curr.value} value={curr.value}>
-                      {curr.label}
-                    </option>
-                  ))}
-                </select>
               </div>
             </div>
           </section>
