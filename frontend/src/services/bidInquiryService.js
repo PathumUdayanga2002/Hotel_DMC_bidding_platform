@@ -97,6 +97,16 @@ export const getDMCStats = async () => {
 };
 
 /**
+ * Get enhanced DMC dashboard statistics with analytics
+ */
+export const getDMCDashboardStats = async (period = 'daily') => {
+  const response = await api.get('/dmc/inquiries/dashboard-stats', {
+    params: { period }
+  });
+  return response.data;
+};
+
+/**
  * Search DMC inquiries by keyword
  */
 export const searchInquiries = async (keyword, page = 0, size = 10) => {

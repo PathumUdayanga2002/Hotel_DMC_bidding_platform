@@ -294,6 +294,19 @@ public class DMCBidInquiryController {
     }
 
     /**
+     * Get enhanced dashboard statistics with analytics
+     */
+    @GetMapping("/dashboard-stats")
+    public ResponseEntity<com.hotel_bidding.backend.dto.response.DMCDashboardStatsResponse> getDashboardStats(
+            @RequestParam(defaultValue = "daily") String period,
+            Authentication authentication) {
+        String dmcUserId = getUserId(authentication);
+        com.hotel_bidding.backend.dto.response.DMCDashboardStatsResponse stats = 
+                bidInquiryService.getDashboardStats(dmcUserId, period);
+        return ResponseEntity.ok(stats);
+    }
+
+    /**
      * Search inquiries with filters
      */
     @GetMapping("/search")
