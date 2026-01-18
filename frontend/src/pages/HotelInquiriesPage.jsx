@@ -116,7 +116,7 @@ const HotelInquiriesPage = () => {
             <div className="flex items-end gap-2">
               <button
                 onClick={handleSearch}
-                className="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors h-10"
+                className="px-6 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 h-10"
               >
                 Search
               </button>
@@ -351,7 +351,7 @@ const InquiryCard = ({ inquiry }) => {
 
         <button
           onClick={() => navigate(`/hotel/inquiries/${inquiry.id}/bid`)}
-          className="w-full flex items-center justify-center px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium"
+          className="w-full flex items-center justify-center px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 font-medium"
         >
           View Details & Submit Bid
           <ArrowRight className="w-4 h-4 ml-2" />

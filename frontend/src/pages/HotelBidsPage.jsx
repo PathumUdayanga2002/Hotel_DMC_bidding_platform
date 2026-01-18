@@ -173,7 +173,7 @@ const HotelBidsPage = () => {
                 </div>
                 <button
                   onClick={handleSearch}
-                  className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+                  className="px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300"
                 >
                   Search
                 </button>
@@ -197,7 +197,7 @@ const HotelBidsPage = () => {
               </p>
               <button
                 onClick={() => navigate('/hotel/inquiries')}
-                className="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+                className="px-6 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300"
               >
                 Browse Available Inquiries
               </button>

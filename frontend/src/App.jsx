@@ -14,6 +14,7 @@ import HotelRegisterPage from './pages/HotelRegisterPage';
 import DMCRegisterPage from './pages/DMCRegisterPage';
 import AdminRegisterPage from './pages/AdminRegisterPage';
 import HotelDashboard from './pages/HotelDashboard';
+import HotelLayout from './layouts/HotelLayout';
 import DMCDashboard from './pages/DMCDashboard';
 import DMCReceivedContracts from './pages/DMCReceivedContracts';
 import DMCContractDetail from './pages/DMCContractDetail';
@@ -109,117 +110,43 @@ const App = () => {
 
           {/* Protected Routes */}
           <Route
-            path="/hotel/dashboard"
+            path="/hotel"
             element={
               <ProtectedRoute allowedRoles={HOTEL_ROLES}>
-                <HotelDashboard />
+                <HotelLayout />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/hotel/profile/register"
-            element={
-              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
-                <HotelProfileRegister />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Hotel Bid Inquiry Routes */}
-          <Route
-            path="/hotel/inquiries"
-            element={
-              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
-                <HotelInquiriesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/hotel/direct-inquiries"
-            element={
-              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
-                <HotelDirectInquiriesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/hotel/inquiries/:inquiryId/bid"
-            element={
-              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
-                <SubmitBidForm />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/hotel/bids"
-            element={
-              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
-                <HotelBidsPage />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route index element={<HotelDashboard />} />
+            <Route path="dashboard" element={<HotelDashboard />} />
+            <Route path="profile/register" element={<HotelProfileRegister />} />
 
-          <Route
-            path="/hotel/mycontracts"
-            element={
-              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
-                <MyContracts />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/hotel/sendcontracts"
-            element={
-              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
-                <HotelContractBuilder />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* Hotel Messages 
+            {/* Hotel Bid Inquiry Routes */}
+            <Route path="inquiries" element={<HotelInquiriesPage />} />
+            <Route path="inquiries/:inquiryId/bid" element={<SubmitBidForm />} />
+            <Route path="inquiries/:inquiryId" element={<HotelInquiryDetails />} />
+            <Route path="direct-inquiries" element={<HotelDirectInquiriesPage />} />
+            <Route path="bids" element={<HotelBidsPage />} />
+
+            <Route path="mycontracts" element={<MyContracts />} />
+            <Route path="sendcontracts" element={<HotelContractBuilder />} />
+
+            {/* Hotel Staff Management - Super Admin Only */}
             <Route
-            path="/hotel/messages"
-            element={
-              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
-                <HotelMessages />
-              </ProtectedRoute>
-            }
-          /> 
-          */}
-         
-          {/* Hotel Staff Management - Super Admin Only */}
-          <Route
-            path="/hotel/staff"
-            element={
-              <ProtectedRoute allowedRoles={HOTEL_ROLES} requireSuperAdmin={true}>
-                <HotelStaffManagement />
-              </ProtectedRoute>
-            }
-          />
+              path="staff"
+              element={
+                <ProtectedRoute allowedRoles={HOTEL_ROLES} requireSuperAdmin={true}>
+                  <HotelStaffManagement />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Activity Logs - Platform Admin Only */}
-          {/* Hotel users cannot access activity logs - only Platform Admin */}
-          <Route
-            path="/hotel/activity-logs"
-            element={
-              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
-                <ActivityLogs portalType="hotel" />
-              </ProtectedRoute>
-            }
-          />
+            {/* Hotel Activity Logs */}
+            <Route path="activity-logs" element={<ActivityLogs portalType="hotel" />} />
 
-          <Route path="/hotel/inquiries/:inquiryId" element={<HotelInquiryDetails />} />
-
-          {/* Hotel Payment Routes */}
-          <Route
-            path="/hotel/payments"
-            element={
-              <ProtectedRoute allowedRoles={HOTEL_ROLES}>
-                <HotelPaymentHistory />
-              </ProtectedRoute>
-            }
-          />
+            {/* Hotel Payment Routes */}
+            <Route path="payments" element={<HotelPaymentHistory />} />
+          </Route>
 
           
           <Route

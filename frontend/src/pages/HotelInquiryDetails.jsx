@@ -51,7 +51,7 @@ const HotelInquiryDetails = () => {
         <p>No inquiry found. It may have been removed or is unavailable.</p>
         <button
           onClick={() => navigate(-1)}
-          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="mt-4 px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300"
         >
           Go Back
         </button>
