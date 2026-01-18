@@ -5,6 +5,7 @@ import com.hotel_bidding.backend.dto.request.CreateBidInquiryRequest;
 import com.hotel_bidding.backend.dto.request.UpdateBidInquiryRequest;
 import com.hotel_bidding.backend.dto.response.BidInquiryResponse;
 import com.hotel_bidding.backend.dto.response.BidInquiryStatsResponse;
+import com.hotel_bidding.backend.dto.response.DMCDashboardStatsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -72,6 +73,11 @@ public interface BidInquiryService {
      * Get inquiry statistics for DMC dashboard
      */
     BidInquiryStatsResponse getInquiryStats(String dmcUserId);
+    
+    /**
+     * Get enhanced dashboard statistics with analytics
+     */
+    DMCDashboardStatsResponse getDashboardStats(String dmcUserId, String period);
     
     /**
      * Auto-close expired inquiries (scheduled task)
