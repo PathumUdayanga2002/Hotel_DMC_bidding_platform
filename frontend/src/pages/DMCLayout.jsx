@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import NotificationBell from '../components/NotificationBell';
-import SubscriptionBanner from '../components/SubscriptionBanner';
+import SubscriptionReminder from '../components/SubscriptionReminder';
 import {
   Plane,
   LogOut,
@@ -124,13 +124,13 @@ const DMCLayout = () => {
       path: '/dmc/received-contracts',
       requiresApproval: true
     },
-    {
-      id: 'bids',
-      name: 'My Bids',
-      icon: Gavel,
-      path: '/dmc/my-bids',
-      requiresApproval: true
-    },
+    // {
+    //   id: 'bids',
+    //   name: 'My Bids',
+    //   icon: Gavel,
+    //   path: '/dmc/my-bids',
+    //   requiresApproval: true
+    // },
     {
       id: 'direct',
       name: 'Direct Inquiries',
@@ -201,6 +201,9 @@ const DMCLayout = () => {
           </div>
 
           <div className="flex items-center space-x-4">
+            {/* Subscription Reminder */}
+            <SubscriptionReminder />
+
             {/* Upgrade Button */}
             <button
               onClick={() => navigate('/subscription/purchase')}
@@ -242,11 +245,6 @@ const DMCLayout = () => {
           } lg:translate-x-0`}
         >
           <nav className="h-full overflow-y-auto py-4">
-            {/* Subscription Banner */}
-            <div className="px-4 mb-4">
-              <SubscriptionBanner />
-            </div>
-
             {/* Menu Items */}
             <div className="space-y-1 px-2">
               {filteredMenuItems.map((item) => {
