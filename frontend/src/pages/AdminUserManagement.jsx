@@ -129,20 +129,20 @@ const AdminUserManagement = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">User Management</h1>
-          <p className="text-gray-600">Manage hotels, DMCs, and monitor registrations</p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-3">User Management</h1>
+          <p className="text-slate-600 text-lg">Manage hotels, DMCs, and monitor registrations</p>
         </div>
 
         {/* Statistics Cards - Always Visible */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:shadow-xl transition-shadow">
+          <Card className="bg-gradient-to-br from-teal-500 to-blue-600 text-white hover:shadow-2xl hover:scale-105 transition-all duration-300">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="bg-white/20 rounded-lg p-3">
+                <div className="bg-white/20 backdrop-blur-md rounded-xl p-3 shadow-lg">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
@@ -157,10 +157,10 @@ const AdminUserManagement = () => {
             </div>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white hover:shadow-xl transition-shadow">
+          <Card className="bg-gradient-to-br from-purple-500 to-pink-600 text-white hover:shadow-2xl hover:scale-105 transition-all duration-300">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="bg-white/20 rounded-lg p-3">
+                <div className="bg-white/20 backdrop-blur-md rounded-xl p-3 shadow-lg">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
@@ -175,10 +175,10 @@ const AdminUserManagement = () => {
             </div>
           </Card>
 
-          <Card className="bg-gradient-to-br from-orange-500 to-orange-600 text-white hover:shadow-xl transition-shadow">
+          <Card className="bg-gradient-to-br from-orange-500 to-red-600 text-white hover:shadow-2xl hover:scale-105 transition-all duration-300">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className="bg-white/20 rounded-lg p-3">
+                <div className="bg-white/20 backdrop-blur-md rounded-xl p-3 shadow-lg">
                   <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>

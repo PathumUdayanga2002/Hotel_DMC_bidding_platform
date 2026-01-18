@@ -1,5 +1,6 @@
 package com.hotel_bidding.backend.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import com.hotel_bidding.backend.dto.HotelProfileResponse;
 import com.hotel_bidding.backend.dto.HotelProfileStats;
 import com.hotel_bidding.backend.dto.HotelProfileSummary;
 import com.hotel_bidding.backend.dto.PlatformSettingsResponse;
+import com.hotel_bidding.backend.dto.RecentActivityDTO;
 import com.hotel_bidding.backend.dto.UpdateCommissionSettingsRequest;
 import com.hotel_bidding.backend.dto.UpdateDMCStatusRequest;
 import com.hotel_bidding.backend.dto.UpdateHotelStatusRequest;
@@ -39,7 +41,11 @@ import com.hotel_bidding.backend.dto.analytics.PlatformPerformanceDTO;
 import com.hotel_bidding.backend.dto.analytics.RevenueAnalyticsDTO;
 import com.hotel_bidding.backend.dto.analytics.TopHotelMarketDTO;
 import com.hotel_bidding.backend.dto.response.ApiResponse;
+import com.hotel_bidding.backend.entity.DMCProfile;
+import com.hotel_bidding.backend.entity.HotelProfile;
 import com.hotel_bidding.backend.entity.User;
+import com.hotel_bidding.backend.repository.DMCProfileRepository;
+import com.hotel_bidding.backend.repository.HotelRepository;
 import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.security.UserDetailsImpl;
 import com.hotel_bidding.backend.service.AdminDMCService;
@@ -62,6 +68,8 @@ public class AdminController {
     private final PlatformSettingsService platformSettingsService;
     private final PlatformAnalyticsService platformAnalyticsService;
     private final UserRepository userRepository;
+    private final DMCProfileRepository dmcProfileRepository;
+    private final HotelRepository hotelRepository;
 
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse> getDashboard(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -83,6 +91,106 @@ public class AdminController {
                 .success(true)
                 .message("Admin Dashboard")
                 .data(dashboardData)
+                .build());
+    }
+
+    @GetMapping("/recent-activity")
+    public ResponseEntity<ApiResponse> getRecentActivity() {
+        List<RecentActivityDTO> activities = new ArrayList<>();
+        
+        // Get recent DMC profile activities
+        List<DMCProfile> recentDMCProfiles = dmcProfileRepository.findTop10ByReviewedAtIsNotNullOrderByReviewedAtDesc();
+        for (DMCProfile profile : recentDMCProfiles) {
+            String action = "New DMC Registration";
+            String status = "info";
+            
+            if (profile.getStatus() != null) {
+                switch (profile.getStatus()) {
+                    case APPROVED:
+                        action = "DMC Profile Approved";
+                        status = "approved";
+                        break;
+                    case REJECTED:
+                        action = "DMC Profile Rejected";
+                        status = "rejected";
+                        break;
+                    case UNDER_REVIEW:
+                        action = "DMC Profile Under Review";
+                        status = "underreview";
+                        break;
+                    case PENDING:
+                        action = "New DMC Registration";
+                        status = "pending";
+                        break;
+                    case SUSPENDED:
+                        action = "DMC Profile Suspended";
+                        status = "error";
+                        break;
+                }
+            }
+            
+            activities.add(RecentActivityDTO.builder()
+                    .action(action + " - " + profile.getCompanyName())
+                    .timestamp(profile.getReviewedAt())
+                    .status(status)
+                    .companyName(profile.getCompanyName())
+                    .profileType("DMC")
+                    .build());
+        }
+        
+        // Get recent Hotel profile activities
+        List<HotelProfile> recentHotelProfiles = hotelRepository.findTop10ByUpdatedAtIsNotNullOrderByUpdatedAtDesc();
+        for (HotelProfile profile : recentHotelProfiles) {
+            String action = "New Hotel Registration";
+            String status = "info";
+            
+            if (profile.getStatus() != null) {
+                HotelProfileStatus hotelStatus = HotelProfileStatus.valueOf(profile.getStatus());
+                switch (hotelStatus) {
+                    case APPROVED:
+                        action = "Hotel Profile Approved";
+                        status = "approved";
+                        break;
+                    case REJECTED:
+                        action = "Hotel Profile Rejected";
+                        status = "rejected";
+                        break;
+                    case UNDER_REVIEW:
+                        action = "Hotel Profile Under Review";
+                        status = "underreview";
+                        break;
+                    case PENDING:
+                        action = "New Hotel Registration";
+                        status = "pending";
+                        break;
+                    case SUSPENDED:
+                        action = "Hotel Profile Suspended";
+                        status = "error";
+                        break;
+                }
+            }
+            
+            activities.add(RecentActivityDTO.builder()
+                    .action(action + " - " + profile.getName())
+                    .timestamp(profile.getUpdatedAt())
+                    .status(status)
+                    .companyName(profile.getName())
+                    .profileType("HOTEL")
+                    .build());
+        }
+        
+        // Sort all activities by timestamp (most recent first)
+        activities.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
+        
+        // Limit to top 15 activities
+        List<RecentActivityDTO> limitedActivities = activities.stream()
+                .limit(15)
+                .collect(java.util.stream.Collectors.toList());
+        
+        return ResponseEntity.ok(ApiResponse.builder()
+                .success(true)
+                .message("Recent activities retrieved successfully")
+                .data(limitedActivities)
                 .build());
     }
 

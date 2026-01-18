@@ -315,7 +315,7 @@ const LandingPage = () => {
           <div className="flex justify-between items-center">
             {/* Left: Logo */}
             <div className="flex items-center">
-              <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 tracking-tight" style={{letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif'}}>Rezpitch</h1>
+              <img src="/Rezpitch _logo.png" alt="Rezpitch" className="h-8 lg:h-10" />
             </div>
 
             {/* Center: Desktop Navigation */}
@@ -983,7 +983,7 @@ const LandingPage = () => {
           <div className="grid md:grid-cols-4 gap-12 mb-16">
             {/* Brand */}
             <div>
-              <h3 className="text-2xl font-bold mb-4" style={{letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif'}}>Rezpitch</h3>
+              <img src="/Rezpitch _logo.png" alt="Rezpitch" className="h-8 mb-4" />
               <p className="text-slate-400 text-sm leading-relaxed" style={{fontFamily: 'Inter, sans-serif', lineHeight: '1.8'}}>
                 Premium B2B marketplace connecting luxury hospitality with destination management worldwide.
               </p>
@@ -1033,9 +1033,8 @@ const LandingPage = () => {
           <hr className="border-slate-800 my-10" />
 
           {/* Bottom */}
-          <div className="flex flex-col md:flex-row justify-between items-center text-sm text-slate-500" style={{fontFamily: 'Inter, sans-serif'}}>
+          <div className="flex flex-col md:flex-row justify-center items-center text-sm text-slate-500" style={{fontFamily: 'Inter, sans-serif'}}>
             <p>&copy; 2024 Rezpitch. All rights reserved.</p>
-         
           </div>
         </div>
       </footer>

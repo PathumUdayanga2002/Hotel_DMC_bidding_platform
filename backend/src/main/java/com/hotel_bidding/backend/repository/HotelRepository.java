@@ -1,11 +1,13 @@
 package com.hotel_bidding.backend.repository;
 
-import com.hotel_bidding.backend.entity.HotelProfile;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import java.util.List;
-import java.util.Optional;
+
+import com.hotel_bidding.backend.entity.HotelProfile;
 
 public interface HotelRepository extends MongoRepository<HotelProfile, String> {
     Optional<HotelProfile> findByUserId(String userId);
@@ -26,4 +28,7 @@ public interface HotelRepository extends MongoRepository<HotelProfile, String> {
     
     // Find hotels by cities (for matching with inquiries)
     List<HotelProfile> findByCityInAndStatus(List<String> cities, String status);
+    
+    // Find recent profile activities sorted by updatedAt
+    List<HotelProfile> findTop10ByUpdatedAtIsNotNullOrderByUpdatedAtDesc();
 }

@@ -214,11 +214,12 @@ const App = () => {
             }
           />
 
-          {/* DMC Activity Logs */}
+          {/* Activity Logs - Platform Admin Only */}
+          {/* DMC users cannot access activity logs - only Platform Admin */}
           <Route
             path="/dmc/activity-logs"
             element={
-              <ProtectedRoute allowedRoles={DMC_ROLES}>
+              <ProtectedRoute allowedRoles={ADMIN_ROLES}>
                 <ActivityLogs portalType="dmc" />
               </ProtectedRoute>
             }

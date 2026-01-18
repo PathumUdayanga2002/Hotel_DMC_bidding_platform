@@ -1,14 +1,15 @@
 package com.hotel_bidding.backend.repository;
 
-import com.hotel_bidding.backend.constants.DMCProfileStatus;
-import com.hotel_bidding.backend.entity.DMCProfile;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import com.hotel_bidding.backend.constants.DMCProfileStatus;
+import com.hotel_bidding.backend.entity.DMCProfile;
 
 @Repository
 public interface DMCProfileRepository extends MongoRepository<DMCProfile, String> {
@@ -37,5 +38,8 @@ public interface DMCProfileRepository extends MongoRepository<DMCProfile, String
         Pageable pageable);
     // Find approved DMCs by partial company name (case-insensitive)
     List<DMCProfile> findByStatusAndCompanyNameContainingIgnoreCase(DMCProfileStatus status, String companyName);
+    
+    // Find recent profile activities sorted by reviewedAt
+    List<DMCProfile> findTop10ByReviewedAtIsNotNullOrderByReviewedAtDesc();
 
 }

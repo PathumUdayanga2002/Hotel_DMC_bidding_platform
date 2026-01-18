@@ -172,12 +172,12 @@ const AdminSettings = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="min-h-screen">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Platform Settings</h1>
-          <p className="text-gray-600">Configure commission rates, payment settings, and system parameters</p>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent mb-3">Platform Settings</h1>
+          <p className="text-slate-600 text-lg">Configure commission rates, payment settings, and system parameters</p>
           
           {lastUpdated && (
             <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
@@ -209,27 +209,27 @@ const AdminSettings = () => {
 
         <div className="space-y-6">
           {/* Commission Settings Card */}
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-xl border-slate-200/50 shadow-lg">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="bg-blue-100 rounded-lg p-3">
+                <div className="bg-gradient-to-br from-teal-500 to-emerald-600 rounded-xl p-3 shadow-lg">
                   <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Commission Settings</h2>
-                  <p className="text-gray-600 text-sm">Configure platform fees and minimum booking requirements</p>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">Commission Settings</h2>
+                  <p className="text-slate-600 text-sm">Configure platform fees and minimum booking requirements</p>
                 </div>
               </div>
 
               <div className="space-y-6">
                 {/* Platform Commission Rate */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-900 mb-2">
                     Platform Commission Rate (%)
                   </label>
-                  <p className="text-xs text-gray-500 mb-2">
+                  <p className="text-xs text-slate-500 mb-2">
                     Current rate applies to all new bookings
                   </p>
                   <input
@@ -239,7 +239,7 @@ const AdminSettings = () => {
                     max="100"
                     value={commissionSettings.platformCommissionRate}
                     onChange={(e) => handleCommissionChange('platformCommissionRate', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all"
                     placeholder="e.g., 5.0"
                   />
                 </div>
@@ -281,7 +281,7 @@ const AdminSettings = () => {
                 <button
                   onClick={handleUpdateCommissionSettings}
                   disabled={saving}
-                  className="w-full py-3 px-6 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 px-6 bg-gradient-to-r from-teal-600 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
                 >
                   {saving ? (
                     <>
@@ -302,18 +302,18 @@ const AdminSettings = () => {
           </Card>
 
           {/* System Settings Card */}
-          <Card>
+          <Card className="bg-white/80 backdrop-blur-xl border-slate-200/50 shadow-lg">
             <div className="p-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="bg-purple-100 rounded-lg p-3">
+                <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl p-3 shadow-lg">
                   <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">System Settings</h2>
-                  <p className="text-gray-600 text-sm">Configure operational parameters and thresholds</p>
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">System Settings</h2>
+                  <p className="text-slate-600 text-sm">Configure operational parameters and thresholds</p>
                 </div>
               </div>
 
@@ -393,10 +393,10 @@ const AdminSettings = () => {
           </Card>
 
           {/* Info Card */}
-          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+          <Card className="bg-gradient-to-r from-teal-50 via-emerald-50 to-blue-50 border-teal-200 shadow-lg">
             <div className="p-6">
               <div className="flex items-start gap-3">
-                <svg className="w-6 h-6 text-blue-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-teal-600 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div>

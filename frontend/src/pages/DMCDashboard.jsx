@@ -179,13 +179,7 @@ const DMCDashboard = () => {
       requiresApproval: true, // Requires profile approval AND super admin role
       showForSuperAdminOnly: true // Only show to super admin
     },
-    {
-      id: 'activity-logs',
-      name: 'Activity Logs',
-      icon: Activity,
-      path: '/dmc/activity-logs',
-      requiresApproval: true // Requires profile approval
-    },
+    // Activity Logs removed - Only accessible to Platform Admin, not DMC users
     {
       id: 'myprofile',
       name: 'Profile',

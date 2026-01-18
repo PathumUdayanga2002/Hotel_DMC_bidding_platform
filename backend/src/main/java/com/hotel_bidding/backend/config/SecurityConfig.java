@@ -64,6 +64,7 @@ public class SecurityConfig {
                         // Public endpoints
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/api/webhooks/**").permitAll()
+                        .requestMatchers("/subscription/payhere-notify").permitAll() // PayHere webhook
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         // Protected endpoints - Using hasAnyRole to support all role levels
                         // DMC users (legacy, super admin, staff) can view approved hotels
