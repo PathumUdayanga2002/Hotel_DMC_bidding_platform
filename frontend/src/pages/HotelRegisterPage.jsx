@@ -82,9 +82,7 @@ const HotelRegisterPage = () => {
       {/* Header */}
       <header className="bg-white/90 backdrop-blur-md shadow-sm border-b border-slate-100 sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
-            <span className="bg-gradient-to-r from-teal-500 to-emerald-600 bg-clip-text text-transparent">Rezpitch</span>
-          </h1>
+          <img src="/Rezpitch _logo.png" alt="Rezpitch" className="h-8" />
           <button
             onClick={() => navigate('/')}
             className="flex items-center gap-2 px-4 py-2 border-2 border-slate-200 text-slate-700 rounded-lg hover:border-teal-400 hover:text-teal-600 transition-all duration-300"

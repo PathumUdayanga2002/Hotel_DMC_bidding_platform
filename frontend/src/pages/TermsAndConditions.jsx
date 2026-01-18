@@ -10,9 +10,7 @@ const TermsAndConditions = () => {
       {/* Header */}
       <header className="bg-white/90 backdrop-blur-md shadow-sm border-b border-slate-100 sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
-            <span className="bg-gradient-to-r from-teal-500 to-emerald-600 bg-clip-text text-transparent">Rezpitch</span>
-          </h1>
+          <img src="/Rezpitch _logo.png" alt="Rezpitch" className="h-8" />
           <Button
             variant="outline"
             onClick={() => navigate('/')}
