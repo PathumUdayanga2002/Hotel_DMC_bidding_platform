@@ -73,7 +73,7 @@ const ResetPassword = () => {
           {!token ? (
             <div className="text-center space-y-4 py-4">
               <p className="text-gray-700">This reset link is invalid or has already been used.</p>
-              <Link to="/forgot-password" className="text-cyan-700 font-semibold hover:underline">
+              <Link to="/forgot-password" className="text-emerald-600 font-semibold hover:text-emerald-700 hover:underline">
                 Request a new password reset link
               </Link>
             </div>

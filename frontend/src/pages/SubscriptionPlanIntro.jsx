@@ -72,7 +72,7 @@ const SubscriptionPlanIntro = () => {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Header with Back Button */}
       <div className="bg-white/90 backdrop-blur-md shadow-sm border-b border-slate-100 sticky top-0 z-20">
-        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="container mx-auto px-4 sm:px-6 md:px-8 py-4 flex justify-between items-center">
           <img src="/Rezpitch _logo.png" alt="Rezpitch" className="h-8" />
           <button
             onClick={() => navigate('/')}

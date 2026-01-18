@@ -9,7 +9,7 @@ const TermsAndConditions = () => {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
       {/* Header */}
       <header className="bg-white/90 backdrop-blur-md shadow-sm border-b border-slate-100 sticky top-0 z-20">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-4 flex justify-between items-center">
           <img src="/Rezpitch _logo.png" alt="Rezpitch" className="h-8" />
           <Button
             variant="outline"
@@ -24,7 +24,7 @@ const TermsAndConditions = () => {
 
       {/* Hero */}
       <section className="bg-white">
-        <div className="max-w-6xl mx-auto px-6 py-16 flex flex-col gap-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-16 flex flex-col gap-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-teal-50 border border-teal-200 rounded-full w-fit text-sm font-semibold text-teal-700">
             Terms & Conditions
           </div>
@@ -39,7 +39,7 @@ const TermsAndConditions = () => {
       </section>
 
       {/* Content */}
-      <main className="max-w-6xl mx-auto px-6 pb-20">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 pb-20">
         <div className="bg-white rounded-3xl border border-slate-200 shadow-lg shadow-slate-900/5 p-10 space-y-10">
           <div className="grid gap-6">
             {/* Section 1 */}
@@ -195,7 +195,7 @@ const TermsAndConditions = () => {
 
       {/* Footer */}
       <footer className="bg-gradient-to-b from-slate-900 to-slate-950 text-white mt-20 py-10 border-t border-slate-800">
-        <div className="max-w-6xl mx-auto px-6 text-center space-y-3 text-sm text-slate-300">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 text-center space-y-3 text-sm text-slate-300">
           <p>&copy; 2024 Rezpitch. All rights reserved.</p>
           <p className="text-slate-400">Luxury hospitality where logic meets service.</p>
         </div>
