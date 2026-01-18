@@ -41,20 +41,19 @@ const DMCDirectInquiry = () => {
   };
 
   const handleCitySelect = (city) => {
-    if (!formData.destinationCities.includes(city)) {
-      setFormData(prev => ({
-        ...prev,
-        destinationCities: [...prev.destinationCities, city]
-      }));
-    }
+    // Only allow one city selection
+    setFormData(prev => ({
+      ...prev,
+      destinationCities: [city] // Replace with single city
+    }));
     setCitySearch('');
     setShowCityDropdown(false);
   };
 
-  const handleCityRemove = (cityToRemove) => {
+  const handleCityRemove = () => {
     setFormData(prev => ({
       ...prev,
-      destinationCities: prev.destinationCities.filter(city => city !== cityToRemove)
+      destinationCities: []
     }));
   };
 
@@ -82,8 +81,8 @@ const DMCDirectInquiry = () => {
       return false;
     }
 
-    if (!formData.description.trim()) {
-      toast.error('Please enter a description');
+    if (!formData.description.trim() || formData.description.trim().length < 20) {
+      toast.error('Description must be at least 20 characters long');
       return false;
     }
 
@@ -113,6 +112,11 @@ const DMCDirectInquiry = () => {
 
     if (formData.numberOfAdults < 1) {
       toast.error('Number of adults must be at least 1');
+      return false;
+    }
+
+    if (formData.preferredMealPlans.length === 0) {
+      toast.error('Please select at least one meal plan preference');
       return false;
     }
 
@@ -191,7 +195,7 @@ const DMCDirectInquiry = () => {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  placeholder="Provide detailed information about your accommodation needs..."
+                  placeholder="Provide detailed information about your accommodation needs (minimum 20 characters)..."
                   rows="4"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   required
@@ -318,7 +322,7 @@ const DMCDirectInquiry = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center">
                   <Utensils className="w-4 h-4 mr-1" />
-                  Preferred Meal Plans
+                  Preferred Meal Plans *
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {Object.values(MEAL_PLANS).map((mealPlan) => (
