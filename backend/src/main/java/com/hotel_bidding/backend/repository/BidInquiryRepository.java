@@ -20,6 +20,9 @@ public interface BidInquiryRepository extends MongoRepository<BidInquiry, String
     // Find by DMC user
     Page<BidInquiry> findByDmcUserIdOrderByPostedAtDesc(String dmcUserId, Pageable pageable);
     
+    // Find all inquiries by DMC user (without pagination)
+    List<BidInquiry> findByDmcUserId(String dmcUserId);
+    
     // Find by status
     Page<BidInquiry> findByStatusOrderByPostedAtDesc(BidInquiryStatus status, Pageable pageable);
     

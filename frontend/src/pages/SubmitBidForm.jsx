@@ -13,7 +13,9 @@ import {
   Loader2,
   AlertTriangle,
   Check,
-  Calculator
+  Calculator,
+  Eye,
+  X
 } from 'lucide-react';
 import { getInquiryDetailsForHotel, submitBid } from '../services/bidInquiryService';
 import {
@@ -41,6 +43,7 @@ const SubmitBidForm = () => {
     pricePerRoomPerNight: '',
     totalPrice: '',
     availableRooms: '',
+    currency: '',
     roomType: '',
     mealPlan: '',
     bidDescription: '',
@@ -54,6 +57,7 @@ const SubmitBidForm = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [showInquiryDetails, setShowInquiryDetails] = useState(false);
 
   useEffect(() => {
     fetchInquiryDetails();
@@ -64,11 +68,12 @@ const SubmitBidForm = () => {
       const response = await getInquiryDetailsForHotel(inquiryId);
       setInquiry(response);
       
-      // Pre-fill dates with inquiry dates
+      // Pre-fill dates and currency with inquiry data
       setFormData(prev => ({
         ...prev,
         availableFrom: response.checkInDate,
-        availableTo: response.checkOutDate
+        availableTo: response.checkOutDate,
+        currency: response.currency || 'USD'
       }));
     } catch (error) {
       console.error('Error fetching inquiry:', error);
@@ -148,6 +153,10 @@ const SubmitBidForm = () => {
       newErrors.mealPlan = 'Please select a meal plan';
     }
 
+    if (!formData.currency) {
+      newErrors.currency = 'Please select a currency';
+    }
+
     if (!formData.bidDescription || formData.bidDescription.trim().length < 20) {
       newErrors.bidDescription = 'Please provide a description (minimum 20 characters)';
     }
@@ -176,8 +185,31 @@ const SubmitBidForm = () => {
       }
     }
 
-    console.log('Validation errors found:', newErrors);
     setErrors(newErrors);
+    
+    // Show toast notifications for each error
+    if (Object.keys(newErrors).length > 0) {
+      // Show the first 3 errors to avoid overwhelming the user
+      const errorMessages = Object.values(newErrors).slice(0, 3);
+      errorMessages.forEach((message, index) => {
+        setTimeout(() => {
+          toast.error(message, {
+            position: "top-right",
+            autoClose: 4000,
+          });
+        }, index * 200); // Stagger the toasts slightly
+      });
+      
+      if (Object.keys(newErrors).length > 3) {
+        setTimeout(() => {
+          toast.warning(`${Object.keys(newErrors).length - 3} more field(s) need attention`, {
+            position: "top-right",
+            autoClose: 4000,
+          });
+        }, 600);
+      }
+    }
+    
     return Object.keys(newErrors).length === 0;
   };
 
@@ -185,9 +217,7 @@ const SubmitBidForm = () => {
     e.preventDefault();
     
     if (!validateForm()) {
-      console.log('Validation errors:', errors);
-      console.log('Form data:', formData);
-      toast.error('Please fix all errors before submitting');
+      // Validation function now handles toast notifications
       return;
     }
 
@@ -199,7 +229,7 @@ const SubmitBidForm = () => {
         pricePerRoomPerNight: parseFloat(formData.pricePerRoomPerNight),
         totalPrice: parseFloat(formData.totalPrice),
         availableRooms: parseInt(formData.availableRooms),
-        currency: inquiry.currency,
+        currency: formData.currency,
         roomType: formData.roomType,
         mealPlan: formData.mealPlan,
         bidDescription: formData.bidDescription.trim(),
@@ -290,7 +320,7 @@ const SubmitBidForm = () => {
                     name="bidTitle"
                     value={formData.bidTitle}
                     onChange={handleInputChange}
-                    placeholder="Enter a descriptive title for your bid (min 10 characters)"
+                    placeholder="e.g., Luxury Beach Resort - Premium Rooms with Ocean View"
                     disabled={deadlinePassed}
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent ${
                       errors.bidTitle ? 'border-red-500' : 'border-gray-300'
@@ -310,15 +340,47 @@ const SubmitBidForm = () => {
                 </h2>
 
                 <div className="space-y-4">
+                  {/* Currency Selector */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Currency <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="currency"
+                      value={formData.currency}
+                      onChange={handleInputChange}
+                      disabled={deadlinePassed}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent ${
+                        errors.currency ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select currency</option>
+                      <option value="USD">USD - US Dollar</option>
+                      <option value="EUR">EUR - Euro</option>
+                      <option value="GBP">GBP - British Pound</option>
+                      <option value="LKR">LKR - Sri Lankan Rupee</option>
+                      <option value="INR">INR - Indian Rupee</option>
+                      <option value="AED">AED - UAE Dirham</option>
+                    </select>
+                    {errors.currency && (
+                      <p className="text-red-500 text-sm mt-1">{errors.currency}</p>
+                    )}
+                    {inquiry.currency && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Inquiry currency: {inquiry.currency}
+                      </p>
+                    )}
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Price per Room per Night <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                        {inquiry.currency === 'USD' ? '$' :
-                         inquiry.currency === 'EUR' ? '€' :
-                         inquiry.currency === 'GBP' ? '£' : 'LKR'}
+                        {formData.currency === 'USD' ? '$' :
+                         formData.currency === 'EUR' ? '€' :
+                         formData.currency === 'GBP' ? '£' : 'LKR'}
                       </span>
                       <input
                         type="number"
@@ -337,9 +399,9 @@ const SubmitBidForm = () => {
                     {errors.pricePerRoomPerNight && (
                       <p className="text-red-500 text-sm mt-1">{errors.pricePerRoomPerNight}</p>
                     )}
-                    {inquiry.budgetMin && inquiry.budgetMax && (
+                    {inquiry.budgetMin && inquiry.budgetMax && formData.currency && (
                       <p className="text-xs text-gray-500 mt-1">
-                        Budget range: {formatPrice(inquiry.budgetMin, inquiry.currency)} - {formatPrice(inquiry.budgetMax, inquiry.currency)}
+                        Budget range: {formatPrice(inquiry.budgetMin, formData.currency)} - {formatPrice(inquiry.budgetMax, formData.currency)}
                       </p>
                     )}
                   </div>
@@ -352,10 +414,10 @@ const SubmitBidForm = () => {
                         <div className="flex-1">
                           <p className="text-sm text-cyan-900 mb-2">Price Calculation:</p>
                           <p className="text-xs text-cyan-700">
-                            {formatPrice(parseFloat(formData.pricePerRoomPerNight), inquiry.currency)} × {inquiry.numberOfRooms} rooms × {inquiry.numberOfNights} nights
+                            {formatPrice(parseFloat(formData.pricePerRoomPerNight), formData.currency)} × {inquiry.numberOfRooms} rooms × {inquiry.numberOfNights} nights
                           </p>
                           <p className="text-lg font-bold text-cyan-900 mt-2">
-                            Total: {formatPrice(totalPrice, inquiry.currency)}
+                            Total: {formatPrice(totalPrice, formData.currency)}
                           </p>
                         </div>
                       </div>
@@ -369,9 +431,9 @@ const SubmitBidForm = () => {
                       </label>
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                          {inquiry.currency === 'USD' ? '$' :
-                           inquiry.currency === 'EUR' ? '€' :
-                           inquiry.currency === 'GBP' ? '£' : 'LKR'}
+                          {formData.currency === 'USD' ? '$' :
+                           formData.currency === 'EUR' ? '€' :
+                           formData.currency === 'GBP' ? '£' : 'LKR'}
                         </span>
                         <input
                           type="number"
@@ -629,7 +691,7 @@ const SubmitBidForm = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Terms & Conditions (Optional)
+                      Terms & Conditions <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       name="termsAndConditions"
@@ -638,8 +700,13 @@ const SubmitBidForm = () => {
                       rows={3}
                       placeholder="Cancellation policy, payment terms, additional charges, etc..."
                       disabled={deadlinePassed}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none"
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none ${
+                        errors.termsAndConditions ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {errors.termsAndConditions && (
+                      <p className="text-red-500 text-sm mt-1">{errors.termsAndConditions}</p>
+                    )}
                   </div>
 
                   <div>
@@ -740,10 +807,253 @@ const SubmitBidForm = () => {
                   </p>
                   <p className="text-xs text-gray-500">{formatDate(inquiry.deadline)}</p>
                 </div>
+
+                {/* View Full Details Button */}
+                <button
+                  onClick={() => setShowInquiryDetails(true)}
+                  className="w-full mt-4 px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  View Full Details
+                </button>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Inquiry Details Modal */}
+        {showInquiryDetails && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Inquiry Full Details</h2>
+                <button
+                  onClick={() => setShowInquiryDetails(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 space-y-6">
+                {/* Basic Information */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Basic Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-medium text-gray-600">Inquiry Title</label>
+                      <p className="text-sm text-gray-900">{inquiry.title}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600">Status</label>
+                      <p className="text-sm text-gray-900">{inquiry.status}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600">Deadline</label>
+                      <p className="text-sm text-gray-900">{formatDate(inquiry.deadline)}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600">Currency</label>
+                      <p className="text-sm text-gray-900">{inquiry.currency}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Inquiry Description */}
+                {inquiry.description && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Inquiry Description</h3>
+                    <p className="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
+                      {inquiry.description}
+                    </p>
+                  </div>
+                )}
+
+                {/* Destination & Dates */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Destination & Dates</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 flex items-center">
+                        <MapPin className="w-3 h-3 mr-1" />
+                        Destinations
+                      </label>
+                      <p className="text-sm text-gray-900">{inquiry.destinationCities?.join(', ')}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 flex items-center">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        Check-in Date
+                      </label>
+                      <p className="text-sm text-gray-900">{formatDate(inquiry.checkInDate)}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600 flex items-center">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        Check-out Date
+                      </label>
+                      <p className="text-sm text-gray-900">{formatDate(inquiry.checkOutDate)}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600">Number of Nights</label>
+                      <p className="text-sm text-gray-900">{inquiry.numberOfNights}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Guest Information */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Guest Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-medium text-gray-600">Number of Rooms</label>
+                      <p className="text-sm text-gray-900">{inquiry.numberOfRooms}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600">Adults</label>
+                      <p className="text-sm text-gray-900">{inquiry.numberOfAdults}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600">Children</label>
+                      <p className="text-sm text-gray-900">{inquiry.numberOfChildren}</p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-600">Total Guests</label>
+                      <p className="text-sm text-gray-900">{inquiry.numberOfAdults + inquiry.numberOfChildren}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Budget & Preferences */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Budget & Preferences</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {inquiry.budgetMin && inquiry.budgetMax && (
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Budget Range</label>
+                        <p className="text-sm text-gray-900">
+                          {formatPrice(inquiry.budgetMin, inquiry.currency)} - {formatPrice(inquiry.budgetMax, inquiry.currency)}
+                        </p>
+                      </div>
+                    )}
+                    {inquiry.preferredRoomTypes?.length > 0 && (
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Preferred Room Types</label>
+                        <p className="text-sm text-gray-900">
+                          {inquiry.preferredRoomTypes.map(t => getRoomTypeLabel(t)).join(', ')}
+                        </p>
+                      </div>
+                    )}
+                    {inquiry.preferredMealPlans?.length > 0 && (
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Preferred Meal Plans</label>
+                        <p className="text-sm text-gray-900">
+                          {inquiry.preferredMealPlans.map(p => getMealPlanLabel(p)).join(', ')}
+                        </p>
+                      </div>
+                    )}
+                    {inquiry.tripType && (
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Trip Type</label>
+                        <p className="text-sm text-gray-900">{inquiry.tripType}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Special Requirements */}
+                {inquiry.specialRequirements && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Special Requirements</h3>
+                    <p className="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
+                      {inquiry.specialRequirements}
+                    </p>
+                  </div>
+                )}
+
+                {/* Additional Notes */}
+                {inquiry.additionalNotes && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Additional Notes</h3>
+                    <p className="text-sm text-gray-700 bg-gray-50 p-4 rounded-lg">
+                      {inquiry.additionalNotes}
+                    </p>
+                  </div>
+                )}
+
+                {/* Contact Information */}
+                {(inquiry.contactName || inquiry.contactEmail || inquiry.contactPhone) && (
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Contact Information</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {inquiry.contactName && (
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Contact Name</label>
+                          <p className="text-sm text-gray-900">{inquiry.contactName}</p>
+                        </div>
+                      )}
+                      {inquiry.contactEmail && (
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Contact Email</label>
+                          <p className="text-sm text-gray-900">{inquiry.contactEmail}</p>
+                        </div>
+                      )}
+                      {inquiry.contactPhone && (
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Contact Phone</label>
+                          <p className="text-sm text-gray-900">{inquiry.contactPhone}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Inquiry Metadata */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Inquiry Details</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {inquiry.id && (
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Inquiry ID</label>
+                        <p className="text-xs text-gray-600 font-mono break-all">{inquiry.id}</p>
+                      </div>
+                    )}
+                    {inquiry.createdAt && (
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Created On</label>
+                        <p className="text-sm text-gray-900">{formatDate(inquiry.createdAt)}</p>
+                      </div>
+                    )}
+                    {inquiry.updatedAt && (
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Last Updated</label>
+                        <p className="text-sm text-gray-900">{formatDate(inquiry.updatedAt)}</p>
+                      </div>
+                    )}
+                    {inquiry.source && (
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Inquiry Source</label>
+                        <p className="text-sm text-gray-900">{inquiry.source}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="sticky bottom-0 bg-gray-50 border-t px-6 py-4">
+                <button
+                  onClick={() => setShowInquiryDetails(false)}
+                  className="w-full px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

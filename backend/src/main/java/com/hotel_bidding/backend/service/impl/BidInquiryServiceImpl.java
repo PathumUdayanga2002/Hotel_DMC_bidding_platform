@@ -7,6 +7,7 @@ import com.hotel_bidding.backend.dto.request.CreateBidInquiryRequest;
 import com.hotel_bidding.backend.dto.request.UpdateBidInquiryRequest;
 import com.hotel_bidding.backend.dto.response.BidInquiryResponse;
 import com.hotel_bidding.backend.dto.response.BidInquiryStatsResponse;
+import com.hotel_bidding.backend.dto.response.DMCDashboardStatsResponse;
 import com.hotel_bidding.backend.entity.BidInquiry;
 import com.hotel_bidding.backend.entity.DMCProfile;
 import com.hotel_bidding.backend.entity.HotelBid;
@@ -26,9 +27,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -66,8 +70,11 @@ public class BidInquiryServiceImpl implements BidInquiryService {
             throw new IllegalArgumentException("Check-out date must be after check-in date");
         }
 
-        if (request.getBudgetMax() < request.getBudgetMin()) {
-            throw new IllegalArgumentException("Maximum budget must be greater than minimum budget");
+        // Validate budget only if both min and max are provided
+        if (request.getBudgetMin() != null && request.getBudgetMax() != null) {
+            if (request.getBudgetMax() < request.getBudgetMin()) {
+                throw new IllegalArgumentException("Maximum budget must be greater than minimum budget");
+            }
         }
 
         int numberOfNights = (int) ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
@@ -405,5 +412,221 @@ public class BidInquiryServiceImpl implements BidInquiryService {
         
         // For super admins, return their own ID
         return userId;
+    }
+
+    @Override
+    public DMCDashboardStatsResponse getDashboardStats(String dmcUserId, String period) {
+        log.info("Getting dashboard stats for DMC user: {} with period: {}", dmcUserId, period);
+        
+        // Basic counts
+        long totalInquiries = bidInquiryRepository.countByDmcUserId(dmcUserId);
+        long openInquiries = bidInquiryRepository.countByDmcUserIdAndStatus(dmcUserId, BidInquiryStatus.OPEN);
+        long closedInquiries = bidInquiryRepository.countByDmcUserIdAndStatus(dmcUserId, BidInquiryStatus.CLOSED);
+        long awardedInquiries = bidInquiryRepository.countByDmcUserIdAndStatus(dmcUserId, BidInquiryStatus.AWARDED);
+        long cancelledInquiries = bidInquiryRepository.countByDmcUserIdAndStatus(dmcUserId, BidInquiryStatus.CANCELLED);
+        
+        List<HotelBid> allBids = hotelBidRepository.findByDmcUserId(dmcUserId);
+        long totalBidsReceived = allBids.size();
+        long pendingBids = allBids.stream().filter(b -> b.getStatus() == BidStatus.PENDING).count();
+        long acceptedBids = allBids.stream().filter(b -> b.getStatus() == BidStatus.ACCEPTED).count();
+        long rejectedBids = allBids.stream().filter(b -> b.getStatus() == BidStatus.REJECTED).count();
+        
+        Double averageBidsPerInquiry = totalInquiries > 0 ? (double) totalBidsReceived / totalInquiries : 0.0;
+        
+        // Calculate rates
+        Double bidAwardRate = totalInquiries > 0 ? (awardedInquiries * 100.0) / totalInquiries : 0.0;
+        Double bidRejectionRate = totalBidsReceived > 0 ? (rejectedBids * 100.0) / totalBidsReceived : 0.0;
+        Double inquiryCompletionRate = totalInquiries > 0 ? (closedInquiries * 100.0) / totalInquiries : 0.0;
+        
+        // Bid Status Distribution
+        Map<String, Long> bidStatusDistribution = new LinkedHashMap<>();
+        bidStatusDistribution.put("Pending", pendingBids);
+        bidStatusDistribution.put("Accepted", acceptedBids);
+        bidStatusDistribution.put("Rejected", rejectedBids);
+        
+        // Inquiry Status Distribution
+        Map<String, Long> inquiryStatusDistribution = new LinkedHashMap<>();
+        inquiryStatusDistribution.put("Open", openInquiries);
+        inquiryStatusDistribution.put("Closed", closedInquiries);
+        inquiryStatusDistribution.put("Awarded", awardedInquiries);
+        inquiryStatusDistribution.put("Cancelled", cancelledInquiries);
+        
+        // Time series data based on period
+        List<DMCDashboardStatsResponse.TimeSeriesData> timeSeriesData = generateTimeSeriesData(dmcUserId, period);
+        
+        // Top cities by bids
+        List<DMCDashboardStatsResponse.CityStats> topCities = generateCityStats(dmcUserId);
+        
+        return DMCDashboardStatsResponse.builder()
+                .totalInquiries(totalInquiries)
+                .openInquiries(openInquiries)
+                .closedInquiries(closedInquiries)
+                .awardedInquiries(awardedInquiries)
+                .cancelledInquiries(cancelledInquiries)
+                .totalBidsReceived(totalBidsReceived)
+                .pendingBids(pendingBids)
+                .acceptedBids(acceptedBids)
+                .rejectedBids(rejectedBids)
+                .averageBidsPerInquiry(averageBidsPerInquiry)
+                .bidAwardRate(bidAwardRate)
+                .bidRejectionRate(bidRejectionRate)
+                .inquiryCompletionRate(inquiryCompletionRate)
+                .bidStatusDistribution(bidStatusDistribution)
+                .inquiryStatusDistribution(inquiryStatusDistribution)
+                .dailyStats(period.equals("daily") ? timeSeriesData : null)
+                .weeklyStats(period.equals("weekly") ? timeSeriesData : null)
+                .monthlyStats(period.equals("monthly") ? timeSeriesData : null)
+                .topCitiesByBids(topCities)
+                .build();
+    }
+    
+    private List<DMCDashboardStatsResponse.TimeSeriesData> generateTimeSeriesData(String dmcUserId, String period) {
+        List<BidInquiry> inquiries = bidInquiryRepository.findByDmcUserId(dmcUserId);
+        List<HotelBid> bids = hotelBidRepository.findByDmcUserId(dmcUserId);
+        
+        LocalDateTime now = LocalDateTime.now();
+        List<DMCDashboardStatsResponse.TimeSeriesData> dataPoints = new ArrayList<>();
+        
+        if ("daily".equals(period)) {
+            // Last 7 days
+            for (int i = 6; i >= 0; i--) {
+                LocalDate date = now.minusDays(i).toLocalDate();
+                String label = date.format(DateTimeFormatter.ofPattern("MMM dd"));
+                
+                long inquiriesCount = inquiries.stream()
+                        .filter(inq -> inq.getPostedAt().toLocalDate().equals(date))
+                        .count();
+                
+                long bidsCount = bids.stream()
+                        .filter(bid -> bid.getSubmittedAt().toLocalDate().equals(date))
+                        .count();
+                
+                long awardedCount = inquiries.stream()
+                        .filter(inq -> inq.getStatus() == BidInquiryStatus.AWARDED && 
+                                inq.getAwardedAt() != null &&
+                                inq.getAwardedAt().toLocalDate().equals(date))
+                        .count();
+                
+                long rejectedCount = bids.stream()
+                        .filter(bid -> bid.getStatus() == BidStatus.REJECTED &&
+                                bid.getRejectedAt() != null &&
+                                bid.getRejectedAt().toLocalDate().equals(date))
+                        .count();
+                
+                dataPoints.add(DMCDashboardStatsResponse.TimeSeriesData.builder()
+                        .label(label)
+                        .inquiries(inquiriesCount)
+                        .bidsReceived(bidsCount)
+                        .awarded(awardedCount)
+                        .rejected(rejectedCount)
+                        .build());
+            }
+        } else if ("weekly".equals(period)) {
+            // Last 12 weeks
+            for (int i = 11; i >= 0; i--) {
+                LocalDate startOfWeek = now.minusWeeks(i).toLocalDate().minusDays(now.minusWeeks(i).getDayOfWeek().getValue() - 1);
+                LocalDate endOfWeek = startOfWeek.plusDays(6);
+                String label = "Week " + startOfWeek.format(DateTimeFormatter.ofPattern("MMM dd"));
+                
+                long inquiriesCount = inquiries.stream()
+                        .filter(inq -> !inq.getPostedAt().toLocalDate().isBefore(startOfWeek) &&
+                                !inq.getPostedAt().toLocalDate().isAfter(endOfWeek))
+                        .count();
+                
+                long bidsCount = bids.stream()
+                        .filter(bid -> !bid.getSubmittedAt().toLocalDate().isBefore(startOfWeek) &&
+                                !bid.getSubmittedAt().toLocalDate().isAfter(endOfWeek))
+                        .count();
+                
+                long awardedCount = inquiries.stream()
+                        .filter(inq -> inq.getStatus() == BidInquiryStatus.AWARDED &&
+                                inq.getAwardedAt() != null &&
+                                !inq.getAwardedAt().toLocalDate().isBefore(startOfWeek) &&
+                                !inq.getAwardedAt().toLocalDate().isAfter(endOfWeek))
+                        .count();
+                
+                long rejectedCount = bids.stream()
+                        .filter(bid -> bid.getStatus() == BidStatus.REJECTED &&
+                                bid.getRejectedAt() != null &&
+                                !bid.getRejectedAt().toLocalDate().isBefore(startOfWeek) &&
+                                !bid.getRejectedAt().toLocalDate().isAfter(endOfWeek))
+                        .count();
+                
+                dataPoints.add(DMCDashboardStatsResponse.TimeSeriesData.builder()
+                        .label(label)
+                        .inquiries(inquiriesCount)
+                        .bidsReceived(bidsCount)
+                        .awarded(awardedCount)
+                        .rejected(rejectedCount)
+                        .build());
+            }
+        } else if ("monthly".equals(period)) {
+            // Last 12 months
+            for (int i = 11; i >= 0; i--) {
+                LocalDate monthDate = now.minusMonths(i).toLocalDate();
+                String label = monthDate.format(DateTimeFormatter.ofPattern("MMM yyyy"));
+                
+                long inquiriesCount = inquiries.stream()
+                        .filter(inq -> inq.getPostedAt().getYear() == monthDate.getYear() &&
+                                inq.getPostedAt().getMonthValue() == monthDate.getMonthValue())
+                        .count();
+                
+                long bidsCount = bids.stream()
+                        .filter(bid -> bid.getSubmittedAt().getYear() == monthDate.getYear() &&
+                                bid.getSubmittedAt().getMonthValue() == monthDate.getMonthValue())
+                        .count();
+                
+                long awardedCount = inquiries.stream()
+                        .filter(inq -> inq.getStatus() == BidInquiryStatus.AWARDED &&
+                                inq.getAwardedAt() != null &&
+                                inq.getAwardedAt().getYear() == monthDate.getYear() &&
+                                inq.getAwardedAt().getMonthValue() == monthDate.getMonthValue())
+                        .count();
+                
+                long rejectedCount = bids.stream()
+                        .filter(bid -> bid.getStatus() == BidStatus.REJECTED &&
+                                bid.getRejectedAt() != null &&
+                                bid.getRejectedAt().getYear() == monthDate.getYear() &&
+                                bid.getRejectedAt().getMonthValue() == monthDate.getMonthValue())
+                        .count();
+                
+                dataPoints.add(DMCDashboardStatsResponse.TimeSeriesData.builder()
+                        .label(label)
+                        .inquiries(inquiriesCount)
+                        .bidsReceived(bidsCount)
+                        .awarded(awardedCount)
+                        .rejected(rejectedCount)
+                        .build());
+            }
+        }
+        
+        return dataPoints;
+    }
+    
+    private List<DMCDashboardStatsResponse.CityStats> generateCityStats(String dmcUserId) {
+        List<BidInquiry> inquiries = bidInquiryRepository.findByDmcUserId(dmcUserId);
+        
+        // Group by cities (flatten destination cities list)
+        Map<String, Long> inquiryCountByCity = new HashMap<>();
+        Map<String, Long> bidCountByCity = new HashMap<>();
+        
+        for (BidInquiry inquiry : inquiries) {
+            if (inquiry.getDestinationCities() != null) {
+                for (String city : inquiry.getDestinationCities()) {
+                    inquiryCountByCity.put(city, inquiryCountByCity.getOrDefault(city, 0L) + 1);
+                    bidCountByCity.put(city, bidCountByCity.getOrDefault(city, 0L) + inquiry.getBidCount());
+                }
+            }
+        }
+        
+        return bidCountByCity.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(5)
+                .map(entry -> DMCDashboardStatsResponse.CityStats.builder()
+                        .city(entry.getKey())
+                        .inquiryCount(inquiryCountByCity.getOrDefault(entry.getKey(), 0L))
+                        .bidCount(entry.getValue())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

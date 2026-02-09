@@ -37,6 +37,9 @@ public interface HotelBidRepository extends MongoRepository<HotelBid, String> {
     // Find by DMC user (all bids on DMC's inquiries)
     Page<HotelBid> findByDmcUserIdOrderBySubmittedAtDesc(String dmcUserId, Pageable pageable);
     
+    // Find all bids by DMC user (without pagination)
+    List<HotelBid> findByDmcUserId(String dmcUserId);
+    
     // Find by inquiry and status (multiple results)
     List<HotelBid> findAllByInquiryIdAndStatus(String inquiryId, BidStatus status);
     

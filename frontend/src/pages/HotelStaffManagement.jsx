@@ -172,7 +172,7 @@ const HotelStaffManagement = () => {
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors"
+              className="bg-gradient-to-r from-teal-500 to-emerald-600 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-all duration-300 hover:shadow-lg"
             >
               <Plus className="w-5 h-5" />
               <span>Add Staff Member</span>
@@ -426,7 +426,7 @@ const HotelStaffManagement = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg"
+                  className="px-6 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300"
                 >
                   Create Staff Member
                 </button>
@@ -512,7 +512,7 @@ const HotelStaffManagement = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg"
+                  className="px-6 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300"
                 >
                   Update Staff Member
                 </button>
@@ -556,7 +556,7 @@ const HotelStaffManagement = () => {
                   setGeneratedPassword('');
                   setCopied(false);
                 }}
-                className="w-full px-6 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg"
+                className="w-full px-6 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300"
               >
                 Got it
               </button>

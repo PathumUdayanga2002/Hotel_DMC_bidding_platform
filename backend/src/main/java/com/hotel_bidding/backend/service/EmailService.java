@@ -92,7 +92,7 @@ public interface EmailService {
     /**
      * Send new bid notification to DMC
      */
-    void sendNewBidNotificationToDmc(String dmcCompanyName, String hotelName, String inquiryTitle,
+    void sendNewBidNotificationToDmc(String dmcEmail, String dmcCompanyName, String hotelName, String inquiryTitle,
                                     Double bidPrice, String currency);
     
     /**

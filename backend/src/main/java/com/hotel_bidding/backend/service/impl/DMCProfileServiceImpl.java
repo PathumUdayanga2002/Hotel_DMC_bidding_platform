@@ -58,8 +58,38 @@ public class DMCProfileServiceImpl implements DMCProfileService {
             MultipartFile sltdaCertification
     ) throws IOException {
 
+        // Validate that SLTDA certification is provided for new profiles
+        // or when existing profile doesn't have a certificate
+        DMCProfile existingProfile = dmcProfileRepository.findByUserId(userId).orElse(null);
+        boolean hasExistingCertificate = existingProfile != null && 
+            (existingProfile.getSltdaCertificationUrl() != null || 
+             existingProfile.getSltdaCertificationFileName() != null);
+        
+        if (!hasExistingCertificate && (sltdaCertification == null || sltdaCertification.isEmpty())) {
+            throw new BadRequestException("SLTDA Certification is required. Please upload your certificate.");
+        }
+        
+        // Validate file type if provided
+        if (sltdaCertification != null && !sltdaCertification.isEmpty()) {
+            String contentType = sltdaCertification.getContentType();
+            if (contentType == null || (!contentType.equals("application/pdf") && 
+                !contentType.startsWith("image/"))) {
+                throw new BadRequestException("Invalid file type. Only PDF, JPG, JPEG, and PNG files are allowed.");
+            }
+            
+            // Validate file size (50MB max)
+            if (sltdaCertification.getSize() > 50 * 1024 * 1024) {
+                throw new BadRequestException("File size must be less than 50MB.");
+            }
+        }
+        
+        // Sanitize input to prevent XSS
+        request.setCompanyName(sanitizeInput(request.getCompanyName()));
+        request.setAddress(sanitizeInput(request.getAddress()));
+        request.setBusinessRegistrationNumber(sanitizeInput(request.getBusinessRegistrationNumber()));
+
         // Check if profile already exists
-        DMCProfile profile = dmcProfileRepository.findByUserId(userId).orElse(null);
+        DMCProfile profile = existingProfile;
         boolean isNewProfile = (profile == null);
 
         if (isNewProfile) {
@@ -88,10 +118,10 @@ public class DMCProfileServiceImpl implements DMCProfileService {
 
         // Check if business registration number already exists (for other users)
         if (dmcProfileRepository.existsByBusinessRegistrationNumber(request.getBusinessRegistrationNumber())) {
-            DMCProfile existingProfile = dmcProfileRepository
+            DMCProfile profileWithSameRegNumber = dmcProfileRepository
                     .findByBusinessRegistrationNumber(request.getBusinessRegistrationNumber())
                     .orElse(null);
-            if (existingProfile != null && !existingProfile.getUserId().equals(userId)) {
+            if (profileWithSameRegNumber != null && !profileWithSameRegNumber.getUserId().equals(userId)) {
                 throw new BadRequestException("Business registration number already exists");
             }
         }
@@ -166,6 +196,18 @@ public class DMCProfileServiceImpl implements DMCProfileService {
         }
 
         return convertToResponse(savedProfile);
+    }
+    
+    /**
+     * Sanitize input to prevent XSS attacks
+     */
+    private String sanitizeInput(String input) {
+        if (input == null) return null;
+        // Remove HTML tags and potentially dangerous characters
+        return input
+            .replaceAll("<[^>]*>", "")  // Remove HTML tags
+            .replaceAll("[<>\"']", "")   // Remove angle brackets and quotes
+            .trim();
     }
 
     @Override

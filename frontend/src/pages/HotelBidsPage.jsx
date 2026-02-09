@@ -91,7 +91,7 @@ const HotelBidsPage = () => {
   };
 
   const tabs = [
-    { key: 'ALL', label: 'All Bids', count: stats?.totalBids || 0 },
+    { key: 'ALL', label: 'All Bids', count: stats?.totalBidsSubmitted || 0 },
     { key: BID_STATUS.PENDING, label: 'Pending', count: stats?.pendingBids || 0 },
     { key: BID_STATUS.ACCEPTED, label: 'Accepted', count: stats?.acceptedBids || 0 },
     { key: BID_STATUS.REJECTED, label: 'Rejected', count: stats?.rejectedBids || 0 }
@@ -112,7 +112,7 @@ const HotelBidsPage = () => {
             <StatCard
               icon={<FileText className="w-6 h-6" />}
               label="Total Bids"
-              value={stats.totalBids || 0}
+              value={stats.totalBidsSubmitted || 0}
               color="cyan"
             />
             <StatCard
@@ -130,7 +130,7 @@ const HotelBidsPage = () => {
             <StatCard
               icon={<TrendingUp className="w-6 h-6" />}
               label="Win Rate"
-              value={`${calculateWinRate(stats.acceptedBids, stats.totalBids)}%`}
+              value={`${calculateWinRate(stats.acceptedBids, stats.totalBidsSubmitted)}%`}
               color="purple"
             />
           </div>
@@ -173,7 +173,7 @@ const HotelBidsPage = () => {
                 </div>
                 <button
                   onClick={handleSearch}
-                  className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+                  className="px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300"
                 >
                   Search
                 </button>
@@ -197,7 +197,7 @@ const HotelBidsPage = () => {
               </p>
               <button
                 onClick={() => navigate('/hotel/inquiries')}
-                className="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+                className="px-6 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300"
               >
                 Browse Available Inquiries
               </button>

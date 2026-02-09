@@ -67,11 +67,13 @@ public class HotelBidServiceImpl implements HotelBidService {
             throw new IllegalStateException("Inquiry is no longer accepting bids");
         }
         
-        // Validate price is within budget
-        if (request.getPricePerRoomPerNight() < inquiry.getBudgetMin() || 
-            request.getPricePerRoomPerNight() > inquiry.getBudgetMax()) {
-            log.warn("Hotel bid price {} is outside budget range: {} - {}", 
-                    request.getPricePerRoomPerNight(), inquiry.getBudgetMin(), inquiry.getBudgetMax());
+        // Validate price is within budget (only if DMC specified budget range)
+        if (inquiry.getBudgetMin() != null && inquiry.getBudgetMax() != null) {
+            if (request.getPricePerRoomPerNight() < inquiry.getBudgetMin() || 
+                request.getPricePerRoomPerNight() > inquiry.getBudgetMax()) {
+                log.warn("Hotel bid price {} is outside budget range: {} - {}", 
+                        request.getPricePerRoomPerNight(), inquiry.getBudgetMin(), inquiry.getBudgetMax());
+            }
         }
         
         // Create bid

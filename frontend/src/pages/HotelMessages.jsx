@@ -196,7 +196,7 @@ const HotelMessages = () => {
               />
               <button
                 onClick={handleSend}
-                className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition"
+                className="p-2 rounded-lg bg-gradient-to-r from-teal-500 to-emerald-600 text-white hover:shadow-lg transition-all duration-300"
               >
                 <Send size={18} />
               </button>

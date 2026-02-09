@@ -232,6 +232,43 @@ public class DMCBidInquiryController {
     }
 
     /**
+     * Reject a bid with a reason
+     * Hotel will be notified via email and can submit a new improved bid
+     */
+    @PutMapping("/{inquiryId}/reject/{bidId}")
+    public ResponseEntity<HotelBidResponse> rejectBid(
+            @PathVariable String inquiryId,
+            @PathVariable String bidId,
+            @RequestBody String rejectionReason,
+            Authentication authentication) {
+        
+        log.info("Rejecting bid {} for inquiry {} by DMC: {}", bidId, inquiryId, authentication.getName());
+        
+        String dmcUserId = getUserId(authentication);
+        User dmcUser = userRepository.findById(dmcUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        HotelBidResponse rejectedBid = hotelBidService.rejectBid(bidId, rejectionReason, dmcUserId);
+        
+        // Log activity
+        String companyName = dmcUser.getFullName() != null ? dmcUser.getFullName() : dmcUser.getUsername();
+        activityLogService.logActivity(
+                ActivityType.BID_REJECTED,
+                dmcUserId,
+                dmcUser.getFullName(),
+                companyName,
+                dmcUserId,
+                inquiryId,
+                "HotelBid",
+                String.format("Rejected bid for inquiry: %s", rejectedBid.getInquiryTitle()),
+                String.format("Rejected bid ID: %s, Reason: %s", bidId, rejectionReason),
+                null
+        );
+        
+        return ResponseEntity.ok(rejectedBid);
+    }
+
+    /**
      * Get all bids for a specific inquiry
      */
     @GetMapping("/{inquiryId}/bids")
@@ -253,6 +290,19 @@ public class DMCBidInquiryController {
     public ResponseEntity<BidInquiryStatsResponse> getStats(Authentication authentication) {
         String dmcUserId = getUserId(authentication);
         BidInquiryStatsResponse stats = bidInquiryService.getInquiryStats(dmcUserId);
+        return ResponseEntity.ok(stats);
+    }
+
+    /**
+     * Get enhanced dashboard statistics with analytics
+     */
+    @GetMapping("/dashboard-stats")
+    public ResponseEntity<com.hotel_bidding.backend.dto.response.DMCDashboardStatsResponse> getDashboardStats(
+            @RequestParam(defaultValue = "daily") String period,
+            Authentication authentication) {
+        String dmcUserId = getUserId(authentication);
+        com.hotel_bidding.backend.dto.response.DMCDashboardStatsResponse stats = 
+                bidInquiryService.getDashboardStats(dmcUserId, period);
         return ResponseEntity.ok(stats);
     }
 

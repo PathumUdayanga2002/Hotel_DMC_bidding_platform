@@ -277,7 +277,7 @@ const HotelDirectInquiriesPage = () => {
                   </button>
                   <button
                     onClick={handleConfirmInquiry}
-                    className="flex-1 px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-medium flex items-center justify-center"
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 font-medium flex items-center justify-center"
                     disabled={confirming}
                   >
                     {confirming ? (
@@ -585,7 +585,7 @@ const DirectInquiryCard = ({ inquiry, onConfirmClick, onRejectClick }) => {
             <>
               <button 
                 onClick={() => onConfirmClick(inquiry)}
-                className="flex-1 px-6 py-3 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-semibold flex items-center justify-center"
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 font-semibold flex items-center justify-center"
               >
                 <CheckCircle className="w-5 h-5 mr-2" />
                 Confirm Inquiry
