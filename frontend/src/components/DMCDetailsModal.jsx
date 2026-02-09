@@ -208,21 +208,8 @@ const DMCDetailsModal = ({ profile, onClose }) => {
                   <p className="text-sm text-gray-600">Phone</p>
                   <p className="font-medium text-gray-900 flex items-center">
                     <Phone className="w-4 h-4 mr-1 text-gray-500" />
-                    {profile.phoneNumber}
+                    {profile.contactNumber}
                   </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Website</p>
-                  <a
-                    href={profile.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-medium text-green-600 hover:text-green-700 flex items-center"
-                  >
-                    <Globe className="w-4 h-4 mr-1" />
-                    {profile.website}
-                    <ExternalLink className="w-3 h-3 ml-1" />
-                  </a>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Address</p>

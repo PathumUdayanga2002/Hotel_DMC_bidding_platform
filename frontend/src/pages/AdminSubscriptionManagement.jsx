@@ -320,6 +320,9 @@ const AdminSubscriptionManagement = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Subscription ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     User
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -345,7 +348,7 @@ const AdminSubscriptionManagement = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredSubscriptions.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
                       <Users className="w-12 h-12 mx-auto text-gray-300 mb-2" />
                       <p>No subscriptions found</p>
                     </td>
@@ -353,6 +356,11 @@ const AdminSubscriptionManagement = () => {
                 ) : (
                   filteredSubscriptions.map((subscription) => (
                     <tr key={subscription.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-xs font-mono text-gray-600">
+                          {subscription.id}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0">
