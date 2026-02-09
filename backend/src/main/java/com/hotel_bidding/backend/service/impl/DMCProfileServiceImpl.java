@@ -1,5 +1,16 @@
 package com.hotel_bidding.backend.service.impl;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.hotel_bidding.backend.constants.DMCProfileStatus;
 import com.hotel_bidding.backend.dto.DMCProfileRequest;
 import com.hotel_bidding.backend.dto.DMCProfileResponse;
@@ -14,17 +25,9 @@ import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.CloudinaryService;
 import com.hotel_bidding.backend.service.DMCProfileService;
 import com.hotel_bidding.backend.service.EmailService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+import com.hotel_bidding.backend.service.NotificationService;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -35,13 +38,16 @@ public class DMCProfileServiceImpl implements DMCProfileService {
     @Autowired(required = false)
     private CloudinaryService cloudinaryService;
     private final EmailService emailService;
+    private final NotificationService notificationService;
 
     public DMCProfileServiceImpl(DMCProfileRepository dmcProfileRepository, 
                                  UserRepository userRepository,
-                                 EmailService emailService) {
+                                 EmailService emailService,
+                                 NotificationService notificationService) {
         this.dmcProfileRepository = dmcProfileRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -130,6 +136,18 @@ public class DMCProfileServiceImpl implements DMCProfileService {
 
         // Save profile
         DMCProfile savedProfile = dmcProfileRepository.save(profile);
+        
+        // Notify all admins about new profile submission
+        try {
+            notificationService.notifyAdminProfileSubmitted(
+                savedProfile.getId(),
+                "DMC",
+                savedProfile.getCompanyName()
+            );
+            log.info("Admin notifications sent for DMC profile: {}", savedProfile.getCompanyName());
+        } catch (Exception e) {
+            log.error("Failed to send admin notifications for DMC profile: {}", e.getMessage());
+        }
 
         // Send email notification to admin (only for new submissions)
         if (isNewProfile) {

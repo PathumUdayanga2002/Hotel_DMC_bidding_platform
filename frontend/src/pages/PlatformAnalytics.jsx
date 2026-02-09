@@ -133,8 +133,18 @@ const PlatformAnalytics = () => {
   
   // Debug logging
   console.log('Analytics data:', analytics);
+  console.log('Revenue Analytics:', revenueAnalytics);
+  console.log('Platform Performance:', platformPerformance);
   console.log('Top Hotel Markets:', topHotelMarkets);
   console.log('Top Hotel Markets length:', topHotelMarkets?.length);
+  
+  // Safety check for revenueAnalytics
+  if (!revenueAnalytics) {
+    console.error('Revenue analytics data is missing!');
+  }
+  if (!platformPerformance) {
+    console.error('Platform performance data is missing!');
+  }
 
   return (
     <div className="p-6">
@@ -153,6 +163,13 @@ const PlatformAnalytics = () => {
           <h2 className="text-2xl font-semibold text-gray-800">Revenue Analytics</h2>
         </div>
         
+        {!revenueAnalytics ? (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+            <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
+            <p className="text-yellow-800">Revenue analytics data not available</p>
+          </div>
+        ) : (
+        <>
         {/* First row: 2 main revenue metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           
@@ -163,10 +180,10 @@ const PlatformAnalytics = () => {
               <TrendingUp className="w-5 h-5 opacity-80" />
             </div>
             <p className="text-3xl font-bold mb-2">
-              {formatCurrency(revenueAnalytics.totalRevenueYTD)}
+              {formatCurrency(revenueAnalytics.totalRevenueYTD || 0)}
             </p>
             <p className="text-xs opacity-80">
-              From {formatNumber(revenueAnalytics.totalBookingsYTD)} completed bookings
+              From {formatNumber(revenueAnalytics.totalBookingsYTD || 0)} completed bookings
             </p>
           </div>
           
@@ -177,7 +194,7 @@ const PlatformAnalytics = () => {
               <CreditCard className="w-5 h-5 opacity-80" />
             </div>
             <p className="text-3xl font-bold mb-2">
-              {formatCurrency(revenueAnalytics.subscriptionRevenue)}
+              {formatCurrency(revenueAnalytics.subscriptionRevenue || 0)}
             </p>
             <p className="text-xs opacity-80">
               From active subscriptions (YTD)
@@ -194,7 +211,7 @@ const PlatformAnalytics = () => {
               <Activity className="w-5 h-5 opacity-80" />
             </div>
             <p className="text-3xl font-bold mb-2">
-              {formatCurrency(revenueAnalytics.averageBookingValue)}
+              {formatCurrency(revenueAnalytics.averageBookingValue || 0)}
             </p>
             <p className="text-xs opacity-80">
               Per transaction average
@@ -203,7 +220,7 @@ const PlatformAnalytics = () => {
 
           {/* Growth Rate */}
           <div className={`bg-gradient-to-br ${
-            revenueAnalytics.growthRate >= 0 
+            (revenueAnalytics.growthRate || 0) >= 0 
               ? 'from-emerald-500 to-emerald-600' 
               : 'from-red-500 to-red-600'
           } rounded-lg shadow-lg p-6 text-white transform transition hover:scale-105`}>
@@ -212,14 +229,16 @@ const PlatformAnalytics = () => {
               <TrendingUp className="w-5 h-5 opacity-80" />
             </div>
             <p className="text-3xl font-bold mb-2">
-              {revenueAnalytics.growthRate >= 0 ? '+' : ''}
-              {formatPercentage(revenueAnalytics.growthRate)}
+              {(revenueAnalytics.growthRate || 0) >= 0 ? '+' : ''}
+              {formatPercentage(revenueAnalytics.growthRate || 0)}
             </p>
             <p className="text-xs opacity-80">
               Compared to {new Date().getFullYear() - 1}
             </p>
           </div>
         </div>
+        </>
+        )}
       </div>
 
       {/* Platform Performance Section */}
@@ -229,6 +248,12 @@ const PlatformAnalytics = () => {
           <h2 className="text-2xl font-semibold text-gray-800">Platform Performance</h2>
         </div>
         
+        {!platformPerformance ? (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+            <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
+            <p className="text-yellow-800">Platform performance data not available</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Booking Success Rate */}
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
@@ -237,10 +262,10 @@ const PlatformAnalytics = () => {
               <ThumbsUp className="w-5 h-5 text-green-600" />
             </div>
             <p className="text-3xl font-bold text-gray-800 mb-2">
-              {formatPercentage(platformPerformance.bookingSuccessRate)}
+              {formatPercentage(platformPerformance.bookingSuccessRate || 0)}
             </p>
             <p className="text-xs text-gray-500">
-              {formatNumber(platformPerformance.acceptedBids)} of {formatNumber(platformPerformance.totalBids)} bids
+              {formatNumber(platformPerformance.acceptedBids || 0)} of {formatNumber(platformPerformance.totalBids || 0)} bids
             </p>
           </div>
 
@@ -251,7 +276,7 @@ const PlatformAnalytics = () => {
               <Clock className="w-5 h-5 text-blue-600" />
             </div>
             <p className="text-3xl font-bold text-gray-800 mb-2">
-              {platformPerformance.averageResponseTime.toFixed(1)}h
+              {(platformPerformance.averageResponseTime || 0).toFixed(1)}h
             </p>
             <p className="text-xs text-gray-500">
               Platform processing time
@@ -265,7 +290,7 @@ const PlatformAnalytics = () => {
               <ThumbsUp className="w-5 h-5 text-purple-600" />
             </div>
             <p className="text-3xl font-bold text-gray-800 mb-2">
-              {formatPercentage(platformPerformance.userSatisfaction)}
+              {formatPercentage(platformPerformance.userSatisfaction || 0)}
             </p>
             <p className="text-xs text-gray-500">
               Based on completion rate
@@ -279,13 +304,14 @@ const PlatformAnalytics = () => {
               <AlertCircle className="w-5 h-5 text-orange-600" />
             </div>
             <p className="text-3xl font-bold text-gray-800 mb-2">
-              {formatPercentage(platformPerformance.disputeRate)}
+              {formatPercentage(platformPerformance.disputeRate || 0)}
             </p>
             <p className="text-xs text-gray-500">
-              {formatNumber(platformPerformance.totalDisputes)} disputed transactions
+              {formatNumber(platformPerformance.totalDisputes || 0)} disputed transactions
             </p>
           </div>
         </div>
+        )}
       </div>
 
       {/* Top Hotel Markets Section */}

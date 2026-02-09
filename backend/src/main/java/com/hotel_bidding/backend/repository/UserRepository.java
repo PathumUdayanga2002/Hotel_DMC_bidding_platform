@@ -1,12 +1,14 @@
 package com.hotel_bidding.backend.repository;
 
-import com.hotel_bidding.backend.constants.AccountType;
-import com.hotel_bidding.backend.entity.User;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import com.hotel_bidding.backend.constants.AccountType;
+import com.hotel_bidding.backend.constants.UserRole;
+import com.hotel_bidding.backend.entity.User;
 
 @Repository
 public interface UserRepository extends MongoRepository<User, String> {
@@ -25,4 +27,7 @@ public interface UserRepository extends MongoRepository<User, String> {
     List<User> findByParentUserId(String parentUserId);
     
     Long countByParentUserId(String parentUserId);
+    
+    // Find all admin users
+    List<User> findByRole(UserRole role);
 }

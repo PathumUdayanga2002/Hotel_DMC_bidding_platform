@@ -1,5 +1,16 @@
 package com.hotel_bidding.backend.service.impl;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.hotel_bidding.backend.dto.request.HotelProfileRequestDTO;
 import com.hotel_bidding.backend.dto.response.ApiResponse;
 import com.hotel_bidding.backend.entity.HotelProfile;
@@ -9,17 +20,9 @@ import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.security.UserDetailsImpl;
 import com.hotel_bidding.backend.service.CloudinaryService;
 import com.hotel_bidding.backend.service.HotelService;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import com.hotel_bidding.backend.service.NotificationService;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -27,12 +30,14 @@ public class HotelServiceImpl implements HotelService {
 
     private final HotelRepository hotelRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
     @Autowired(required = false)
     private CloudinaryService cloudinaryService;
 
-    public HotelServiceImpl(HotelRepository hotelRepository, UserRepository userRepository) {
+    public HotelServiceImpl(HotelRepository hotelRepository, UserRepository userRepository, NotificationService notificationService) {
         this.hotelRepository = hotelRepository;
         this.userRepository = userRepository;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -96,6 +101,18 @@ public class HotelServiceImpl implements HotelService {
         profile.setStatus("PENDING");
 
         HotelProfile saved = hotelRepository.save(profile);
+        
+        // Notify all admins about new profile submission
+        try {
+            notificationService.notifyAdminProfileSubmitted(
+                saved.getId(),
+                "Hotel",
+                saved.getName()
+            );
+            log.info("Admin notifications sent for hotel profile: {}", saved.getName());
+        } catch (Exception e) {
+            log.error("Failed to send admin notifications for hotel profile: {}", e.getMessage());
+        }
 
         return ApiResponse.builder()
                 .success(true)
