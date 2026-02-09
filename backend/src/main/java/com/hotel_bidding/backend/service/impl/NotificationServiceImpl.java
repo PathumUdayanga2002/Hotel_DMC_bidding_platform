@@ -13,13 +13,14 @@ import com.hotel_bidding.backend.constants.NotificationType;
 import com.hotel_bidding.backend.constants.UserRole;
 import com.hotel_bidding.backend.dto.response.NotificationResponse;
 import com.hotel_bidding.backend.entity.BidInquiry;
+import com.hotel_bidding.backend.entity.DMCProfile;
 import com.hotel_bidding.backend.entity.HotelBid;
 import com.hotel_bidding.backend.entity.HotelProfile;
-import com.hotel_bidding.backend.entity.DMCProfile;
 import com.hotel_bidding.backend.entity.Notification;
 import com.hotel_bidding.backend.exception.ResourceNotFoundException;
 import com.hotel_bidding.backend.exception.UnauthorizedException;
 import com.hotel_bidding.backend.repository.BidInquiryRepository;
+import com.hotel_bidding.backend.repository.DMCProfileRepository;
 import com.hotel_bidding.backend.repository.HotelBidRepository;
 import com.hotel_bidding.backend.repository.HotelRepository;
 import com.hotel_bidding.backend.repository.NotificationRepository;
@@ -42,6 +43,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final BidInquiryRepository bidInquiryRepository;
     private final HotelBidRepository hotelBidRepository;
     private final HotelRepository hotelRepository;
+    private final DMCProfileRepository dmcProfileRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
     
