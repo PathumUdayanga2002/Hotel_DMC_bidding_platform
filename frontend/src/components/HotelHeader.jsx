@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { LogOut, User, CreditCard, CheckCircle, AlertTriangle, Clock, Loader2 } from 'lucide-react';
 import NotificationBell from './NotificationBell';
+import SubscriptionReminder from './SubscriptionReminder';
 import { toast } from 'react-toastify';
 
 const HotelHeader = ({ profileStatus }) => {
@@ -64,6 +65,9 @@ const HotelHeader = ({ profileStatus }) => {
       <div>{renderProfileStatus()}</div>
 
       <div className="flex items-center space-x-4">
+        {/* Subscription Reminder */}
+        <SubscriptionReminder />
+
         <button
           onClick={() => navigate('/subscription/purchase')}
           className="px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-teal-500 to-emerald-600 text-white"
