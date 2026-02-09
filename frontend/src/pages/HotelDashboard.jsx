@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Building2,
   LogOut,
@@ -22,6 +22,38 @@ import {
   Mail,
   CreditCard
 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line
+} from 'recharts';
+import {
+  addDays,
+  addMonths,
+  addWeeks,
+  addYears,
+  format,
+  isWithinInterval,
+  parseISO,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+  startOfYear,
+  subDays,
+  subMonths,
+  subWeeks,
+  subYears
+} from 'date-fns';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -87,15 +119,17 @@ const InfoCard = ({ title, message, icon: Icon, iconColor, bgColor }) => (
 );
 
 // --- StatCards ---
-const StatCards = ({ dashboardData }) => {
+const StatCards = ({ bidStats, pendingInquiriesCount }) => {
   const stats = [
-    { title: 'Active Inquiries', value: dashboardData.activeInquiries || 0, icon: FilePlus, color: 'text-green-500', bgColor: 'bg-green-50' },
-    { title: 'Proposals Received', value: dashboardData.proposalsReceived || 0, icon: Send, color: 'text-blue-500', bgColor: 'bg-blue-50' },
-    { title: 'Messages', value: dashboardData.messages || 0, icon: MessageSquare, color: 'text-purple-500', bgColor: 'bg-purple-50' },
+    { title: 'Available Inquiries', value: bidStats?.totalAvailableInquiries || 0, icon: FilePlus, color: 'text-teal-600', bgColor: 'bg-teal-50' },
+    { title: 'Bids Submitted', value: bidStats?.totalBidsSubmitted || 0, icon: Send, color: 'text-emerald-600', bgColor: 'bg-emerald-50' },
+    { title: 'Pending Bids', value: bidStats?.pendingBids || 0, icon: Clock, color: 'text-amber-600', bgColor: 'bg-amber-50' },
+    { title: 'Win Rate', value: `${Math.round(bidStats?.winRate || 0)}%`, icon: TrendingUp, color: 'text-cyan-600', bgColor: 'bg-cyan-50' },
+    { title: 'Direct Inquiries', value: pendingInquiriesCount || 0, icon: Inbox, color: 'text-slate-600', bgColor: 'bg-slate-50' }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-6">
       {stats.map((stat) => (
         <Card key={stat.title} className="flex items-center justify-between">
           <div>
@@ -122,16 +156,186 @@ const HotelDashboard = () => {
 
   const [profileStatus, setProfileStatus] = useState('LOADING');
   const [dashboardData, setDashboardData] = useState(null);
+  const [bidStats, setBidStats] = useState(null);
+  const [bids, setBids] = useState([]);
+  const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(false);
+  const [timeframe, setTimeframe] = useState('monthly');
   const [error, setError] = useState(null);
   const [pendingInquiriesCount, setPendingInquiriesCount] = useState(0);
   
+
+  const timeframeOptions = [
+    { value: 'daily', label: 'Daily' },
+    { value: 'weekly', label: 'Weekly' },
+    { value: 'monthly', label: 'Monthly' },
+    { value: 'yearly', label: 'Yearly' }
+  ];
+
+  const buildSeries = (sourceBids, range) => {
+    const now = new Date();
+    const configs = {
+      daily: {
+        count: 7,
+        label: 'MMM d',
+        startOf: (date) => startOfDay(date),
+        sub: (date, amount) => subDays(date, amount),
+        add: (date, amount) => addDays(date, amount)
+      },
+      weekly: {
+        count: 8,
+        label: "MMM d",
+        startOf: (date) => startOfWeek(date, { weekStartsOn: 1 }),
+        sub: (date, amount) => subWeeks(date, amount),
+        add: (date, amount) => addWeeks(date, amount)
+      },
+      monthly: {
+        count: 12,
+        label: 'MMM',
+        startOf: (date) => startOfMonth(date),
+        sub: (date, amount) => subMonths(date, amount),
+        add: (date, amount) => addMonths(date, amount)
+      },
+      yearly: {
+        count: 5,
+        label: 'yyyy',
+        startOf: (date) => startOfYear(date),
+        sub: (date, amount) => subYears(date, amount),
+        add: (date, amount) => addYears(date, amount)
+      }
+    };
+
+    const config = configs[range];
+    const buckets = [];
+
+    for (let i = config.count - 1; i >= 0; i -= 1) {
+      const anchor = config.sub(now, i);
+      const start = config.startOf(anchor);
+      const end = config.add(start, 1);
+      buckets.push({
+        label: format(start, config.label),
+        start,
+        end,
+        bids: 0,
+        amount: 0,
+        accepted: 0,
+        rejected: 0
+      });
+    }
+
+    const normalizedBids = sourceBids
+      .map((bid) => {
+        const submittedAt = bid?.submittedAt ? parseISO(bid.submittedAt) : null;
+        if (!submittedAt || Number.isNaN(submittedAt.getTime())) {
+          return null;
+        }
+        return {
+          ...bid,
+          submittedAt,
+          totalPrice: Number(bid.totalPrice) || 0
+        };
+      })
+      .filter(Boolean);
+
+    normalizedBids.forEach((bid) => {
+      buckets.forEach((bucket) => {
+        if (
+          isWithinInterval(bid.submittedAt, {
+            start: bucket.start,
+            end: bucket.end
+          })
+        ) {
+          bucket.bids += 1;
+          bucket.amount += bid.totalPrice;
+          if (bid.status === 'ACCEPTED') bucket.accepted += 1;
+          if (bid.status === 'REJECTED') bucket.rejected += 1;
+        }
+      });
+    });
+
+    return { buckets, normalizedBids };
+  };
+
+  const analytics = useMemo(() => {
+    if (!bids.length) {
+      return {
+        series: [],
+        outcome: [],
+        summary: {
+          totalAmount: 0,
+          awardedRate: 0,
+          rejectedRate: 0,
+          totalBids: 0,
+          accepted: 0,
+          rejected: 0,
+          pending: 0,
+          withdrawn: 0
+        }
+      };
+    }
+
+    const { buckets, normalizedBids } = buildSeries(bids, timeframe);
+    const timeframeStart = buckets[0]?.start || new Date(0);
+    const timeframeBids = normalizedBids.filter((bid) => bid.submittedAt >= timeframeStart);
+
+    const accepted = timeframeBids.filter((bid) => bid.status === 'ACCEPTED').length;
+    const rejected = timeframeBids.filter((bid) => bid.status === 'REJECTED').length;
+    const pending = timeframeBids.filter((bid) => bid.status === 'PENDING').length;
+    const withdrawn = timeframeBids.filter((bid) => bid.status === 'WITHDRAWN').length;
+    const totalBids = timeframeBids.length;
+    const totalAmount = timeframeBids.reduce((sum, bid) => sum + bid.totalPrice, 0);
+
+    const series = buckets.map((bucket) => ({
+      label: bucket.label,
+      bids: bucket.bids,
+      amount: Math.round(bucket.amount),
+      accepted: bucket.accepted,
+      rejected: bucket.rejected
+    }));
+
+    const outcome = [
+      { name: 'Awarded', value: accepted, color: '#14b8a6' },
+      { name: 'Rejected', value: rejected, color: '#f43f5e' },
+      { name: 'Pending', value: pending, color: '#f59e0b' },
+      { name: 'Withdrawn', value: withdrawn, color: '#94a3b8' }
+    ];
+
+    return {
+      series,
+      outcome,
+      summary: {
+        totalAmount,
+        awardedRate: totalBids ? (accepted / totalBids) * 100 : 0,
+        rejectedRate: totalBids ? (rejected / totalBids) * 100 : 0,
+        totalBids,
+        accepted,
+        rejected,
+        pending,
+        withdrawn
+      }
+    };
+  }, [bids, timeframe]);
+
+  const formatCurrency = (value, currency = 'LKR') => {
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 0
+      }).format(value);
+    } catch (error) {
+      return `${currency} ${Math.round(value).toLocaleString('en-US')}`;
+    }
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setProfileStatus('LOADING');
       setError(null);
       setDashboardData(null);
+      setBidStats(null);
+      setBids([]);
       setPendingInquiriesCount(0);
+      setIsAnalyticsLoading(true);
 
       try {
         const response = await api.get('/hotel/dashboard', {
@@ -142,6 +346,40 @@ const HotelDashboard = () => {
         if (apiResponse.success) {
           setDashboardData(apiResponse.data);
           setProfileStatus('APPROVED');
+
+          try {
+            const statsResponse = await api.get('/hotel/bids/stats', {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            setBidStats(statsResponse.data);
+          } catch (statsError) {
+            console.error('Error fetching bid stats:', statsError);
+          }
+
+          try {
+            const pageSize = 200;
+            let page = 0;
+            let totalPages = 1;
+            let allBids = [];
+
+            while (page < totalPages && page < 10) {
+              const bidsResponse = await api.get('/hotel/bids/search', {
+                params: { keyword: '', page, size: pageSize },
+                headers: { Authorization: `Bearer ${token}` }
+              });
+
+              const pageData = bidsResponse.data?.content ? bidsResponse.data : bidsResponse.data?.data;
+              const content = pageData?.content || [];
+              totalPages = pageData?.totalPages ?? 1;
+
+              allBids = [...allBids, ...content];
+              page += 1;
+            }
+
+            setBids(allBids);
+          } catch (bidsError) {
+            console.error('Error fetching bids for analytics:', bidsError);
+          }
           
           // Fetch direct inquiries to count pending ones
           try {
@@ -177,6 +415,8 @@ const HotelDashboard = () => {
           setProfileStatus('ERROR');
         }
       }
+
+      setIsAnalyticsLoading(false);
     };
 
     fetchDashboardData();
@@ -192,15 +432,17 @@ const HotelDashboard = () => {
     }
   };
 
+  const showAnalytics = profileStatus === 'APPROVED' && !isAnalyticsLoading;
+
   return (
-    <div className="flex h-screen bg-slate-50 font-inter">
+    <div className="flex h-screen bg-slate-50 font-display">
       <div className="flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto p-6 md:p-8">
           {/* Subscription Status Banner */}
           <SubscriptionBanner />
           
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back, {user?.username || 'Hotel Manager'}!
+            Welcome back, {dashboardData?.hotelName || user?.username || 'Hotel Manager'}!
           </h2>
           <p className="text-gray-600 mb-8">Manage your hotel's needs and connect with DMCs.</p>
 
@@ -224,7 +466,9 @@ const HotelDashboard = () => {
               bgColor="bg-yellow-50"
             />
           )}
-          {profileStatus === 'APPROVED' && dashboardData && <StatCards dashboardData={dashboardData} />}
+          {profileStatus === 'APPROVED' && (
+            <StatCards bidStats={bidStats} pendingInquiriesCount={pendingInquiriesCount} />
+          )}
           {profileStatus === 'ERROR' && error && (
             <InfoCard
               title="An Error Occurred"
@@ -233,6 +477,244 @@ const HotelDashboard = () => {
               iconColor="text-red-600"
               bgColor="bg-red-50"
             />
+          )}
+
+          {profileStatus === 'APPROVED' && isAnalyticsLoading && (
+            <div className="mt-10">
+              <LoadingSpinner />
+            </div>
+          )}
+
+          {showAnalytics && (
+            <section className="mt-10">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold text-gray-900">Bid Performance Analytics</h3>
+                  <p className="text-gray-600">
+                    Track bid value, award rate, and rejection trends across timeframes.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {timeframeOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setTimeframe(option.value)}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
+                        timeframe === option.value
+                          ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-md'
+                          : 'bg-white text-gray-600 border border-gray-200 hover:border-teal-300'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-6"
+              >
+                <Card className="border border-teal-100 bg-gradient-to-br from-teal-50 via-white to-emerald-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500">Bid Amount</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {formatCurrency(analytics.summary.totalAmount)}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-full bg-teal-100">
+                      <CreditCard className="w-6 h-6 text-teal-600" />
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="border border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-cyan-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500">Awarded Rate</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {Math.round(analytics.summary.awardedRate)}%
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-full bg-emerald-100">
+                      <CheckCircle className="w-6 h-6 text-emerald-600" />
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="border border-rose-100 bg-gradient-to-br from-rose-50 via-white to-amber-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500">Rejection Rate</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {Math.round(analytics.summary.rejectedRate)}%
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-full bg-rose-100">
+                      <AlertTriangle className="w-6 h-6 text-rose-600" />
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="border border-slate-100 bg-gradient-to-br from-slate-50 via-white to-gray-50">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-500">Total Bids</p>
+                      <p className="text-3xl font-bold text-gray-900">
+                        {analytics.summary.totalBids}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-full bg-slate-100">
+                      <Activity className="w-6 h-6 text-slate-600" />
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.2 }}
+                className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-8"
+              >
+                <Card className="xl:col-span-2 bg-white">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900">Bid Amount Trend</h4>
+                      <p className="text-sm text-gray-500">Total bid value per period</p>
+                    </div>
+                    <span className="text-xs font-semibold px-3 py-1 bg-teal-50 text-teal-700 rounded-full">
+                      Point chart
+                    </span>
+                  </div>
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={analytics.series} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="lineGlow" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.9} />
+                            <stop offset="100%" stopColor="#34d399" stopOpacity={0.8} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis dataKey="label" stroke="#64748b" fontSize={12} />
+                        <YAxis stroke="#64748b" fontSize={12} />
+                        <Tooltip
+                          cursor={{ stroke: '#14b8a6', strokeWidth: 1 }}
+                          contentStyle={{
+                            borderRadius: '12px',
+                            border: '1px solid #e2e8f0',
+                            boxShadow: '0 10px 24px rgba(15, 23, 42, 0.08)'
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="amount"
+                          stroke="url(#lineGlow)"
+                          strokeWidth={3}
+                          dot={{ r: 4, stroke: '#14b8a6', strokeWidth: 2, fill: '#ffffff' }}
+                          activeDot={{ r: 6 }}
+                          animationDuration={1200}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+
+                <Card className="bg-white">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900">Bid Outcomes</h4>
+                      <p className="text-sm text-gray-500">Awarded vs rejected</p>
+                    </div>
+                    <span className="text-xs font-semibold px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full">
+                      Pie chart
+                    </span>
+                  </div>
+                  <div className="h-72 flex items-center justify-center">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={analytics.outcome}
+                          dataKey="value"
+                          nameKey="name"
+                          innerRadius={60}
+                          outerRadius={90}
+                          paddingAngle={4}
+                          animationDuration={900}
+                        >
+                          {analytics.outcome.map((entry) => (
+                            <Cell key={entry.name} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            borderRadius: '12px',
+                            border: '1px solid #e2e8f0',
+                            boxShadow: '0 10px 24px rgba(15, 23, 42, 0.08)'
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {analytics.outcome.map((entry) => (
+                      <div key={entry.name} className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
+                        <span className="text-gray-600">{entry.name}</span>
+                        <span className="ml-auto font-semibold text-gray-900">{entry.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.3 }}
+                className="mt-6"
+              >
+                <Card className="bg-white">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900">Bid Volume</h4>
+                      <p className="text-sm text-gray-500">Bids submitted per period</p>
+                    </div>
+                    <span className="text-xs font-semibold px-3 py-1 bg-cyan-50 text-cyan-700 rounded-full">
+                      Bar chart
+                    </span>
+                  </div>
+                  <div className="h-72">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={analytics.series} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="barGlow" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.9} />
+                            <stop offset="100%" stopColor="#0ea5e9" stopOpacity={0.7} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis dataKey="label" stroke="#64748b" fontSize={12} />
+                        <YAxis stroke="#64748b" fontSize={12} />
+                        <Tooltip
+                          cursor={{ fill: '#e2f2f8' }}
+                          contentStyle={{
+                            borderRadius: '12px',
+                            border: '1px solid #e2e8f0',
+                            boxShadow: '0 10px 24px rgba(15, 23, 42, 0.08)'
+                          }}
+                        />
+                        <Bar dataKey="bids" fill="url(#barGlow)" radius={[8, 8, 0, 0]} animationDuration={1100} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Card>
+              </motion.div>
+            </section>
           )}
         </main>
       </div>
