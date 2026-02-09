@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import com.hotel_bidding.backend.constants.BidStatus;
 import com.hotel_bidding.backend.constants.PaymentStatus;
-import com.hotel_bidding.backend.constants.SubscriptionStatus;
 import com.hotel_bidding.backend.dto.analytics.PlatformAnalyticsDTO;
 import com.hotel_bidding.backend.dto.analytics.PlatformPerformanceDTO;
 import com.hotel_bidding.backend.dto.analytics.RevenueAnalyticsDTO;
@@ -61,35 +60,85 @@ public class PlatformAnalyticsServiceImpl implements PlatformAnalyticsService {
         // Get year-to-date date range
         LocalDateTime startOfYear = LocalDateTime.now().withDayOfYear(1).withHour(0).withMinute(0).withSecond(0);
         
+        log.info("Calculating analytics from start of year: {}", startOfYear);
+        
         // Get all completed payments for this year
-        List<Payment> completedPayments = paymentRepository.findAll().stream()
+        List<Payment> allPayments = paymentRepository.findAll();
+        List<Payment> completedPayments = allPayments.stream()
                 .filter(p -> p.getPaymentStatus() == PaymentStatus.COMPLETED)
                 .filter(p -> p.getPaymentCompletedAt() != null && 
                             p.getPaymentCompletedAt().isAfter(startOfYear))
                 .collect(Collectors.toList());
         
-        // Calculate metrics
-        double totalRevenue = completedPayments.stream()
+        log.info("Total payments in database: {}", allPayments.size());
+        log.info("Found {} completed payments for year-to-date", completedPayments.size());
+        
+        // Debug: Show all completed payments (any year)
+        long allCompletedCount = allPayments.stream()
+                .filter(p -> p.getPaymentStatus() == PaymentStatus.COMPLETED)
+                .count();
+        log.info("Total completed payments (all time): {}", allCompletedCount);
+        
+        // Calculate booking revenue from payments
+        double bookingRevenue = completedPayments.stream()
                 .mapToDouble(p -> p.getTotalAmount() != null ? p.getTotalAmount() : 0.0)
                 .sum();
+        
+        log.info("Booking revenue calculated: {}", bookingRevenue);
         
         double totalCommission = completedPayments.stream()
                 .mapToDouble(p -> p.getPlatformCommission() != null ? p.getPlatformCommission() : 0.0)
                 .sum();
         
+        log.info("Total commission calculated: {}", totalCommission);
+        
         // Calculate subscription revenue for the year
-        List<Subscription> activeSubscriptions = subscriptionRepository.findAll().stream()
-                .filter(s -> s.getStatus() == SubscriptionStatus.ACTIVE || s.getStatus() == SubscriptionStatus.TRIAL)
-                .filter(s -> s.getCreatedAt() != null && s.getCreatedAt().isAfter(startOfYear))
+        // Count all subscriptions that were paid/activated during this year
+        List<Subscription> allSubscriptions = subscriptionRepository.findAll();
+        
+        List<Subscription> yearSubscriptions = allSubscriptions.stream()
+                .filter(s -> {
+                    // Include subscriptions created this year (new subscriptions)
+                    if (s.getCreatedAt() != null && s.getCreatedAt().isAfter(startOfYear)) {
+                        return true;
+                    }
+                    // Include subscriptions that started this year (activated/renewed)
+                    if (s.getStartDate() != null && s.getStartDate().isAfter(startOfYear)) {
+                        return true;
+                    }
+                    return false;
+                })
                 .collect(Collectors.toList());
         
-        double subscriptionRevenue = activeSubscriptions.stream()
-                .mapToDouble(s -> s.getAmount() != null ? s.getAmount() : 0.0)
+        log.info("Found {} subscriptions for revenue calculation (created or started this year)", yearSubscriptions.size());
+        log.info("Total subscriptions in database: {}", allSubscriptions.size());
+        
+        // Calculate total subscription revenue from this year's subscriptions
+        double subscriptionRevenue = yearSubscriptions.stream()
+                .mapToDouble(s -> {
+                    double amt = s.getAmount() != null ? s.getAmount() : 0.0;
+                    if (amt > 0) {
+                        log.debug("Subscription {} - Amount: {}, Status: {}, Created: {}, Started: {}", 
+                                s.getId(), amt, s.getStatus(), s.getCreatedAt(), s.getStartDate());
+                    }
+                    return amt;
+                })
                 .sum();
+        
+        log.info("Subscription revenue calculated: {} (from {} subscriptions)", 
+                subscriptionRevenue, yearSubscriptions.size());
+        
+        // Calculate total revenue (booking revenue + subscription revenue)
+        double totalRevenue = bookingRevenue + subscriptionRevenue;
+        
+        log.info("Total revenue (bookings + subscriptions): {}", totalRevenue);
         
         int totalBookings = completedPayments.size();
         
-        double averageBookingValue = totalBookings > 0 ? totalRevenue / totalBookings : 0.0;
+        double averageBookingValue = totalBookings > 0 ? bookingRevenue / totalBookings : 0.0;
+        
+        log.info("Average Booking Value calculated: {} (from {} bookings, total revenue: {})", 
+                averageBookingValue, totalBookings, bookingRevenue);
         
         // Calculate previous year data for growth rate
         LocalDateTime startOfLastYear = startOfYear.minusYears(1);
@@ -102,9 +151,31 @@ public class PlatformAnalyticsServiceImpl implements PlatformAnalyticsService {
                             p.getPaymentCompletedAt().isBefore(endOfLastYear))
                 .collect(Collectors.toList());
         
-        double previousYearRevenue = previousYearPayments.stream()
+        double previousYearBookingRevenue = previousYearPayments.stream()
                 .mapToDouble(p -> p.getTotalAmount() != null ? p.getTotalAmount() : 0.0)
                 .sum();
+        
+        // Calculate previous year subscription revenue
+        List<Subscription> previousYearSubscriptions = subscriptionRepository.findAll().stream()
+                .filter(s -> {
+                    if (s.getCreatedAt() != null && s.getCreatedAt().isAfter(startOfLastYear) && s.getCreatedAt().isBefore(endOfLastYear)) {
+                        return true;
+                    }
+                    if (s.getStartDate() != null && s.getStartDate().isAfter(startOfLastYear) && s.getStartDate().isBefore(endOfLastYear)) {
+                        return true;
+                    }
+                    return false;
+                })
+                .collect(Collectors.toList());
+        
+        double previousYearSubscriptionRevenue = previousYearSubscriptions.stream()
+                .mapToDouble(s -> s.getAmount() != null ? s.getAmount() : 0.0)
+                .sum();
+        
+        double previousYearRevenue = previousYearBookingRevenue + previousYearSubscriptionRevenue;
+        
+        log.info("Previous year revenue: {} (bookings: {}, subscriptions: {})", 
+                previousYearRevenue, previousYearBookingRevenue, previousYearSubscriptionRevenue);
         
         // Calculate growth rate
         double growthRate = 0.0;

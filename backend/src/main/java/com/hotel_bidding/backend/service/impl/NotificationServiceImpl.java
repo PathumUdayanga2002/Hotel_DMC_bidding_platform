@@ -23,7 +23,7 @@ import com.hotel_bidding.backend.repository.BidInquiryRepository;
 import com.hotel_bidding.backend.repository.HotelBidRepository;
 import com.hotel_bidding.backend.repository.HotelRepository;
 import com.hotel_bidding.backend.repository.NotificationRepository;
-import com.hotel_bidding.backend.repository.DMCProfileRepository;
+import com.hotel_bidding.backend.repository.UserRepository;
 import com.hotel_bidding.backend.service.EmailService;
 import com.hotel_bidding.backend.service.NotificationService;
 
@@ -38,12 +38,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
     
-        private final NotificationRepository notificationRepository;
-        private final BidInquiryRepository bidInquiryRepository;
-        private final HotelBidRepository hotelBidRepository;
-        private final HotelRepository hotelRepository;
-        private final DMCProfileRepository dmcProfileRepository;
-        private final EmailService emailService;
+    private final NotificationRepository notificationRepository;
+    private final BidInquiryRepository bidInquiryRepository;
+    private final HotelBidRepository hotelBidRepository;
+    private final HotelRepository hotelRepository;
+    private final UserRepository userRepository;
+    private final EmailService emailService;
     
     @Override
     @Transactional
@@ -750,17 +750,81 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void notifyAdminNewRegistration(String userEmail, String userType) {
+        log.info("Creating admin notifications for new {} registration: {}", userType, userEmail);
+        
         // Get all admin users
-        // For now, we'll skip this as admin notification requires admin user repository
-        log.info("New {} registration: {}", userType, userEmail);
+        List<com.hotel_bidding.backend.entity.User> adminUsers = userRepository.findByRole(UserRole.PLATFORM_SUPER_ADMIN);
+        
+        if (adminUsers.isEmpty()) {
+            log.warn("No admin users found to notify about new registration");
+            return;
+        }
+        
+        String title = "New " + userType + " Registration";
+        String message = "A new " + userType + " user has registered: " + userEmail + ". Please review their profile.";
+        String actionUrl = "/admin/users";
+        
+        // Create notification for each admin
+        for (com.hotel_bidding.backend.entity.User admin : adminUsers) {
+            try {
+                createNotification(
+                    admin.getId(),
+                    NotificationType.USER_REGISTRATION,
+                    title,
+                    message,
+                    null, // no related inquiry
+                    null, // no related bid
+                    actionUrl,
+                    2 // medium priority
+                );
+                log.info("Created notification for admin: {}", admin.getUsername());
+            } catch (Exception e) {
+                log.error("Failed to create notification for admin {}: {}", admin.getUsername(), e.getMessage());
+            }
+        }
+        
+        log.info("Successfully notified {} admin(s) about new {} registration", adminUsers.size(), userType);
     }
     
     @Override
     @Transactional
     public void notifyAdminProfileSubmitted(String profileId, String profileType, String companyName) {
+        log.info("Creating admin notifications for new {} profile submitted: {}", profileType, companyName);
+        
         // Get all admin users
-        // For now, we'll skip this as admin notification requires admin user repository
-        log.info("New {} profile submitted for {}", profileType, companyName);
+        List<com.hotel_bidding.backend.entity.User> adminUsers = userRepository.findByRole(UserRole.PLATFORM_SUPER_ADMIN);
+        
+        if (adminUsers.isEmpty()) {
+            log.warn("No admin users found to notify about profile submission");
+            return;
+        }
+        
+        String title = "New " + profileType + " Profile Submitted";
+        String message = companyName + " has submitted their " + profileType + " profile for approval. Please review and approve/reject.";
+        String actionUrl = profileType.equals("Hotel") 
+            ? "/admin/hotels" 
+            : "/admin/dmcs";
+        
+        // Create notification for each admin
+        for (com.hotel_bidding.backend.entity.User admin : adminUsers) {
+            try {
+                createNotification(
+                    admin.getId(),
+                    NotificationType.PROFILE_SUBMITTED,
+                    title,
+                    message,
+                    null, // no related inquiry
+                    null, // no related bid
+                    actionUrl,
+                    3 // high priority - needs action
+                );
+                log.info("Created notification for admin: {}", admin.getUsername());
+            } catch (Exception e) {
+                log.error("Failed to create notification for admin {}: {}", admin.getUsername(), e.getMessage());
+            }
+        }
+        
+        log.info("Successfully notified {} admin(s) about {} profile submission", adminUsers.size(), profileType);
     }
     
     /**
